@@ -92,6 +92,101 @@ if not st.session_state.logged_in:
 
             st.error("Invalid login")
 
+        st.divider()
+
+with st.expander("🆕 Create Account"):
+
+    db = SessionLocal()
+
+    players = db.query(Player).all()
+
+    users = db.query(User).all()
+
+    used_player_ids = []
+
+    for user in users:
+
+        if user.player_id:
+
+            used_player_ids.append(
+                user.player_id
+            )
+
+    available_players = {
+
+        p.name: p.id
+
+        for p in players
+
+        if p.id not in used_player_ids
+
+    }
+
+    if available_players:
+
+        new_username = st.text_input(
+            "Choose Username",
+            key="create_user"
+        )
+
+        new_password = st.text_input(
+            "Choose Password",
+            type="password",
+            key="create_pass"
+        )
+
+        selected_player = st.selectbox(
+            "Select Your Player Profile",
+            list(
+                available_players.keys()
+            ),
+            key="create_player"
+        )
+
+        if st.button(
+            "Create Account",
+            key="create_account_btn"
+        ):
+
+            existing_user = db.query(
+                User
+            ).filter(
+                User.username == new_username
+            ).first()
+
+            if existing_user:
+
+                st.error(
+                    "Username already exists."
+                )
+
+            else:
+
+                user = User(
+                    username=new_username,
+                    password=new_password,
+                    role="viewer",
+                    player_id=available_players[
+                        selected_player
+                    ]
+                )
+
+                db.add(user)
+
+                db.commit()
+
+                st.success(
+                    "Account created successfully."
+                )
+
+    else:
+
+        st.info(
+            "All players already have accounts."
+        )
+
+    db.close()
+
     st.stop()
 
 
