@@ -1000,7 +1000,7 @@ with fixtures_tab:
             "Player 2": p2_name,
 
             
-            "✔":
+            "played?":
             "✅"
             if item.played == 1
             else "❌"
