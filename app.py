@@ -97,8 +97,8 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
         [
             "Round",
             "Player 1",
-            "Player 2",
             "Result",
+            "Player 2",
             "Status"
         ]
     ]
@@ -109,6 +109,7 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
             [
                 row.get("Round", ""),
                 row.get("Player 1", ""),
+                row.get("Result", ""),
                 row.get("Player 2", ""),
                 row.get("Result", ""),
                 row.get("Status", "")
@@ -971,14 +972,15 @@ with fixtures_tab:
 
             "Player 1": p1_name,
 
-            "Player 2": p2_name,
-
             "Result": result,
 
-            "Status":
-            "Played"
+            "Player 2": p2_name,
+
+            
+            "✔":
+            "✅"
             if item.played == 1
-            else "Not Played"
+            else "❌"
 
         })
 
