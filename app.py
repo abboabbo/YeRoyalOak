@@ -1256,11 +1256,15 @@ with league_tab:
             range(1, len(display_df) + 1)
         )
 
-        styled_df = display_df.style.set_properties(
-            **{
-                "text-align": "center"
-            }
-        )
+        styled_df = (
+        display_df.style.set_properties(
+             **{
+            "text-align": "center",
+            "font-weight": "bold",
+            "font-size": "15px"
+        }
+    )
+)
 
         st.dataframe(
             styled_df,
@@ -1481,11 +1485,22 @@ with stats_tab:
             ascending=False
         )
 
+        styled_fixtures = (
+    fixtures_df.style
+    .set_properties(
+        **{
+            "font-weight": "bold",
+            "font-size": "15px",
+            "text-align": "center"
+        }
+    )
+)
+
         st.dataframe(
-            df,
+            styled_fixtures,
             hide_index=True,
             use_container_width=True
-        )
+)
 
     else:
 
