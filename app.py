@@ -1015,28 +1015,28 @@ with fixtures_tab:
     fixtures_df["Round"].unique()
 )
 
-for round_number in round_numbers:
+    for round_number in round_numbers:
 
-    st.subheader(
-        f"Round {round_number}"
-    )
-
-    round_df = fixtures_df[
-        fixtures_df["Round"] == round_number
-    ].drop(
-        columns=["Round"]
-    )
-
-    styled_round_df = (
-        round_df.style
-        .set_properties(
-            **{
-                "font-weight": "bold",
-                "font-size": "17px",
-                "text-align": "center"
-            }
+        st.subheader(
+            f"Round {round_number}"
         )
-    )
+
+        round_df = fixtures_df[
+            fixtures_df["Round"] == round_number
+        ].drop(
+            columns=["Round"]
+        )
+
+        styled_round_df = (
+            round_df.style
+            .set_properties(
+                **{
+                    "font-weight": "bold",
+                    "font-size": "17px",
+                    "text-align": "center"
+                }
+            )
+        )
 
     st.dataframe(
         styled_round_df,
