@@ -952,38 +952,26 @@ if is_admin:
 
     for tournament in tournaments:
 
-        st.write(f"🏆 {tournament.name}")
-        st.write(f"Format: {tournament.format_type}")
-        st.write(f"Match Format: {tournament.legs_format}")
+    st.write(f"🏆 {tournament.name}")
+    st.write(f"Format: {tournament.format_type}")
+    st.write(f"Match Format: {tournament.legs_format}")
 
-        if st.button(
-            "🗑️ Remove Tournament",
-            key=f"remove_tournament_{tournament.id}"
-        ):
+    if st.button(
+        "🗑️ Remove Tournament",
+        key=f"remove_tournament_{tournament.id}"
+    ):
 
-            fixtures_to_delete = db.query(Fixture).filter(
-                Fixture.tournament_id == tournament.id
-            ).all()
+        db.query(Fixture).filter(
+            Fixture.tournament_id == tournament.id
+        ).delete()
 
-        for fixture in fixtures_to_delete:
-
-            db.delete(fixture)
-
-        tournament_players_to_delete = db.query(TournamentPlayer).filter(
+        db.query(TournamentPlayer).filter(
             TournamentPlayer.tournament_id == tournament.id
-        ).all()
+        ).delete()
 
-        for link in tournament_players_to_delete:
-
-            db.delete(link)
-
-        knockout_matches_to_delete = db.query(KnockoutMatch).filter(
+        db.query(KnockoutMatch).filter(
             KnockoutMatch.tournament_id == tournament.id
-        ).all()
-
-        for match in knockout_matches_to_delete:
-
-            db.delete(match)
+        ).delete()
 
         db.delete(tournament)
 
@@ -993,10 +981,9 @@ if is_admin:
 
         st.rerun()
 
-        st.divider()
+    st.divider()
 
-        db.close()
-
+db.close()
 
 # FIXTURES TAB
 
