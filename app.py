@@ -931,15 +931,15 @@ with fixtures_tab:
             for p in players
 }
 
-if not fixtures:
+    if not fixtures:
 
-    st.info("No fixtures generated.")
+        st.info("No fixtures generated.")
 
-else:
+    else:
 
-    st.subheader("Fixtures")
+        st.subheader("Fixtures")
 
-    fixture_rows = []
+        fixture_rows = []
 
     for item in fixtures:
 
