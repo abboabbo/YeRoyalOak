@@ -1668,7 +1668,7 @@ with stats_tab:
 
         styled_fixtures = (
     
-        fixtures_df.style
+            fixtures_df.style
             .set_properties(
             **{
             "font-weight": "bold",
