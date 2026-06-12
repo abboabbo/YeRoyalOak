@@ -3,3 +3,4 @@ pandas
 sqlalchemy
 pillow
 psycopg2-binary
+reportlab
