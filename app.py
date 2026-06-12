@@ -2,6 +2,12 @@ import streamlit as st
 import pandas as pd
 import os
 
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+
 from PIL import Image
 from itertools import combinations
 from datetime import date
@@ -65,6 +71,73 @@ def display_player_name(player):
         return player.nickname
 
     return player.name
+
+def create_fixtures_pdf(fixture_rows, tournament_name):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4
+    )
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    title = Paragraph(
+        f"{tournament_name} - Fixtures",
+        styles["Title"]
+    )
+
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    table_data = [
+        [
+            "Round",
+            "Player 1",
+            "Player 2",
+            "Result",
+            "Status"
+        ]
+    ]
+
+    for row in fixture_rows:
+
+        table_data.append(
+            [
+                row.get("Round", ""),
+                row.get("Player 1", ""),
+                row.get("Player 2", ""),
+                row.get("Result", ""),
+                row.get("Status", "")
+            ]
+        )
+
+    table = Table(
+        table_data,
+        repeatRows=1
+    )
+
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+            ]
+        )
+    )
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return buffer
 
 
 icon = Image.open(
@@ -858,17 +931,95 @@ with fixtures_tab:
             for p in players
 }
 
-        if not fixtures:
+if not fixtures:
 
-            st.info("No fixtures generated.")
+    st.info("No fixtures generated.")
 
-        else:
+else:
 
-            st.subheader("Fixtures")
+    st.subheader("Fixtures")
 
-            current_round = None
+    fixture_rows = []
 
-            for fixture in fixtures:
+    for item in fixtures:
+
+        p1_name = player_lookup.get(
+            item.player1_id,
+            "Unknown"
+        )
+
+        p2_name = player_lookup.get(
+            item.player2_id,
+            "Unknown"
+        )
+
+        result = ""
+
+        if item.played == 1:
+
+            result = (
+                f"{item.player1_legs}"
+                f" - "
+                f"{item.player2_legs}"
+            )
+
+        fixture_rows.append({
+
+            "Round": item.round_number,
+
+            "Date Played": item.date_played,
+
+            "Player 1": p1_name,
+
+            "Player 2": p2_name,
+
+            "Result": result,
+
+            "Status":
+            "Played"
+            if item.played == 1
+            else "Not Played"
+
+        })
+
+    fixtures_df = pd.DataFrame(
+        fixture_rows
+    )
+
+    st.dataframe(
+        fixtures_df,
+        hide_index=True,
+        use_container_width=True
+    )
+
+    csv = fixtures_df.to_csv(
+        index=False
+    )
+
+    st.download_button(
+        "📥 Download Fixtures CSV",
+        csv,
+        "fixtures.csv",
+        "text/csv"
+    )
+
+    pdf_file = create_fixtures_pdf(
+        fixture_rows,
+        selected_tournament
+    )
+
+    st.download_button(
+        "📄 Download Fixtures PDF",
+        pdf_file,
+        "fixtures.pdf",
+        "application/pdf"
+    )
+
+    st.divider() 
+
+    current_round = None
+
+    for fixture in fixtures:
 
                 if fixture.round_number != current_round:
 
