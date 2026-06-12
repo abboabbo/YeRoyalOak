@@ -151,6 +151,29 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown(
+    """
+    <style>
+
+    .stDataFrame table {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .stDataFrame th {
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .stDataFrame td {
+        font-weight: 700;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # LOGIN
 
