@@ -58,6 +58,14 @@ def generate_round_robin(player_ids):
 
     return rounds
 
+def display_player_name(player):
+
+    if player.nickname:
+
+        return player.nickname
+
+    return player.name
+
 
 icon = Image.open(
     "assets/royal_oak_logo.png"
@@ -846,9 +854,9 @@ with fixtures_tab:
         players = db.query(Player).all()
 
         player_lookup = {
-            p.id: p.name
+            p.id: display_player_name(p)
             for p in players
-        }
+}
 
         if not fixtures:
 
@@ -1056,7 +1064,7 @@ with league_tab:
             )
 
         rows.append({
-            "Player": data["player"].name,
+            "Player": display_player_name(data["player"]),
             "Played": data["played"],
             "Won": data["won"],
             "Drawn": data["drawn"],
