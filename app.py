@@ -950,40 +950,40 @@ if is_admin:
 
         tournaments = db.query(Tournament).all()
 
-    for tournament in tournaments:
+        for tournament in tournaments:
 
-        st.write(f"🏆 {tournament.name}")
-        st.write(f"Format: {tournament.format_type}")
-        st.write(f"Match Format: {tournament.legs_format}")
+            st.write(f"🏆 {tournament.name}")
+            st.write(f"Format: {tournament.format_type}")
+            st.write(f"Match Format: {tournament.legs_format}")
 
-        if st.button(
-            "🗑️ Remove Tournament",
-            key=f"remove_tournament_{tournament.id}"
-        ):
+            if st.button(
+                "🗑️ Remove Tournament",
+                key=f"remove_tournament_{tournament.id}"
+            ):
 
-            db.query(Fixture).filter(
-                Fixture.tournament_id == tournament.id
-            ).delete()
+                db.query(Fixture).filter(
+                    Fixture.tournament_id == tournament.id
+                ).delete()
 
-            db.query(TournamentPlayer).filter(
-                TournamentPlayer.tournament_id == tournament.id
-            ).delete()
+                db.query(TournamentPlayer).filter(
+                    TournamentPlayer.tournament_id == tournament.id
+                ).delete()
 
-            db.query(KnockoutMatch).filter(
-                KnockoutMatch.tournament_id == tournament.id
-            ).delete()
+                db.query(KnockoutMatch).filter(
+                    KnockoutMatch.tournament_id == tournament.id
+                ).delete()
 
-            db.delete(tournament)
+                db.delete(tournament)
 
-            db.commit()
+                db.commit()
 
-            st.success("Tournament removed successfully.")
+                st.success("Tournament removed successfully.")
 
-            st.rerun()
+                st.rerun()
 
-    st.divider()
+        st.divider()
 
-db.close()
+    db.close()
 
 # FIXTURES TAB
 
