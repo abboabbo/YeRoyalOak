@@ -126,8 +126,9 @@ is_admin = st.session_state.get("role") == "admin"
 
 if is_admin:
 
-    players_tab, users_tab, tournaments_tab, fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
+    profile_tab, players_tab, users_tab, tournaments_tab, fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
         [
+            "Profile",
             "Players",
             "Users",
             "Tournaments",
@@ -140,8 +141,9 @@ if is_admin:
 
 else:
 
-    fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
+    profile_tab, fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
         [
+            "My Profile",
             "Fixtures",
             "League",
             "Knockout",
@@ -151,6 +153,213 @@ else:
 
 
 # ADMIN TABS
+
+with profile_tab:
+
+    st.header("🎯 My Player Profile")
+
+    player_id = st.session_state.get("player_id")
+
+    if not player_id:
+
+        st.info("No player is linked to this account.")
+
+    else:
+
+        db = SessionLocal()
+
+        player = db.get(Player, player_id)
+
+        if not player:
+
+            st.error("Linked player could not be found.")
+
+        else:
+
+            col1, col2 = st.columns([1, 4])
+
+            with col1:
+
+                if player.logo_path and os.path.exists(player.logo_path):
+
+                    st.image(
+                        player.logo_path,
+                        width=120
+                    )
+
+            with col2:
+
+                st.subheader(player.name)
+
+                if player.nickname:
+
+                    st.write(f"Nickname: {player.nickname}")
+
+            fixtures = db.query(Fixture).filter(
+                (
+                    Fixture.player1_id == player_id
+                )
+                |
+                (
+                    Fixture.player2_id == player_id
+                )
+            ).all()
+
+            played = 0
+            wins = 0
+            draws = 0
+            losses = 0
+            averages = []
+
+            upcoming = []
+
+            for fixture in fixtures:
+
+                if fixture.played == 0:
+
+                    upcoming.append(fixture)
+
+                else:
+
+                    played += 1
+
+                    if fixture.player1_id == player_id:
+
+                        player_legs = fixture.player1_legs
+                        opponent_legs = fixture.player2_legs
+
+                        try:
+                            averages.append(float(fixture.player1_average))
+                        except:
+                            pass
+
+                    else:
+
+                        player_legs = fixture.player2_legs
+                        opponent_legs = fixture.player1_legs
+
+                        try:
+                            averages.append(float(fixture.player2_average))
+                        except:
+                            pass
+
+                    if player_legs > opponent_legs:
+
+                        wins += 1
+
+                    elif player_legs < opponent_legs:
+
+                        losses += 1
+
+                    else:
+
+                        draws += 1
+
+            win_pct = 0
+
+            if played > 0:
+
+                win_pct = round(
+                    (wins / played) * 100,
+                    1
+                )
+
+            avg = 0
+
+            if averages:
+
+                avg = round(
+                    sum(averages) / len(averages),
+                    2
+                )
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric("Win %", win_pct)
+            col2.metric("3 Dart Average", avg)
+            col3.metric("Played", played)
+            col4.metric("Wins", wins)
+
+            col5, col6, col7 = st.columns(3)
+
+            col5.metric("Draws", draws)
+            col6.metric("Losses", losses)
+            col7.metric("Remaining Fixtures", len(upcoming))
+
+            st.divider()
+
+            st.subheader("Upcoming Fixtures")
+
+            if not upcoming:
+
+                st.info("No upcoming fixtures.")
+
+            else:
+
+                players = db.query(Player).all()
+
+                player_lookup = {
+                    p.id: p.name
+                    for p in players
+                }
+
+                for fixture in upcoming:
+
+                    p1 = player_lookup.get(
+                        fixture.player1_id,
+                        "Unknown"
+                    )
+
+                    p2 = player_lookup.get(
+                        fixture.player2_id,
+                        "Unknown"
+                    )
+
+                    st.write(f"🎯 {p1} vs {p2}")
+
+            st.divider()
+
+            st.subheader("Recent Results")
+
+            recent_results = [
+                fixture
+                for fixture in fixtures
+                if fixture.played == 1
+            ]
+
+            recent_results = recent_results[-5:]
+
+            if not recent_results:
+
+                st.info("No results yet.")
+
+            else:
+
+                players = db.query(Player).all()
+
+                player_lookup = {
+                    p.id: p.name
+                    for p in players
+                }
+
+                for fixture in recent_results:
+
+                    p1 = player_lookup.get(
+                        fixture.player1_id,
+                        "Unknown"
+                    )
+
+                    p2 = player_lookup.get(
+                        fixture.player2_id,
+                        "Unknown"
+                    )
+
+                    st.write(
+                        f"{p1} {fixture.player1_legs} - "
+                        f"{fixture.player2_legs} {p2}"
+                    )
+
+        db.close()
 
 if is_admin:
 
