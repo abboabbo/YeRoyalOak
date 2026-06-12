@@ -18,12 +18,45 @@ from models import (
 
 
 def generate_round_robin(player_ids):
-    fixtures = []
 
-    for player1, player2 in combinations(player_ids, 2):
-        fixtures.append((player1, player2))
+    players = player_ids.copy()
 
-    return fixtures
+    if len(players) % 2 != 0:
+        players.append(None)
+
+    rounds = []
+
+    total_rounds = len(players) - 1
+    matches_per_round = len(players) // 2
+
+    for round_number in range(1, total_rounds + 1):
+
+        round_matches = []
+
+        for match_index in range(matches_per_round):
+
+            player1 = players[match_index]
+            player2 = players[-(match_index + 1)]
+
+            if player1 is not None and player2 is not None:
+
+                round_matches.append(
+                    (
+                        round_number,
+                        player1,
+                        player2
+                    )
+                )
+
+        players = [
+            players[0]
+        ] + [
+            players[-1]
+        ] + players[1:-1]
+
+        rounds.extend(round_matches)
+
+    return rounds
 
 
 icon = Image.open(
@@ -780,13 +813,14 @@ with fixtures_tab:
 
                         generated_fixtures = generate_round_robin(player_ids)
 
-                        for player1_id, player2_id in generated_fixtures:
+                        for round_number, player1_id, player2_id in generated_fixtures:
 
                             fixture = Fixture(
-                                tournament_id=selected_tournament_id,
-                                player1_id=player1_id,
-                                player2_id=player2_id
-                            )
+                            tournament_id=selected_tournament_id,
+                            round_number=round_number,
+                            player1_id=player1_id,
+                            player2_id=player2_id
+                        )
 
                             db.add(fixture)
 
@@ -800,6 +834,14 @@ with fixtures_tab:
         fixtures = db.query(Fixture).filter(
             Fixture.tournament_id == selected_tournament_id
         ).all()
+
+        fixtures = sorted(
+    fixtures,
+    key=lambda x: (
+        x.round_number,
+        x.id
+    )
+)
 
         players = db.query(Player).all()
 
@@ -816,7 +858,17 @@ with fixtures_tab:
 
             st.subheader("Fixtures")
 
+            current_round = None
+
             for fixture in fixtures:
+
+                if fixture.round_number != current_round:
+
+                    current_round = fixture.round_number
+
+                    st.subheader(
+                        f"Round {current_round}"
+                )
 
                 player1 = player_lookup.get(
                     fixture.player1_id,
