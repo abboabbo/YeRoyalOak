@@ -1011,11 +1011,40 @@ with fixtures_tab:
         fixture_rows
     )
 
+    round_numbers = sorted(
+    fixtures_df["Round"].unique()
+)
+
+for round_number in round_numbers:
+
+    st.subheader(
+        f"Round {round_number}"
+    )
+
+    round_df = fixtures_df[
+        fixtures_df["Round"] == round_number
+    ].drop(
+        columns=["Round"]
+    )
+
+    styled_round_df = (
+        round_df.style
+        .set_properties(
+            **{
+                "font-weight": "bold",
+                "font-size": "17px",
+                "text-align": "center"
+            }
+        )
+    )
+
     st.dataframe(
-        fixtures_df,
+        styled_round_df,
         hide_index=True,
         use_container_width=True
     )
+
+    st.markdown("---")
 
     csv = fixtures_df.to_csv(
         index=False
