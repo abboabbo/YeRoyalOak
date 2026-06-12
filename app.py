@@ -78,8 +78,111 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=A4
+        pagesize=A4,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
     )
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    title = Paragraph(
+        f"{tournament_name} - Fixtures",
+        styles["Title"]
+    )
+
+    elements.append(title)
+    elements.append(Spacer(1, 16))
+
+    rounds = sorted(
+        set(
+            row.get("Round", "")
+            for row in fixture_rows
+        )
+    )
+
+    for round_number in rounds:
+
+        round_title = Paragraph(
+            f"Round {round_number}",
+            styles["Heading2"]
+        )
+
+        elements.append(round_title)
+        elements.append(Spacer(1, 6))
+
+        table_data = [
+            [
+                "Player 1",
+                "Result",
+                "Player 2",
+                "Date",
+                "✔"
+            ]
+        ]
+
+        for row in fixture_rows:
+
+            if row.get("Round", "") == round_number:
+
+                table_data.append(
+                    [
+                        row.get("Player 1", ""),
+                        row.get("Result", ""),
+                        row.get("Player 2", ""),
+                        row.get("Date Played", ""),
+                        row.get("Status", "")
+                    ]
+                )
+
+        table = Table(
+            table_data,
+            colWidths=[
+                130,
+                60,
+                130,
+                90,
+                35
+            ],
+            repeatRows=1
+        )
+
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTNAME", (0, 1), (-1, -1), "Helvetica-Bold"),
+
+                    ("FONTSIZE", (0, 0), (-1, 0), 11),
+                    ("FONTSIZE", (0, 1), (-1, -1), 10),
+
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+                ]
+            )
+        )
+
+        elements.append(table)
+        elements.append(Spacer(1, 18))
+
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return buffer
 
     styles = getSampleStyleSheet()
 
