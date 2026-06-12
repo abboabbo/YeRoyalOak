@@ -116,11 +116,12 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
 
         table_data = [
             [
+                "Average",
                 "Player 1",
                 "Result",
                 "Player 2",
-                "Date",
-                "✔"
+                "Average",
+                "Date"
             ]
         ]
 
