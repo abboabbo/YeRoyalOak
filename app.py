@@ -1038,13 +1038,13 @@ with fixtures_tab:
             )
         )
 
-    st.dataframe(
+        st.dataframe(
         styled_round_df,
         hide_index=True,
         use_container_width=True
     )
 
-    st.markdown("---")
+        st.markdown("---")
 
     csv = fixtures_df.to_csv(
         index=False
