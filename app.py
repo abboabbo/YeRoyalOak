@@ -119,9 +119,9 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
                 "Player 1",
                 "Result",
                 "Player 2",
+                "Date",
                 "AVG 1",
-                "AVG 2",
-                "Date"
+                "AVG 2"
             ]
         ]
 
