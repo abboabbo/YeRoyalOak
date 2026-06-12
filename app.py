@@ -145,8 +145,9 @@ def create_fixtures_pdf(fixture_rows, tournament_name):
                 130,
                 60,
                 130,
-                90,
-                35
+                70,
+                50,
+                50
             ],
             repeatRows=1
         )
@@ -949,13 +950,50 @@ if is_admin:
 
         tournaments = db.query(Tournament).all()
 
-        for tournament in tournaments:
+    for tournament in tournaments:
 
-            st.write(f"🏆 {tournament.name}")
-            st.write(f"Format: {tournament.format_type}")
-            st.write(f"Match Format: {tournament.legs_format}")
+        st.write(f"🏆 {tournament.name}")
+        st.write(f"Format: {tournament.format_type}")
+        st.write(f"Match Format: {tournament.legs_format}")
 
-            st.divider()
+        if st.button(
+            "🗑️ Remove Tournament",
+            key=f"remove_tournament_{tournament.id}"
+        ):
+
+            fixtures_to_delete = db.query(Fixture).filter(
+                Fixture.tournament_id == tournament.id
+            ).all()
+
+        for fixture in fixtures_to_delete:
+
+            db.delete(fixture)
+
+        tournament_players_to_delete = db.query(TournamentPlayer).filter(
+            TournamentPlayer.tournament_id == tournament.id
+        ).all()
+
+        for link in tournament_players_to_delete:
+
+            db.delete(link)
+
+        knockout_matches_to_delete = db.query(KnockoutMatch).filter(
+            KnockoutMatch.tournament_id == tournament.id
+        ).all()
+
+        for match in knockout_matches_to_delete:
+
+            db.delete(match)
+
+        db.delete(tournament)
+
+        db.commit()
+
+        st.success("Tournament removed successfully.")
+
+        st.rerun()
+
+        st.divider()
 
         db.close()
 
