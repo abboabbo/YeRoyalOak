@@ -1659,31 +1659,31 @@ with stats_tab:
 
     df = pd.DataFrame(rows)
 
-if not df.empty:
+    if not df.empty:
 
-    df = df.sort_values(
-        by=["Win %", "3 Dart Average"],
-        ascending=False
-    )
+        df = df.sort_values(
+            by=["Win %", "3 Dart Average"],
+            ascending=False
+        )
 
-    styled_stats = (
-        df.style.set_properties(
-            **{
+        styled_stats = (
+            df.style.set_properties(
+                **{
                 "text-align": "center",
                 "font-weight": "bold",
                 "font-size": "15px"
-            }
+                }
+            )
         )
-    )
 
-    st.dataframe(
-        styled_stats,
-        hide_index=True,
-        use_container_width=True
-    )
+        st.dataframe(
+            styled_stats,
+            hide_index=True,
+            use_container_width=True
+        )
 
-else:
+    else:
 
-    st.info("No statistics available yet.")
+        st.info("No statistics available yet.")
 
-db.close()
+    db.close()
