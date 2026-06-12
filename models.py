@@ -92,6 +92,11 @@ class Fixture(Base):
         ForeignKey("tournaments.id")
     )
 
+    round_number = Column(
+        Integer,
+        default=1
+    )
+
     player1_id = Column(
         Integer,
         ForeignKey("players.id")
@@ -126,7 +131,6 @@ class Fixture(Base):
         String,
         default="0"
     )
-
 
     played = Column(
         Integer,
