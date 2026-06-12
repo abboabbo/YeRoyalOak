@@ -1667,9 +1667,10 @@ with stats_tab:
         )
 
         styled_fixtures = (
-    fixtures_df.style
-    .set_properties(
-        **{
+    
+        fixtures_df.style
+            .set_properties(
+            **{
             "font-weight": "bold",
             "font-size": "15px",
             "text-align": "center"
