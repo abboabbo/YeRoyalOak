@@ -1050,11 +1050,11 @@ with fixtures_tab:
                         for round_number, player1_id, player2_id in generated_fixtures:
 
                             fixture = Fixture(
-                            tournament_id=selected_tournament_id,
-                            round_number=round_number,
-                            player1_id=player1_id,
-                            player2_id=player2_id
-                        )
+                                tournament_id=selected_tournament_id,
+                                round_number=round_number,
+                                player1_id=player1_id,
+                                player2_id=player2_id
+                            )
 
                             db.add(fixture)
 
@@ -1070,139 +1070,138 @@ with fixtures_tab:
         ).all()
 
         fixtures = sorted(
-    fixtures,
-    key=lambda x: (
-        x.round_number,
-        x.id
-    )
-)
+            fixtures,
+            key=lambda x: (
+                x.round_number,
+                x.id
+            )
+        )
 
         players = db.query(Player).all()
 
         player_lookup = {
             p.id: display_player_name(p)
             for p in players
-}
+        }
 
-    if not fixtures:
+        if not fixtures:
 
-        st.info("No fixtures generated.")
+            st.info("No fixtures generated.")
 
-    else:
+        else:
 
-        st.subheader("Fixtures")
+            st.subheader("Fixtures")
 
-        fixture_rows = []
+            fixture_rows = []
 
-    for item in fixtures:
+            for item in fixtures:
 
-        p1_name = player_lookup.get(
-            item.player1_id,
-            "Unknown"
-        )
+                p1_name = player_lookup.get(
+                    item.player1_id,
+                    "Unknown"
+                )
 
-        p2_name = player_lookup.get(
-            item.player2_id,
-            "Unknown"
-        )
+                p2_name = player_lookup.get(
+                    item.player2_id,
+                    "Unknown"
+                )
 
-        result = ""
+                result = ""
 
-        if item.played == 1:
+                if item.played == 1:
 
-            result = (
-                f"{item.player1_legs}"
-                f" - "
-                f"{item.player2_legs}"
+                    result = (
+                        f"{item.player1_legs}"
+                        f" - "
+                        f"{item.player2_legs}"
+                    )
+
+                fixture_rows.append({
+
+                    "Round": item.round_number,
+
+                    "Date Played": item.date_played,
+
+                    "Player 1": p1_name,
+
+                    "Result": result,
+
+                    "Player 2": p2_name,
+
+                    "Played?":
+                    "✅"
+                    if item.played == 1
+                    else "❌"
+
+                })
+
+            fixtures_df = pd.DataFrame(
+                fixture_rows
             )
 
-        fixture_rows.append({
-
-            "Round": item.round_number,
-
-            "Date Played": item.date_played,
-
-            "Player 1": p1_name,
-
-            "Result": result,
-
-            "Player 2": p2_name,
-
-            
-            "played?":
-            "✅"
-            if item.played == 1
-            else "❌"
-
-        })
-
-    fixtures_df = pd.DataFrame(
-        fixture_rows
-    )
-
-    round_numbers = sorted(
-    fixtures_df["Round"].unique()
-)
-
-    for round_number in round_numbers:
-
-        st.subheader(
-            f"Round {round_number}"
-        )
-
-        round_df = fixtures_df[
-            fixtures_df["Round"] == round_number
-        ].drop(
-            columns=["Round"]
-        )
-
-        styled_round_df = (
-            round_df.style
-            .set_properties(
-                **{
-                    "font-weight": "bold",
-                    "font-size": "17px",
-                    "text-align": "center"
-                }
+            round_numbers = sorted(
+                fixtures_df["Round"].unique()
             )
-        )
 
-        st.dataframe(
-        styled_round_df,
-        hide_index=True,
-        use_container_width=True
-    )
+            for round_number in round_numbers:
 
-        st.markdown("---")
+                st.subheader(
+                    f"Round {round_number}"
+                )
 
-    csv = fixtures_df.to_csv(
-        index=False
-    )
+                round_df = fixtures_df[
+                    fixtures_df["Round"] == round_number
+                ].drop(
+                    columns=["Round"]
+                )
 
-    st.download_button(
-        "📥 Download Fixtures CSV",
-        csv,
-        "fixtures.csv",
-        "text/csv"
-    )
+                styled_round_df = (
+                    round_df.style
+                    .set_properties(
+                        **{
+                            "font-weight": "bold",
+                            "font-size": "17px",
+                            "text-align": "center"
+                        }
+                    )
+                )
 
-    pdf_file = create_fixtures_pdf(
-        fixture_rows,
-        selected_tournament
-    )
+                st.dataframe(
+                    styled_round_df,
+                    hide_index=True,
+                    use_container_width=True
+                )
 
-    st.download_button(
-        "📄 Download Fixtures PDF",
-        pdf_file,
-        "fixtures.pdf",
-        "application/pdf"
-    )
+                st.markdown("---")
 
-    st.divider() 
+            csv = fixtures_df.to_csv(
+                index=False
+            )
 
-    current_round = None
+            st.download_button(
+                "📥 Download Fixtures CSV",
+                csv,
+                "fixtures.csv",
+                "text/csv"
+            )
 
-    for fixture in fixtures:
+            pdf_file = create_fixtures_pdf(
+                fixture_rows,
+                selected_tournament
+            )
+
+            st.download_button(
+                "📄 Download Fixtures PDF",
+                pdf_file,
+                "fixtures.pdf",
+                "application/pdf"
+            )
+
+            st.divider()
+
+            current_round = None
+
+            for fixture in fixtures:
 
                 if fixture.round_number != current_round:
 
@@ -1210,7 +1209,7 @@ with fixtures_tab:
 
                     st.subheader(
                         f"Round {current_round}"
-                )
+                    )
 
                 player1 = player_lookup.get(
                     fixture.player1_id,
@@ -1251,6 +1250,7 @@ with fixtures_tab:
                 else:
 
                     st.markdown(f"### {player1} vs {player2}")
+
                     st.warning("Not Played")
 
                     if is_admin:
