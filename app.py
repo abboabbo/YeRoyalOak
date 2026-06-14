@@ -853,6 +853,12 @@ if is_admin:
                         key=f"edit_nickname_{player.id}"
                 )
 
+                    new_logo_path = st.text_input(
+                        "Logo Path / URL",
+                        value=player.logo_path if player.logo_path else "",
+                        key=f"edit_logo_{player.id}"
+            )
+
         col3, col4 = st.columns(2)
 
         with col3:
@@ -873,6 +879,7 @@ if is_admin:
 
                     target.name = new_name
                     target.nickname = new_nickname
+                    target.logo_path = new_logo_path
 
                     db_edit.commit()
 
