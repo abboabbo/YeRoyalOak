@@ -675,6 +675,71 @@ if page == "My Profile":
                     key="my_profile_logo"
                 )
 
+                st.divider()
+
+                st.subheader("🔒 Change Password")
+
+                current_password = st.text_input(
+                    "Current Password",
+                    type="password",
+                    key="current_password"
+                )
+
+                new_password = st.text_input(
+                    "New Password",
+                    type="password",
+                    key="new_password"
+                )
+
+                confirm_password = st.text_input(
+                    "Confirm New Password",
+                    type="password",
+                    key="confirm_password"
+                )
+
+                if st.button(
+                    "Update Password",
+                    key="update_password"
+                ):
+
+                    user = db.query(User).filter(
+                        User.username == st.session_state.username
+                    ).first()
+
+                    if not user:
+
+                        st.error(
+                            "User account not found."
+                        )
+
+                    elif user.password != current_password:
+
+                        st.error(
+                            "Current password is incorrect."
+                        )
+
+                    elif new_password != confirm_password:
+
+                        st.error(
+                            "New passwords do not match."
+                        )
+
+                    elif len(new_password) < 6:
+
+                        st.error(
+                            "Password must be at least 6 characters."
+                        )
+
+                    else:
+
+                        user.password = new_password
+
+                        db.commit()
+
+                        st.success(
+                            "Password updated successfully."
+                        )
+
                 if st.button("Save My Profile"):
 
                     player.nickname = new_nickname
