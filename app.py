@@ -324,6 +324,9 @@ if "logged_in" not in st.session_state:
 
 if not st.session_state.logged_in:
 
+    if "login_mode" not in st.session_state:
+        st.session_state.login_mode = "login"
+
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
@@ -335,46 +338,75 @@ if not st.session_state.logged_in:
 
         st.title("Ye Royal Oak Darts League")
 
+        st.caption("Welcome to the official league portal")
 
-        st.subheader("Player Login")
+        btn_col1, btn_col2 = st.columns(2)
 
-        username = st.text_input("Username")
+        with btn_col1:
 
-        password = st.text_input(
-            "Password",
-            type="password"
-        )
+            if st.button(
+                "🔐 Login",
+                use_container_width=True
+            ):
 
-        if st.button(
-            "Login",
-            use_container_width=True
-        ):
+                st.session_state.login_mode = "login"
 
-            db = SessionLocal()
+        with btn_col2:
 
-            user = db.query(User).filter(
-                User.username == username,
-                User.password == password
-            ).first()
+            if st.button(
+                "🆕 Create Account",
+                use_container_width=True
+            ):
 
-            db.close()
-
-            if user:
-
-                st.session_state.logged_in = True
-                st.session_state.role = user.role
-                st.session_state.username = user.username
-                st.session_state.player_id = user.player_id
-
-                st.rerun()
-
-            else:
-
-                st.error("Invalid login")
+                st.session_state.login_mode = "create"
 
         st.divider()
 
-        with st.expander("🆕 Create Account"):
+        if st.session_state.login_mode == "login":
+
+            st.subheader("Player Login")
+
+            username = st.text_input(
+                "Username",
+                key="login_username"
+            )
+
+            password = st.text_input(
+                "Password",
+                type="password",
+                key="login_password"
+            )
+
+            if st.button(
+                "Enter League Portal",
+                use_container_width=True
+            ):
+
+                db = SessionLocal()
+
+                user = db.query(User).filter(
+                    User.username == username,
+                    User.password == password
+                ).first()
+
+                db.close()
+
+                if user:
+
+                    st.session_state.logged_in = True
+                    st.session_state.role = user.role
+                    st.session_state.username = user.username
+                    st.session_state.player_id = user.player_id
+
+                    st.rerun()
+
+                else:
+
+                    st.error("Invalid login")
+
+        else:
+
+            st.subheader("Create Player Account")
 
             db = SessionLocal()
 
@@ -442,7 +474,11 @@ if not st.session_state.logged_in:
                         db.add(user)
                         db.commit()
 
-                        st.success("Account created successfully. You can now log in.")
+                        st.success(
+                            "Account created successfully. You can now log in."
+                        )
+
+                        st.session_state.login_mode = "login"
 
             else:
 
