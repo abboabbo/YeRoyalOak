@@ -1712,7 +1712,7 @@ if page == "League":
             display_df,
             column_config={
                 "logo": st.column_config.ImageColumn(
-                    "Logo",
+                "Logo",
                     width="small"
                 )
             },
