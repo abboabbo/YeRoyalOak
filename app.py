@@ -822,35 +822,95 @@ if is_admin:
 
         for player in players:
 
-            col1, col2, col3 = st.columns([1, 4, 1])
+            with st.expander(
+                f"🎯 {player.name}"
+            ):
 
-            with col1:
+                col1, col2 = st.columns(
+                    [1, 4]
+                )
 
-                if player.logo_path and os.path.exists(player.logo_path):
-                    st.image(player.logo_path, width=75)
+                with col1:
 
-            with col2:
+                    if player.logo_path and os.path.exists(player.logo_path):
 
-                st.write(f"### {player.name}")
-                st.write(player.nickname)
+                        st.image(
+                            player.logo_path,
+                            width=75
+                        )
 
-            with col3:
+                with col2:
 
-                if st.button("Delete", key=f"del_{player.id}"):
+                    new_name = st.text_input(
+                        "Player Name",
+                        value=player.name,
+                        key=f"edit_name_{player.id}"
+                    )
 
-                    db = SessionLocal()
+                    new_nickname = st.text_input(
+                        "Nickname",
+                        value=player.nickname,
+                        key=f"edit_nickname_{player.id}"
+                    )
 
-                    target = db.get(Player, player.id)
+                col3, col4 = st.columns(2)
+
+                with col3:
+
+                    if st.button(
+                        "💾 Save Changes",
+                        key=f"save_player_{player.id}"
+                    ):
+
+                        db = SessionLocal()
+
+                        target = db.get(
+                            Player,
+                            player.id
+                    )
 
                     if target:
-                        db.delete(target)
+
+                        target.name = new_name
+                        target.nickname = new_nickname
+
                         db.commit()
 
                     db.close()
 
+                    st.success(
+                        "Player updated."
+                    )
+
                     st.rerun()
 
-            st.divider()
+                with col4:
+
+                    if st.button(
+                        "🗑 Delete Player",
+                        key=f"delete_player_{player.id}"
+                    ):
+
+                        db = SessionLocal()
+
+                        target = db.get(
+                            Player,
+                            player.id
+                        )
+
+                        if target:
+
+                            db.delete(target)
+
+                            db.commit()
+
+                        db.close()
+
+                        st.success(
+                            "Player deleted."
+                        )
+
+                        st.rerun()
 
 
     if is_admin and page == "Users":
