@@ -293,6 +293,24 @@ st.markdown(
         font-weight: 700;
     }
 
+    div.stButton > button {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #444;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    }
+
+    div.stButton > button:hover {
+    border-color: #d4af37;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212,175,55,0.35);
+    }
+
+    div.stButton > button:focus {
+    border-color: #d4af37;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -463,6 +481,9 @@ is_admin = st.session_state.get("role") == "admin"
 
 # TABS
 
+if "page" not in st.session_state:
+    st.session_state.page = "My Profile"
+
 with st.sidebar:
 
     st.image(
@@ -474,21 +495,20 @@ with st.sidebar:
 
     st.markdown("## 🎯 Main Menu")
 
-    player_pages = {
-        "👤 My Profile": "My Profile",
-        "📅 Fixtures": "Fixtures",
-        "🏆 League Table": "League",
-        "🎯 Knockout": "Knockout",
-        "📊 Statistics": "Statistics"
-    }
+    if st.button("👤 My Profile", use_container_width=True):
+        st.session_state.page = "My Profile"
 
-    selected_player_page = st.radio(
-        "Navigation",
-        list(player_pages.keys()),
-        label_visibility="collapsed"
-    )
+    if st.button("📅 Fixtures", use_container_width=True):
+        st.session_state.page = "Fixtures"
 
-    page = player_pages[selected_player_page]
+    if st.button("🏆 League Table", use_container_width=True):
+        st.session_state.page = "League"
+
+    if st.button("🎯 Knockout", use_container_width=True):
+        st.session_state.page = "Knockout"
+
+    if st.button("📊 Statistics", use_container_width=True):
+        st.session_state.page = "Statistics"
 
     if is_admin:
 
@@ -496,21 +516,18 @@ with st.sidebar:
 
         st.markdown("## 🔐 Admin Tools")
 
-        admin_pages = {
-            "➕ Players": "Players",
-            "👥 Users": "Users",
-            "🏆 Tournaments": "Tournaments"
-        }
+        if st.button("➕ Players", use_container_width=True):
+            st.session_state.page = "Players"
 
-        selected_admin_page = st.radio(
-            "Admin Navigation",
-            ["None"] + list(admin_pages.keys()),
-            label_visibility="collapsed"
-        )
+        if st.button("👥 Users", use_container_width=True):
+            st.session_state.page = "Users"
 
-        if selected_admin_page != "None":
+        if st.button("🏆 Tournaments", use_container_width=True):
+            st.session_state.page = "Tournaments"
 
-            page = admin_pages[selected_admin_page]
+    page = st.session_state.page
+
+    st.markdown("---")
 
     st.markdown("### Follow Us")
 
