@@ -442,9 +442,6 @@ with col2:
 
 is_admin = st.session_state.get("role") == "admin"
 
-st.title("🎯 Ye Royal Oak Darts League")
-
-
 # TABS
 
 with st.sidebar:
