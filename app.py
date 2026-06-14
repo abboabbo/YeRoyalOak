@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -22,6 +23,27 @@ from models import (
     KnockoutMatch
 )
 
+def image_to_base64(path):
+
+    if not path:
+
+        return None
+
+    if path.startswith("http"):
+
+        return path
+
+    if not os.path.exists(path):
+
+        return None
+
+    with open(path, "rb") as image_file:
+
+        encoded = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    return f"data:image/png;base64,{encoded}"
 
 def generate_round_robin(player_ids):
 
@@ -1658,7 +1680,9 @@ if page == "League":
             )
 
         rows.append({
-            "logo": data["player"].logo_path,
+            "logo": image_to_base64(
+                data["player"].logo_path
+            ),
             "Player": display_player_name(data["player"]),
             "Played": data["played"],
             "Won": data["won"],
