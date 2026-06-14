@@ -444,37 +444,6 @@ is_admin = st.session_state.get("role") == "admin"
 
 st.title("🎯 Ye Royal Oak Darts League")
 
-with st.sidebar:
-
-    st.markdown("### Follow Ye Royal Oak")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        st.image(
-            "assets/social/facebook.png",
-            width=50
-        )
-
-        st.link_button(
-            "Facebook",
-            "https://facebook.com/YOURPAGE"
-        )
-
-    with col2:
-
-        st.image(
-            "assets/social/tiktok.png",
-            width=50
-        )
-
-        st.link_button(
-            "TikTok",
-            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-        )
-
-    st.markdown("---")
 
 # TABS
 
