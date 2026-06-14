@@ -822,36 +822,36 @@ if is_admin:
 
         for player in players:
 
-    with st.expander(
-        f"🎯 {player.name}"
-    ):
+            with st.expander(
+                f"🎯 {player.name}"
+            ):
 
-        col1, col2 = st.columns(
-            [1, 4]
-        )
+                col1, col2 = st.columns(
+                    [1, 4]
+            )
 
-        with col1:
+                with col1:
 
-            if player.logo_path and os.path.exists(player.logo_path):
+                    if player.logo_path and os.path.exists(player.logo_path):
 
-                st.image(
-                    player.logo_path,
-                    width=75
+                        st.image(
+                            player.logo_path,
+                            width=75
+                        )
+
+                with col2:
+
+                    new_name = st.text_input(
+                        "Player Name",
+                        value=player.name,
+                        key=f"edit_name_{player.id}"
                 )
 
-        with col2:
-
-            new_name = st.text_input(
-                "Player Name",
-                value=player.name,
-                key=f"edit_name_{player.id}"
-            )
-
-            new_nickname = st.text_input(
-                "Nickname",
-                value=player.nickname,
-                key=f"edit_nickname_{player.id}"
-            )
+                    new_nickname = st.text_input(
+                        "Nickname",
+                        value=player.nickname,
+                        key=f"edit_nickname_{player.id}"
+                )
 
         col3, col4 = st.columns(2)
 
