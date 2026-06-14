@@ -644,11 +644,11 @@ if page == "My Profile":
 
                     player.logo_path = logo_path
 
-                db.commit()
+                    db.commit()
 
-                st.success("Profile updated.")
+                    st.success("Profile updated.")
 
-                st.rerun()
+                    st.rerun()
 
             fixtures = db.query(Fixture).filter(
                 (
