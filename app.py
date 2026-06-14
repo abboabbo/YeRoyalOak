@@ -822,95 +822,91 @@ if is_admin:
 
         for player in players:
 
-            with st.expander(
-                f"🎯 {player.name}"
-            ):
+    with st.expander(
+        f"🎯 {player.name}"
+    ):
 
-                col1, col2 = st.columns(
-                    [1, 4]
+        col1, col2 = st.columns(
+            [1, 4]
+        )
+
+        with col1:
+
+            if player.logo_path and os.path.exists(player.logo_path):
+
+                st.image(
+                    player.logo_path,
+                    width=75
                 )
 
-                with col1:
+        with col2:
 
-                    if player.logo_path and os.path.exists(player.logo_path):
+            new_name = st.text_input(
+                "Player Name",
+                value=player.name,
+                key=f"edit_name_{player.id}"
+            )
 
-                        st.image(
-                            player.logo_path,
-                            width=75
-                        )
+            new_nickname = st.text_input(
+                "Nickname",
+                value=player.nickname,
+                key=f"edit_nickname_{player.id}"
+            )
 
-                with col2:
+        col3, col4 = st.columns(2)
 
-                    new_name = st.text_input(
-                        "Player Name",
-                        value=player.name,
-                        key=f"edit_name_{player.id}"
-                    )
+        with col3:
 
-                    new_nickname = st.text_input(
-                        "Nickname",
-                        value=player.nickname,
-                        key=f"edit_nickname_{player.id}"
-                    )
+            if st.button(
+                "💾 Save Changes",
+                key=f"save_player_{player.id}"
+            ):
 
-                col3, col4 = st.columns(2)
+                db_edit = SessionLocal()
 
-                with col3:
+                target = db_edit.get(
+                    Player,
+                    player.id
+                )
 
-                    if st.button(
-                        "💾 Save Changes",
-                        key=f"save_player_{player.id}"
-                    ):
+                if target:
 
-                        db = SessionLocal()
+                    target.name = new_name
+                    target.nickname = new_nickname
 
-                        target = db.get(
-                            Player,
-                            player.id
-                    )
+                    db_edit.commit()
 
-                    if target:
+                db_edit.close()
 
-                        target.name = new_name
-                        target.nickname = new_nickname
+                st.success("Player updated.")
 
-                        db.commit()
+                st.rerun()
 
-                    db.close()
+        with col4:
 
-                    st.success(
-                        "Player updated."
-                    )
+            if st.button(
+                "🗑 Delete Player",
+                key=f"delete_player_{player.id}"
+            ):
 
-                    st.rerun()
+                db_delete = SessionLocal()
 
-                with col4:
+                target = db_delete.get(
+                    Player,
+                    player.id
+                )
 
-                    if st.button(
-                        "🗑 Delete Player",
-                        key=f"delete_player_{player.id}"
-                    ):
+                if target:
 
-                        db = SessionLocal()
+                    db_delete.delete(target)
 
-                        target = db.get(
-                            Player,
-                            player.id
-                        )
+                    db_delete.commit()
 
-                        if target:
+                db_delete.close()
 
-                            db.delete(target)
+                st.success("Player deleted.")
 
-                            db.commit()
-
-                        db.close()
-
-                        st.success(
-                            "Player deleted."
-                        )
-
-                        st.rerun()
+                st.rerun()
 
 
     if is_admin and page == "Users":
