@@ -839,6 +839,10 @@ if is_admin:
                             width=75
                         )
 
+                        st.caption(
+                            "Current Logo"
+                        )
+
                 with col2:
 
                     new_name = st.text_input(
@@ -853,11 +857,11 @@ if is_admin:
                         key=f"edit_nickname_{player.id}"
                 )
 
-                    new_logo_path = st.text_input(
-                        "Logo Path / URL",
-                        value=player.logo_path if player.logo_path else "",
+                    new_logo = st.file_uploader(
+                        "Upload New Logo",
+                        type=["png", "jpg", "jpeg"],
                         key=f"edit_logo_{player.id}"
-            )
+                )
 
         col3, col4 = st.columns(2)
 
@@ -879,9 +883,31 @@ if is_admin:
 
                     target.name = new_name
                     target.nickname = new_nickname
-                    target.logo_path = new_logo_path
 
-                    db_edit.commit()
+                if new_logo is not None:
+
+                    os.makedirs(
+                        "assets/logos",
+                        exist_ok=True
+                    )
+
+                    logo_path = os.path.join(
+                        "assets/logos",
+                        new_logo.name
+                    )
+
+                    with open(
+                        logo_path,
+                        "wb"
+                    ) as f:
+
+                        f.write(
+                            new_logo.getbuffer()
+                    )
+
+                target.logo_path = logo_path
+
+                db_edit.commit()
 
                 db_edit.close()
 
