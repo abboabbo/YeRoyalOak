@@ -1028,7 +1028,7 @@ if is_admin:
 
         st.divider()
 
-    db.close()
+        db.close()
 
 # FIXTURES TAB
 
