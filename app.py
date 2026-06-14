@@ -446,38 +446,33 @@ st.title("🎯 Ye Royal Oak Darts League")
 
 with st.sidebar:
 
-    st.image(
-        "assets/royal_oak_logo.png",
-        width=150
-    )
-
-    st.markdown("---")
-
     st.markdown("### Follow Ye Royal Oak")
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
+    with col1:
 
-    st.markdown(
-        """
-        <a href="https://www.facebook.com/groups/1063585262569763/" target="_blank">
-            <img src="app/static/facebook.png" width="50">
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+        st.image(
+            "assets/social/facebook.png",
+            width=50
+        )
 
-with col2:
+        st.link_button(
+            "Facebook",
+            "https://www.facebook.com/groups/1063585262569763/"
+        )
 
-    st.markdown(
-        """
-        <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc" target="_blank">
-            <img src="app/static/tiktok.png" width="50">
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+    with col2:
+
+        st.image(
+            "assets/social/tiktok.png",
+            width=50
+        )
+
+        st.link_button(
+            "TikTok",
+            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+        )
 
     st.markdown("---")
 
