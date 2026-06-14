@@ -1708,10 +1708,17 @@ if page == "League":
     )
 )
 
-        st.dataframe(
-            styled_df,
+        st.data_editor(
+            display_df,
+            column_config={
+                "logo": st.column_config.ImageColumn(
+                    "Logo",
+                    width="small"
+                )
+            },
             hide_index=True,
-            use_container_width=True
+            use_container_width=True,
+            disabled=True
         )
 
         csv = display_df.to_csv(index=False)
