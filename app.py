@@ -480,42 +480,81 @@ with st.sidebar:
 
 with st.sidebar:
 
-    st.markdown("## 🎯 Navigation")
+    st.image(
+        "assets/royal_oak_logo.png",
+        width=150
+    )
 
-    player_pages = [
-        "My Profile",
-        "Fixtures",
-        "League",
-        "Knockout",
-        "Statistics"
-    ]
+    st.markdown("---")
 
-    page = st.radio(
-        "Player Pages",
-        player_pages,
+    st.markdown("## 🎯 Main Menu")
+
+    player_pages = {
+        "👤 My Profile": "My Profile",
+        "📅 Fixtures": "Fixtures",
+        "🏆 League Table": "League",
+        "🎯 Knockout": "Knockout",
+        "📊 Statistics": "Statistics"
+    }
+
+    selected_player_page = st.radio(
+        "Navigation",
+        list(player_pages.keys()),
         label_visibility="collapsed"
     )
+
+    page = player_pages[selected_player_page]
 
     if is_admin:
 
         st.markdown("---")
 
-        st.markdown("## 🔐 Admin")
+        st.markdown("## 🔐 Admin Tools")
 
-        admin_page = st.radio(
-            "Admin Pages",
-            [
-                "None",
-                "Players",
-                "Users",
-                "Tournaments"
-            ],
+        admin_pages = {
+            "➕ Players": "Players",
+            "👥 Users": "Users",
+            "🏆 Tournaments": "Tournaments"
+        }
+
+        selected_admin_page = st.radio(
+            "Admin Navigation",
+            ["None"] + list(admin_pages.keys()),
             label_visibility="collapsed"
         )
 
-        if admin_page != "None":
+        if selected_admin_page != "None":
 
-            page = admin_page
+            page = admin_pages[selected_admin_page]
+
+    st.markdown("### Follow Us")
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    st.image(
+        "assets/social/facebook.png",
+        width=60
+    )
+
+    st.link_button(
+        "Facebook",
+        "https://www.facebook.com/groups/1063585262569763/"
+    )
+
+with col2:
+
+    st.image(
+        "assets/social/tiktok.png",
+        width=60
+    )
+
+    st.link_button(
+        "TikTok",
+        "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+    )
+
 
 # ADMIN TABS
 
