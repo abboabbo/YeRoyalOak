@@ -298,6 +298,7 @@ if not st.session_state.logged_in:
 
         st.title("Ye Royal Oak Darts League")
 
+
         st.subheader("Player Login")
 
         username = st.text_input("Username")
@@ -441,6 +442,30 @@ with col2:
 
 is_admin = st.session_state.get("role") == "admin"
 
+st.title("🎯 Ye Royal Oak Darts League")
+
+with st.sidebar:
+
+    st.image(
+        "assets/royal_oak_logo.png",
+        width=150
+    )
+
+    st.markdown("---")
+
+    st.markdown("### Follow Ye Royal Oak")
+
+    st.link_button(
+        "📘 Facebook",
+        "https://www.facebook.com/groups/1063585262569763/"
+    )
+
+    st.link_button(
+        "🎵 TikTok",
+        "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+    )
+
+    st.markdown("---")
 
 # TABS
 
