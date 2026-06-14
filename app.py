@@ -274,6 +274,25 @@ st.markdown(
         font-weight: 700;
     }
 
+    section[data-testid="stSidebar"] .stRadio label {
+        background: #262730;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        font-weight: 700;
+        border: 1px solid #444;
+    }
+
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background: #3a3b45;
+        border: 1px solid #777;
+    }
+
+    section[data-testid="stSidebar"] .stLinkButton a {
+        border-radius: 10px;
+        font-weight: 700;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
