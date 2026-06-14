@@ -601,6 +601,55 @@ if page == "My Profile":
 
                     st.write(f"Nickname: {player.nickname}")
 
+                st.divider()
+
+                st.subheader("Edit My Profile")
+
+                new_nickname = st.text_input(
+                    "Nickname",
+                    value=player.nickname if player.nickname else "",
+                    key="my_profile_nickname"
+                )
+
+                new_logo = st.file_uploader(
+                    "Upload New Logo",
+                    type=["png", "jpg", "jpeg"],
+                    key="my_profile_logo"
+                )
+
+                if st.button("Save My Profile"):
+
+                    player.nickname = new_nickname
+
+                    if new_logo is not None:
+
+                        os.makedirs(
+                            "assets/logos",
+                            exist_ok=True
+                        )
+
+                        logo_path = os.path.join(
+                            "assets/logos",
+                            new_logo.name
+                        )
+
+                    with open(
+                        logo_path,
+                        "wb"
+                    ) as f:
+
+                        f.write(
+                            new_logo.getbuffer()
+                        )
+
+                    player.logo_path = logo_path
+
+                db.commit()
+
+                st.success("Profile updated.")
+
+                st.rerun()
+
             fixtures = db.query(Fixture).filter(
                 (
                     Fixture.player1_id == player_id
