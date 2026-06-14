@@ -459,7 +459,7 @@ with st.sidebar:
 
         st.link_button(
             "Facebook",
-            "https://www.facebook.com/groups/1063585262569763/"
+            "https://facebook.com/YOURPAGE"
         )
 
     with col2:
@@ -478,37 +478,48 @@ with st.sidebar:
 
 # TABS
 
-if is_admin:
+with st.sidebar:
 
-    profile_tab, players_tab, users_tab, tournaments_tab, fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
-        [
-            "Profile",
-            "Players",
-            "Users",
-            "Tournaments",
-            "Fixtures",
-            "League",
-            "Knockout",
-            "Statistics"
-        ]
+    st.markdown("## 🎯 Navigation")
+
+    player_pages = [
+        "My Profile",
+        "Fixtures",
+        "League",
+        "Knockout",
+        "Statistics"
+    ]
+
+    page = st.radio(
+        "Player Pages",
+        player_pages,
+        label_visibility="collapsed"
     )
 
-else:
+    if is_admin:
 
-    profile_tab, fixtures_tab, league_tab, knockout_tab, stats_tab = st.tabs(
-        [
-            "My Profile",
-            "Fixtures",
-            "League",
-            "Knockout",
-            "Statistics"
-        ]
-    )
+        st.markdown("---")
 
+        st.markdown("## 🔐 Admin")
+
+        admin_page = st.radio(
+            "Admin Pages",
+            [
+                "None",
+                "Players",
+                "Users",
+                "Tournaments"
+            ],
+            label_visibility="collapsed"
+        )
+
+        if admin_page != "None":
+
+            page = admin_page
 
 # ADMIN TABS
 
-with profile_tab:
+if page == "My Profile":
 
     st.header("🎯 My Player Profile")
 
@@ -717,7 +728,7 @@ with profile_tab:
 
 if is_admin:
 
-    with players_tab:
+    if is_admin and page == "Players":
 
         st.header("Add Player")
 
@@ -801,7 +812,7 @@ if is_admin:
             st.divider()
 
 
-    with users_tab:
+    if is_admin and page == "Users":
 
         st.header("👤 User Accounts")
 
@@ -895,7 +906,7 @@ if is_admin:
         db.close()
 
 
-    with tournaments_tab:
+    if is_admin and page == "Tournaments":
 
         st.header("🏆 Create Tournament")
 
@@ -1021,7 +1032,7 @@ if is_admin:
 
 # FIXTURES TAB
 
-with fixtures_tab:
+if page == "Fixtures":
 
     st.header("📅 Fixtures & Results")
 
@@ -1343,7 +1354,7 @@ with fixtures_tab:
 
 # LEAGUE TAB
 
-with league_tab:
+if page == "League":
 
     st.header("🏆 League Table")
 
@@ -1505,7 +1516,7 @@ with league_tab:
 
 # KNOCKOUT TAB
 
-with knockout_tab:
+if page == "Knockout":
 
     st.header("🏆 Knockout Stage")
 
@@ -1605,7 +1616,7 @@ with knockout_tab:
 
 # STATISTICS TAB
 
-with stats_tab:
+if page == "Statistics":
 
     st.header("📊 Player Statistics")
 
