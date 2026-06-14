@@ -1658,6 +1658,7 @@ if page == "League":
             )
 
         rows.append({
+            "logo": data["player"].logo_path,
             "Player": display_player_name(data["player"]),
             "Played": data["played"],
             "Won": data["won"],
