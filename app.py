@@ -455,14 +455,28 @@ with st.sidebar:
 
     st.markdown("### Follow Ye Royal Oak")
 
-    st.link_button(
-        "📘 Facebook",
-        "https://www.facebook.com/groups/1063585262569763/"
+col1, col2 = st.columns(2)
+
+with col1:
+
+    st.markdown(
+        """
+        <a href="https://www.facebook.com/groups/1063585262569763/" target="_blank">
+            <img src="app/static/facebook.png" width="50">
+        </a>
+        """,
+        unsafe_allow_html=True
     )
 
-    st.link_button(
-        "🎵 TikTok",
-        "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+with col2:
+
+    st.markdown(
+        """
+        <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc" target="_blank">
+            <img src="app/static/tiktok.png" width="50">
+        </a>
+        """,
+        unsafe_allow_html=True
     )
 
     st.markdown("---")
