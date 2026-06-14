@@ -529,31 +529,31 @@ with st.sidebar:
 
     st.markdown("### Follow Us")
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
+    with col1:
 
-    st.image(
-        "assets/social/facebook.png",
-        width=60
-    )
+        st.image(
+            "assets/social/facebook.png",
+            width=60
+        )
 
-    st.link_button(
-        "Facebook",
-        "https://www.facebook.com/groups/1063585262569763/"
-    )
+        st.link_button(
+            "Facebook",
+            "https://www.facebook.com/groups/1063585262569763/"
+        )
 
-with col2:
+    with col2:
 
-    st.image(
-        "assets/social/tiktok.png",
-        width=60
-    )
+        st.image(
+            "assets/social/tiktok.png",
+            width=60
+        )
 
-    st.link_button(
-        "TikTok",
-        "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-    )
+        st.link_button(
+            "TikTok",
+            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+        )
 
 
 # ADMIN TABS
