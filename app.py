@@ -1987,10 +1987,10 @@ if page == "League":
         csv = display_df.to_csv(index=False)
 
         st.download_button(
-            "📥 Download League Table CSV",
-            csv,
-            "league_table.csv",
-            "text/csv"
+            "📥 Download League Table PDF",
+            pdf_file,
+            "league_table.pdf",
+            "application/pdf"
         )
 
     else:
