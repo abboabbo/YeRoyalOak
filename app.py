@@ -1112,86 +1112,69 @@ if is_admin:
         for player in players:
 
             with st.expander(
-                f"🎯 {player.name}"
+                f"🎯 {player.name} - ID {player.id}"
             ):
 
-                col1, col2 = st.columns(
-                    [1, 4]
-            )
-
-                with col1:
-
-                    if player.logo_path and os.path.exists(player.logo_path):
-
-                        st.image(
-                            player.logo_path,
-                            width=75
-                        )
-
-                        st.caption(
-                            "Current Logo"
-                        )
-
-                with col2:
+                with st.form(
+                    key=f"edit_player_form_{player.id}"
+                ):
 
                     new_name = st.text_input(
                         "Player Name",
                         value=player.name,
                         key=f"edit_name_{player.id}"
-                )
+                    )
 
                     new_nickname = st.text_input(
                         "Nickname",
-                        value=player.nickname,
+                        value=player.nickname if player.nickname else "",
                         key=f"edit_nickname_{player.id}"
-                )
+                    )
 
                     new_logo = st.file_uploader(
                         "Upload New Logo",
                         type=["png", "jpg", "jpeg"],
                         key=f"edit_logo_{player.id}"
-                )
-
-        col3, col4 = st.columns(2)
-
-        with col3:
-
-                if st.button(
-                    "💾 Save Changes",
-                    key=f"save_player_{player.id}"
-                ):
-
-                    db_edit = SessionLocal()
-
-                    rows_updated = db_edit.query(Player).filter(
-                        Player.id == player.id
-                    ).update(
-                        {
-                            "name": new_name.strip(),
-                            "nickname": new_nickname.strip()
-                        },
-                        synchronize_session=False
                     )
 
-                    st.error(
-                        f"DEBUG rows updated: {rows_updated}, player id: {player.id}, nickname: {new_nickname}"
+                    save_clicked = st.form_submit_button(
+                        "💾 Save Changes"
                     )
-                    
-                    db_edit.commit()
-                    db_edit.close()
 
-                    if "league_standings" in st.session_state:
-                        del st.session_state["league_standings"]
+                    if save_clicked:
 
-                    if rows_updated == 1:
+                        db_edit = SessionLocal()
 
-                        st.success("Player updated.")
+                        rows_updated = db_edit.query(Player).filter(
+                            Player.id == player.id
+                        ).update(
+                            {
+                                "name": new_name.strip(),
+                                "nickname": new_nickname.strip()
+                            },
+                            synchronize_session=False
+                        )
 
-                    else:
+                        db_edit.commit()
+                        db_edit.close()
 
-                        st.error("Player was not updated.")
+                        if "league_standings" in st.session_state:
 
-                    st.rerun()
+                            del st.session_state["league_standings"]
+
+                        if rows_updated == 1:
+
+                            st.success(
+                                f"Player ID {player.id} updated."
+                            )
+
+                        else:
+
+                            st.error(
+                                "Player was not updated."
+                            )
+
+                        st.rerun()
 
 
         with col4:
