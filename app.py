@@ -1177,39 +1177,6 @@ if is_admin:
                         st.rerun()
 
 
-        with col4:
-
-            if st.button(
-                "🗑 Delete Player",
-                key=f"delete_player_{player.id}"
-            ):
-
-                db_delete = SessionLocal()
-
-                target = db_delete.get(
-                    Player,
-                    player.id
-                )
-
-                if target:
-
-                    db_delete.delete(target)
-
-                    db_delete.commit()
-
-                    db_delete.close()
-
-                    st.success("Player deleted.")
-
-                    st.rerun()
-
-                else:
-
-                    db_delete.close()
-
-                    st.error("Player not found.")
-
-
     if is_admin and page == "Users":
 
         st.header("👤 User Accounts")
