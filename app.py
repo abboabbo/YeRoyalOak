@@ -789,23 +789,25 @@ with st.sidebar:
 
     st.markdown(
         f"""
-        <div style="display:flex; justify-content:center; gap:20px;">
+        <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
 
             <a href="https://www.facebook.com/groups/1063585262569763/"
-                target="_blank">
+                target="_blank"
+                style="text-decoration:none;">
 
                 <img src="data:image/png;base64,{facebook_logo}"
-                    width="70"
-                    style="transition:0.3s;">
+                    width="60"
+                    style="border-radius:12px;">
 
             </a>
 
             <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-                target="_blank">
+                target="_blank"
+                style="text-decoration:none;">
 
                 <img src="data:image/png;base64,{tiktok_logo}"
-                    width="70"
-                    style="transition:0.3s;">
+                    width="60"
+                    style="border-radius:12px;">
 
             </a>
 
