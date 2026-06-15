@@ -845,18 +845,22 @@ if page == "My Profile":
                             new_logo.name
                         )
 
-                    with open(
-                        logo_path,
-                        "wb"
-                    ) as f:
+                        with open(
+                            logo_path,
+                            "wb"
+                        ) as f:
 
-                        f.write(
-                            new_logo.getbuffer()
-                        )
+                            f.write(
+                                new_logo.getbuffer()
+                            )
 
-                    player.logo_path = logo_path
+                        player.logo_path = logo_path
 
                     db.commit()
+
+                    if "league_standings" in st.session_state:
+
+                        del st.session_state["league_standings"]
 
                     st.success("Profile updated.")
 
