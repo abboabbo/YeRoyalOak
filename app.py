@@ -779,42 +779,47 @@ with st.sidebar:
 
     st.markdown("### Follow Us")
 
-    facebook_logo = get_base64_image(
-        "assets/social/facebook.png"
-    )
+    col1, col2 = st.columns(2)
 
-    tiktok_logo = get_base64_image(
-        "assets/social/tiktok.png"
-    )
+    with col1:
 
-    st.markdown(
-        f"""
-        <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+        st.image(
+            "assets/social/facebook.png",
+            width=65
+        )
 
-            <a href="https://www.facebook.com/groups/1063585262569763/"
-                target="_blank"
-                style="text-decoration:none;">
+        st.markdown(
+            """
+            <div style="text-align:center;">
+                <a href="https://www.facebook.com/groups/1063585262569763/"
+                    target="_blank"
+                    style="font-size:13px; font-weight:bold; text-decoration:none;">
+                    Open
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-                <img src="data:image/png;base64,{facebook_logo}"
-                    width="60"
-                    style="border-radius:12px;">
+    with col2:
 
-            </a>
+        st.image(
+            "assets/social/tiktok.png",
+            width=65
+        )
 
-            <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-                target="_blank"
-                style="text-decoration:none;">
-
-                <img src="data:image/png;base64,{tiktok_logo}"
-                    width="60"
-                    style="border-radius:12px;">
-
-            </a>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            """
+            <div style="text-align:center;">
+                <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+                    target="_blank"
+                    style="font-size:13px; font-weight:bold; text-decoration:none;">
+                    Open
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 if page == "Announcements":
 
