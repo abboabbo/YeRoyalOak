@@ -1170,6 +1170,16 @@ if is_admin:
 
                     db_edit.commit()
 
+                    if "league_standings" in st.session_state:
+
+                        del st.session_state["league_standings"]
+
+                    db_edit.close()
+
+                    st.success("Player updated.")
+
+                    st.rerun()
+
                 db_edit.close()
 
                 st.success("Player updated.")
