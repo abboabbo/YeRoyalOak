@@ -1173,6 +1173,10 @@ if is_admin:
                         synchronize_session=False
                     )
 
+                    st.error(
+                        f"DEBUG rows updated: {rows_updated}, player id: {player.id}, nickname: {new_nickname}"
+                    )
+                    
                     db_edit.commit()
                     db_edit.close()
 
