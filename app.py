@@ -1145,36 +1145,36 @@ if is_admin:
                     target.name = new_name
                     target.nickname = new_nickname
 
-                if new_logo is not None:
+                    if new_logo is not None:
 
-                    os.makedirs(
-                        "assets/logos",
-                        exist_ok=True
-                    )
+                        os.makedirs(
+                            "assets/logos",
+                            exist_ok=True
+                        )
 
-                    logo_path = os.path.join(
-                        "assets/logos",
-                        new_logo.name
-                    )
+                        logo_path = os.path.join(
+                            "assets/logos",
+                            new_logo.name
+                        )
 
-                    with open(
-                        logo_path,
-                        "wb"
-                    ) as f:
+                        with open(
+                            logo_path,
+                            "wb"
+                        ) as f:
 
-                        f.write(
-                            new_logo.getbuffer()
-                    )
+                            f.write(
+                                new_logo.getbuffer()
+                            )
 
-                target.logo_path = logo_path
+                        target.logo_path = logo_path
 
-            db_edit.commit()
+                    db_edit.commit()
 
-        db_edit.close()
+                db_edit.close()
 
-        st.success("Player updated.")
+                st.success("Player updated.")
 
-        st.rerun()
+                st.rerun()
 
         with col4:
 
