@@ -25,14 +25,6 @@ from models import (
 )
 
 
-def get_base64_image(image_path):
-
-    with open(image_path, "rb") as image_file:
-
-        return base64.b64encode(
-            image_file.read()
-        ).decode()
-
 def image_to_base64(path):
 
     if not path:
@@ -500,6 +492,8 @@ def create_league_table_pdf(league_rows):
 
     return buffer
 
+
+    
 # LOGIN
 
 if "logged_in" not in st.session_state:
@@ -725,6 +719,15 @@ is_admin = st.session_state.get("role") == "admin"
 if "page" not in st.session_state:
     st.session_state.page = "My Profile"
 
+def get_base64_image(image_path):
+
+    with open(image_path, "rb") as image_file:
+
+        return base64.b64encode(
+            image_file.read()
+        ).decode()
+
+
 with st.sidebar:
 
     st.image(
@@ -776,11 +779,11 @@ with st.sidebar:
 
     st.markdown("### Follow Us")
 
-    facebook_logo = get_image_base64(
+    facebook_logo = get_base64_image(
         "assets/social/facebook.png"
     )
 
-    tiktok_logo = get_image_base64(
+    tiktok_logo = get_base64_image(
         "assets/social/tiktok.png"
     )
 
