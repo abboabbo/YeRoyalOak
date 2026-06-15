@@ -1170,6 +1170,13 @@ if is_admin:
 
                     db_edit.commit()
 
+                    db_edit.refresh(target)
+
+                    st.write(
+                        "Saved nickname:",
+                        target.nickname
+                    )
+
                     if "league_standings" in st.session_state:
 
                         del st.session_state["league_standings"]
