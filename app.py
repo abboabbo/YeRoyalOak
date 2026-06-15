@@ -867,6 +867,18 @@ if page == "My Profile":
 
                         db_profile.commit()
 
+                        db_profile.refresh(target_player)
+
+                        st.write(
+                            "DEBUG saved nickname:",
+                            target_player.nickname
+                        )
+
+                        st.write(
+                            "DEBUG player id:",
+                            target_player.id
+                        )
+
                         db_profile.close()
 
                         if "league_standings" in st.session_state:
