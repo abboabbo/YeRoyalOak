@@ -1163,9 +1163,10 @@ if is_admin:
 
                 db_edit = SessionLocal()
 
-                target = db_edit.query(Player).filter(
-                    Player.id == player.id
-                ).first()
+                target = db_edit.get(
+                    Player,
+                    player.id
+                )
 
                 if target:
 
