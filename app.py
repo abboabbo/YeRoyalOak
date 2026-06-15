@@ -1180,7 +1180,7 @@ if is_admin:
                     if "league_standings" in st.session_state:
                         del st.session_state["league_standings"]
 
-                    st.sucess("Player updated.")
+                    st.success("Player updated.")
 
                     st.rerun()
 
