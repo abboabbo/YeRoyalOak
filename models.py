@@ -235,3 +235,24 @@ class User(Base):
         ForeignKey("players.id"),
         nullable=True
     )
+
+class Announcement(Base):
+
+    __tablename__ = "announcements"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    title = Column(
+        String
+    )
+
+    message = Column(
+        String
+    )
+
+    created_at = Column(
+        String
+    )

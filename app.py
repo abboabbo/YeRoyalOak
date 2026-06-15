@@ -20,7 +20,8 @@ from models import (
     Tournament,
     TournamentPlayer,
     Fixture,
-    KnockoutMatch
+    KnockoutMatch,
+    Announcement
 )
 
 def image_to_base64(path):
@@ -656,6 +657,88 @@ with st.sidebar:
 
     if st.button("📊 Statistics", use_container_width=True):
         st.session_state.page = "Statistics"
+
+    if st.button("📢 Announcements", use_container_width=True):
+        st.session_state.page = "Announcements"
+
+if page == "Announcements":
+
+    st.header("📢 Announcements")
+
+    db = SessionLocal()
+
+    if is_admin:
+
+        st.subheader("Create Announcement")
+
+        title = st.text_input(
+            "Title",
+            key="announcement_title"
+        )
+
+        message = st.text_area(
+            "Message",
+            key="announcement_message"
+        )
+
+        if st.button("Post Announcement"):
+
+            if not title or not message:
+
+                st.error("Please enter a title and message.")
+
+            else:
+
+                from datetime import datetime
+
+                announcement = Announcement(
+                    title=title,
+                    message=message,
+                    created_at=datetime.now().strftime("%d/%m/%Y %H:%M")
+                )
+
+                db.add(announcement)
+                db.commit()
+
+                st.success("Announcement posted.")
+                st.rerun()
+
+        st.divider()
+
+    announcements = db.query(Announcement).order_by(
+        Announcement.id.desc()
+    ).all()
+
+    if not announcements:
+
+        st.info("No announcements yet.")
+
+    else:
+
+        for item in announcements:
+
+            st.markdown(f"### 📢 {item.title}")
+
+            st.caption(item.created_at)
+
+            st.write(item.message)
+
+            if is_admin:
+
+                if st.button(
+                    "🗑 Delete",
+                    key=f"delete_announcement_{item.id}"
+                ):
+
+                    db.delete(item)
+                    db.commit()
+
+                    st.success("Announcement deleted.")
+                    st.rerun()
+
+            st.divider()
+
+    db.close()
 
     if is_admin:
 
