@@ -1156,76 +1156,39 @@ if is_admin:
 
         with col3:
 
-            if st.button(
-                "💾 Save Changes",
-                key=f"save_player_{player.id}"
-            ):
+                if st.button(
+                    "💾 Save Changes",
+                    key=f"save_player_{player.id}"
+                ):
 
-                db_edit = SessionLocal()
+                    db_edit = SessionLocal()
 
-                target = db_edit.query(Player).filter(
-                    Player.id == player.id 
-                ).first()
+                    rows_updated = db_edit.query(Player).filter(
+                        Player.id == player.id
+                    ).update(
+                        {
+                            "name": new_name.strip(),
+                            "nickname": new_nickname.strip()
+                        },
+                        synchronize_session=False
+                    )
 
-                if target:
-
-                    target.name = new_name.strip()
-                    target.nickname = new_nickname.strip()
-
-                    db_edit.add(target)
                     db_edit.commit()
-
                     db_edit.close()
 
                     if "league_standings" in st.session_state:
                         del st.session_state["league_standings"]
 
-                    db_edit.close()
-                    
-                    st.success("Player updated.")
+                    if rows_updated == 1:
+
+                        st.success("Player updated.")
+
+                    else:
+
+                        st.error("Player was not updated.")
 
                     st.rerun()
 
-                else:
-
-                    db_edit.close()
-
-                    st.error("Player not found.")
-
-                    if new_logo is not None:
-
-                        os.makedirs(
-                            "assets/logos",
-                            exist_ok=True
-                        )
-
-                        logo_path = os.path.join(
-                            "assets/logos",
-                            new_logo.name
-                        )
-
-                        with open(
-                            logo_path,
-                            "wb"
-                        ) as f:
-
-                            f.write(
-                                new_logo.getbuffer()
-                            )
-
-                        target.logo_path = logo_path
-
-                    db_edit.commit()
-
-                    if "league_standings" in st.session_state:
-
-                        del st.session_state["league_standings"]
-
-                    st.success("Player updated.")
-
-                    db_edit.close()
-
-                    st.rerun()
 
         with col4:
 
