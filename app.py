@@ -1140,51 +1140,51 @@ if is_admin:
                     player.id
                 )
 
-                if target:
+            if target:
 
-                    target.name = new_name.strip()
-                    target.nickname = new_nickname.strip()
+                target.name = new_name.strip()
+                target.nickname = new_nickname.strip()
 
-                    if new_logo is not None:
+                if new_logo is not None:
 
-                        os.makedirs(
-                            "assets/logos",
-                            exist_ok=True
+                    os.makedirs(
+                        "assets/logos",
+                        exist_ok=True
+                    )
+
+                    logo_path = os.path.join(
+                        "assets/logos",
+                        new_logo.name
+                    )
+
+                    with open(
+                        logo_path,
+                        "wb"
+                    ) as f:
+
+                        f.write(
+                            new_logo.getbuffer()
                         )
 
-                        logo_path = os.path.join(
-                            "assets/logos",
-                            new_logo.name
-                        )
+                    target.logo_path = logo_path
 
-                        with open(
-                            logo_path,
-                            "wb"
-                        ) as f:
+                db_edit.commit()
 
-                            f.write(
-                                new_logo.getbuffer()
-                            )
+                if "league_standings" in st.session_state:
 
-                        target.logo_path = logo_path
+                    del st.session_state["league_standings"]
 
-                    db_edit.commit()
+                st.success("Player updated.")
 
-                    if "league_standings" in st.session_state:
+                db_edit.close()
 
-                        del st.session_state["league_standings"]
+                st.rerun()
 
-                    st.success("Player updated.")
+            else:
 
-                    db_edit.close()
+                db_edit.close()
 
-                    st.rerun()
-
-                else:
-
-                    db_edit.close()
-
-                    st.error("Player not found.")
+                st.error("Player not found.")
 
         with col4:
 
