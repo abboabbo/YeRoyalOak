@@ -406,6 +406,90 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+def create_league_table_pdf(league_rows):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=25,
+        leftMargin=25,
+        topMargin=30,
+        bottomMargin=30
+    )
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    title = Paragraph(
+        "Ye Royal Oak Darts League Table",
+        styles["Title"]
+    )
+
+    elements.append(title)
+    elements.append(Spacer(1, 16))
+
+    table_data = [
+        [
+            "Pos",
+            "Player",
+            "P",
+            "W",
+            "D",
+            "L",
+            "LF",
+            "LA",
+            "Diff",
+            "Avg",
+            "Pts"
+        ]
+    ]
+
+    for row in league_rows:
+
+        table_data.append(
+            [
+                row.get("Pos", ""),
+                row.get("Player", ""),
+                row.get("Played", ""),
+                row.get("Won", ""),
+                row.get("Drawn", ""),
+                row.get("Lost", ""),
+                row.get("Legs For", ""),
+                row.get("Legs Against", ""),
+                row.get("Difference", ""),
+                row.get("3 Dart Average", ""),
+                row.get("Points", "")
+            ]
+        )
+
+    table = Table(
+        table_data,
+        repeatRows=1
+    )
+
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTNAME", (0, 1), (-1, -1), "Helvetica-Bold"),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+            ]
+        )
+    )
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return buffer
 
 # LOGIN
 
@@ -1984,11 +2068,15 @@ if page == "League":
 
             st.rerun()
 
-        pdf = display_df.to_pdf(index=False)
+        league_pdf = create_league_table_pdf(
+            display_df.to_dict(
+                orient="records"
+            )
+        )
 
         st.download_button(
             "📄 Download League Table PDF",
-            pdf_file,
+            league_pdf,
             "league_table.pdf",
             "application/pdf"
         )
