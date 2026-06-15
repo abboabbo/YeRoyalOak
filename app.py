@@ -1140,51 +1140,51 @@ if is_admin:
                     player.id
                 )
 
-            if target:
+                if target:
 
-                target.name = new_name.strip()
-                target.nickname = new_nickname.strip()
+                    target.name = new_name.strip()
+                    target.nickname = new_nickname.strip()
 
-                if new_logo is not None:
+                    if new_logo is not None:
 
-                    os.makedirs(
-                        "assets/logos",
-                        exist_ok=True
-                    )
-
-                    logo_path = os.path.join(
-                        "assets/logos",
-                        new_logo.name
-                    )
-
-                    with open(
-                        logo_path,
-                        "wb"
-                    ) as f:
-
-                        f.write(
-                            new_logo.getbuffer()
+                        os.makedirs(
+                            "assets/logos",
+                            exist_ok=True
                         )
 
-                    target.logo_path = logo_path
+                        logo_path = os.path.join(
+                            "assets/logos",
+                            new_logo.name
+                        )
 
-                db_edit.commit()
+                        with open(
+                            logo_path,
+                            "wb"
+                        ) as f:
 
-                if "league_standings" in st.session_state:
+                            f.write(
+                                new_logo.getbuffer()
+                            )
 
-                    del st.session_state["league_standings"]
+                        target.logo_path = logo_path
 
-                st.success("Player updated.")
+                    db_edit.commit()
 
-                db_edit.close()
+                    if "league_standings" in st.session_state:
 
-                st.rerun()
+                        del st.session_state["league_standings"]
 
-            else:
+                    st.success("Player updated.")
 
-                db_edit.close()
+                    db_edit.close()
 
-                st.error("Player not found.")
+                    st.rerun()
+
+                else:
+
+                    db_edit.close()
+
+                    st.error("Player not found.")
 
         with col4:
 
