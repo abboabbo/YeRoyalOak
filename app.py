@@ -1163,15 +1163,31 @@ if is_admin:
 
                 db_edit = SessionLocal()
 
-                target = db_edit.get(
-                    Player,
-                    player.id
-                )
+                target = db_edit.get.query(Player).filter(
+                    Player.id == player.id
+                ).first()
 
                 if target:
 
                     target.name = new_name.strip()
                     target.nickname = new_nickname.strip()
+
+                    db_edit.commit()
+
+                    db_edit.close()
+
+                    if "league_standings" in st.session_state:
+                        del st.session_state["league_standings"]
+
+                    st.sucess("Player updated.")
+
+                    st.rerun()
+
+                else:
+
+                    db_edit.close()
+
+                    st.error("Player not found.")
 
                     if new_logo is not None:
 
@@ -1215,7 +1231,7 @@ if is_admin:
 
                     st.rerun()
 
-                else:
+                    else:
 
                     db_edit.close()
 
@@ -1241,11 +1257,17 @@ if is_admin:
 
                     db_delete.commit()
 
-                db_delete.close()
+                    db_delete.close()
 
-                st.success("Player deleted.")
+                    st.success("Player deleted.")
 
-                st.rerun()
+                    st.rerun()
+
+                else:
+
+                    db_delete.close()
+
+                    st.error("Player not found.")
 
 
     if is_admin and page == "Users":
