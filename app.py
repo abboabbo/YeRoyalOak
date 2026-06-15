@@ -276,6 +276,7 @@ st.set_page_config(
     page_title="Ye Royal Oak Darts League",
     page_icon=icon,
     layout="wide"
+    initial_sidebar_state="collapsed"
 )
 
 st.markdown(
