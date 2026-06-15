@@ -831,40 +831,56 @@ if page == "My Profile":
 
                 if st.button("Save My Profile"):
 
-                    player.nickname = new_nickname
+                    db_profile = SessionLocal()
 
-                    if new_logo is not None:
+                    target_player = db_profile.get(
+                        Player,
+                        player.id
+                    )
 
-                        os.makedirs(
-                            "assets/logos",
-                            exist_ok=True
-                        )
+                    if target_player:
 
-                        logo_path = os.path.join(
-                            "assets/logos",
-                            new_logo.name
-                        )
+                        target_player.nickname = new_nickname.strip()
 
-                        with open(
-                            logo_path,
-                            "wb"
-                        ) as f:
+                        if new_logo is not None:
 
-                            f.write(
-                                new_logo.getbuffer()
+                            os.makedirs(
+                                "assets/logos",
+                                exist_ok=True
                             )
 
-                        player.logo_path = logo_path
+                            logo_path = os.path.join(
+                                "assets/logos",
+                                new_logo.name
+                            )
 
-                    db.commit()
+                            with open(
+                                logo_path,
+                                "wb"
+                            ) as f:
 
-                    if "league_standings" in st.session_state:
+                                f.write(
+                                    new_logo.getbuffer()
+                                )
 
-                        del st.session_state["league_standings"]
+                            target_player.logo_path = logo_path
 
-                    st.success("Profile updated.")
+                        db_profile.commit()
 
-                    st.rerun()
+                        db_profile.close()
+
+                        if "league_standings" in st.session_state:
+                            del st.session_state["league_standings"]
+
+                        st.success("Profile updated.")
+
+                        st.rerun()
+
+                    else:
+
+                        db_profile.close()
+
+                        st.error("Player not found.")
 
             fixtures = db.query(Fixture).filter(
                 (
