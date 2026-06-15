@@ -45,6 +45,72 @@ def image_to_base64(path):
 
     return f"data:image/png;base64,{encoded}"
 
+def get_news_ticker_text():
+
+    db = SessionLocal()
+
+    players = db.query(Player).all()
+
+    player_lookup = {
+        p.id: display_player_name(p)
+        for p in players
+    }
+
+    upcoming = db.query(Fixture).filter(
+        Fixture.played == 0
+    ).order_by(
+        Fixture.round_number,
+        Fixture.id
+    ).limit(5).all()
+
+    recent = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).order_by(
+        Fixture.id.desc()
+    ).limit(5).all()
+
+    ticker_items = []
+
+    for fixture in upcoming:
+
+        p1 = player_lookup.get(
+            fixture.player1_id,
+            "Unknown"
+        )
+
+        p2 = player_lookup.get(
+            fixture.player2_id,
+            "Unknown"
+        )
+
+        ticker_items.append(
+            f"Upcoming: Round {fixture.round_number} - {p1} vs {p2}"
+        )
+
+    for fixture in recent:
+
+        p1 = player_lookup.get(
+            fixture.player1_id,
+            "Unknown"
+        )
+
+        p2 = player_lookup.get(
+            fixture.player2_id,
+            "Unknown"
+        )
+
+        ticker_items.append(
+            f"Result: {p1} {fixture.player1_legs} - {fixture.player2_legs} {p2}"
+        )
+
+    db.close()
+
+    if not ticker_items:
+
+        return "Welcome to Ye Royal Oak Darts League"
+
+    return "   |   ".join(ticker_items)
+
 def generate_round_robin(player_ids):
 
     players = player_ids.copy()
@@ -535,6 +601,28 @@ with col2:
     st.title(
         "Ye Royal Oak Darts League"
     )
+
+    ticker_text = get_news_ticker_text()
+
+st.markdown(
+    f"""
+    <div style="
+        overflow: hidden;
+        white-space: nowrap;
+        background-color: #262730;
+        border: 1px solid #d4af37;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    ">
+        <marquee behavior="scroll" direction="left" scrollamount="5">
+            🎯 {ticker_text}
+        </marquee>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 is_admin = st.session_state.get("role") == "admin"
 
