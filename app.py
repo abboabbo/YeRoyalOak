@@ -755,7 +755,7 @@ if page == "My Profile":
                 new_nickname = st.text_input(
                     "Nickname",
                     value=player.nickname if player.nickname else "",
-                    key="my_profile_nickname"
+                    key=f"my_profile_nickname_{player.id}"
                 )
 
                 new_logo = st.file_uploader(
@@ -869,22 +869,18 @@ if page == "My Profile":
 
                         db_profile.refresh(target_player)
 
-                        st.write(
-                            "DEBUG saved nickname:",
-                            target_player.nickname
-                        )
-
-                        st.write(
-                            "DEBUG player id:",
-                            target_player.id
-                        )
-
                         db_profile.close()
 
                         if "league_standings" in st.session_state:
                             del st.session_state["league_standings"]
 
                         st.success("Profile updated.")
+
+                        if f"my_profile_nickname_{player.id}" in st.session_state:
+
+                            del st.session_state[
+                                f"my_profile_nickname_{player_id}"
+                            ]
 
                         st.rerun()
 
