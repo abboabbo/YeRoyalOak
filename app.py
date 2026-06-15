@@ -1163,16 +1163,16 @@ if is_admin:
 
                 db_edit = SessionLocal()
 
-                target = db_edit.get(
-                    Player,
-                    player.id
-                )
+                target = db_edit.query(Player).filter(
+                    Player.id == player.id 
+                ).first()
 
                 if target:
 
                     target.name = new_name.strip()
                     target.nickname = new_nickname.strip()
 
+                    db_edit.add(target)
                     db_edit.commit()
 
                     db_edit.close()
@@ -1180,6 +1180,8 @@ if is_admin:
                     if "league_standings" in st.session_state:
                         del st.session_state["league_standings"]
 
+                    db_edit.close()
+                    
                     st.success("Player updated.")
 
                     st.rerun()
