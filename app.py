@@ -771,26 +771,41 @@ with st.sidebar:
 
     with col1:
 
-        st.image(
-            "assets/social/facebook.png",
-            width=60
-        )
-
-        st.link_button(
-            "Facebook",
-            "https://www.facebook.com/groups/1063585262569763/"
+        st.markdown(
+            """
+            <a href="https://www.facebook.com/groups/1063585262569763/"
+                target="_blank">
+                <img src="app/static/facebook.png"
+                    width="70">
+            </a>
+            """,
+            unsafe_allow_html=True
         )
 
     with col2:
 
-        st.image(
-            "assets/social/tiktok.png",
-            width=60
+        st.markdown(
+            """
+            <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+                target="_blank">
+                <img src="app/static/tiktok.png"
+                    width="70">
+            </a>
+            """,
+            unsafe_allow_html=True
         )
 
-        st.link_button(
-            "TikTok",
-            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+    with col2:
+
+        st.markdown(
+            """
+            <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+                target="_blank">
+                <img src="app/static/tiktok.png"
+                    width="70">
+            </a>
+            """,
+            unsafe_allow_html=True
         )
 
 if page == "Announcements":
