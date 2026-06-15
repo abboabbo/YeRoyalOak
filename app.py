@@ -24,6 +24,15 @@ from models import (
     Announcement
 )
 
+
+def get_base64_image(image_path):
+
+    with open(image_path, "rb") as image_file:
+
+        return base64.b64encode(
+            image_file.read()
+        ).decode()
+
 def image_to_base64(path):
 
     if not path:
@@ -767,46 +776,40 @@ with st.sidebar:
 
     st.markdown("### Follow Us")
 
-    col1, col2 = st.columns(2)
+    facebook_logo = get_image_base64(
+        "assets/social/facebook.png"
+    )
 
-    with col1:
+    tiktok_logo = get_image_base64(
+        "assets/social/tiktok.png"
+    )
 
-        st.markdown(
-            """
+    st.markdown(
+        f"""
+        <div style="display:flex; justify-content:center; gap:20px;">
+
             <a href="https://www.facebook.com/groups/1063585262569763/"
                 target="_blank">
-                <img src="app/static/facebook.png"
-                    width="70">
+
+                <img src="data:image/png;base64,{facebook_logo}"
+                    width="70"
+                    style="transition:0.3s;">
+
             </a>
-            """,
-            unsafe_allow_html=True
-        )
 
-    with col2:
-
-        st.markdown(
-            """
             <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
                 target="_blank">
-                <img src="app/static/tiktok.png"
-                    width="70">
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
 
-    with col2:
+                <img src="data:image/png;base64,{tiktok_logo}"
+                    width="70"
+                    style="transition:0.3s;">
 
-        st.markdown(
-            """
-            <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-                target="_blank">
-                <img src="app/static/tiktok.png"
-                    width="70">
             </a>
-            """,
-            unsafe_allow_html=True
-        )
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if page == "Announcements":
 
