@@ -1142,8 +1142,8 @@ if is_admin:
 
                 if target:
 
-                    target.name = new_name
-                    target.nickname = new_nickname
+                    target.name = new_name.strip()
+                    target.nickname = new_nickname.strip()
 
                     if new_logo is not None:
 
@@ -1174,17 +1174,17 @@ if is_admin:
 
                         del st.session_state["league_standings"]
 
-                    db_edit.close()
-
                     st.success("Player updated.")
+
+                    db_edit.close()
 
                     st.rerun()
 
-                db_edit.close()
+                else:
 
-                st.success("Player updated.")
+                    db_edit.close()
 
-                st.rerun()
+                    st.error("Player not found.")
 
         with col4:
 
