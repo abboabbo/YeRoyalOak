@@ -661,6 +661,54 @@ with st.sidebar:
     if st.button("📢 Announcements", use_container_width=True):
         st.session_state.page = "Announcements"
 
+    
+    if is_admin:
+
+        st.markdown("---")
+
+        st.markdown("## 🔐 Admin Tools")
+
+        if st.button("➕ Players", use_container_width=True):
+            st.session_state.page = "Players"
+
+        if st.button("👥 Users", use_container_width=True):
+            st.session_state.page = "Users"
+
+        if st.button("🏆 Tournaments", use_container_width=True):
+            st.session_state.page = "Tournaments"
+
+    page = st.session_state.page
+
+    st.markdown("---")
+
+    st.markdown("### Follow Us")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.image(
+            "assets/social/facebook.png",
+            width=60
+        )
+
+        st.link_button(
+            "Facebook",
+            "https://www.facebook.com/groups/1063585262569763/"
+        )
+
+    with col2:
+
+        st.image(
+            "assets/social/tiktok.png",
+            width=60
+        )
+
+        st.link_button(
+            "TikTok",
+            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
+        )
+
 if page == "Announcements":
 
     st.header("📢 Announcements")
@@ -739,54 +787,6 @@ if page == "Announcements":
             st.divider()
 
     db.close()
-
-    if is_admin:
-
-        st.markdown("---")
-
-        st.markdown("## 🔐 Admin Tools")
-
-        if st.button("➕ Players", use_container_width=True):
-            st.session_state.page = "Players"
-
-        if st.button("👥 Users", use_container_width=True):
-            st.session_state.page = "Users"
-
-        if st.button("🏆 Tournaments", use_container_width=True):
-            st.session_state.page = "Tournaments"
-
-    page = st.session_state.page
-
-    st.markdown("---")
-
-    st.markdown("### Follow Us")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        st.image(
-            "assets/social/facebook.png",
-            width=60
-        )
-
-        st.link_button(
-            "Facebook",
-            "https://www.facebook.com/groups/1063585262569763/"
-        )
-
-    with col2:
-
-        st.image(
-            "assets/social/tiktok.png",
-            width=60
-        )
-
-        st.link_button(
-            "TikTok",
-            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-        )
-
 
 # ADMIN TABS
 
