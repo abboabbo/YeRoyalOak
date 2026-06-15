@@ -1956,6 +1956,34 @@ if page == "League":
             disabled=True
         )
 
+        st.divider()
+
+        st.subheader("View Player")
+
+        player_options = {
+            row["Player"]: row["Player ID"]
+            for row in rows
+        }
+
+        selected_player_name = st.selectbox(
+            "Select Player",
+            list(player_options.keys()),
+            key="view_player_select"
+        )
+
+        if st.button(
+            "View Player Profile",
+            key="view_player_button"
+        ):
+
+            st.session_state.view_player_id = player_options[
+                selected_player_name
+            ]
+
+            st.session_state.page = "View Player"
+
+            st.rerun()
+
         csv = display_df.to_csv(index=False)
 
         st.download_button(
@@ -2190,3 +2218,210 @@ if page == "Statistics":
         st.info("No statistics available yet.")
 
     db.close()
+
+if page == "View Player":
+
+    st.header("🎯 Player Profile")
+
+    player_id = st.session_state.get("view_player_id")
+
+    if not player_id:
+
+        st.info("No player selected.")
+
+    else:
+
+        db = SessionLocal()
+
+        player = db.get(
+            Player,
+            player_id
+        )
+
+        if not player:
+
+            st.error("Player not found.")
+
+        else:
+
+            col1, col2 = st.columns([1, 4])
+
+            with col1:
+
+                if player.logo_path and os.path.exists(player.logo_path):
+
+                    st.image(
+                        player.logo_path,
+                        width=120
+                    )
+
+            with col2:
+
+                st.subheader(player.name)
+
+                if player.nickname:
+
+                    st.write(f"Nickname: {player.nickname}")
+
+            fixtures = db.query(Fixture).filter(
+                (
+                    Fixture.player1_id == player_id
+                )
+                |
+                (
+                    Fixture.player2_id == player_id
+                )
+            ).all()
+
+            played = 0
+            wins = 0
+            draws = 0
+            losses = 0
+            averages = []
+
+            results = []
+            upcoming = []
+
+            players = db.query(Player).all()
+
+            player_lookup = {
+                p.id: display_player_name(p)
+                for p in players
+            }
+
+            for fixture in fixtures:
+
+                opponent_id = (
+                    fixture.player2_id
+                    if fixture.player1_id == player_id
+                    else fixture.player1_id
+                )
+
+                opponent_name = player_lookup.get(
+                    opponent_id,
+                    "Unknown"
+                )
+
+                if fixture.played == 1:
+
+                    played += 1
+
+                    if fixture.player1_id == player_id:
+
+                        player_legs = fixture.player1_legs
+                        opponent_legs = fixture.player2_legs
+                        player_average = fixture.player1_average
+
+                    else:
+
+                        player_legs = fixture.player2_legs
+                        opponent_legs = fixture.player1_legs
+                        player_average = fixture.player2_average
+
+                    try:
+
+                        averages.append(
+                            float(player_average)
+                        )
+
+                    except:
+
+                        pass
+
+                    if player_legs > opponent_legs:
+
+                        wins += 1
+                        result_letter = "W"
+
+                    elif player_legs < opponent_legs:
+
+                        losses += 1
+                        result_letter = "L"
+
+                    else:
+
+                        draws += 1
+                        result_letter = "D"
+
+                    results.append(
+                        {
+                            "Opponent": opponent_name,
+                            "Result": result_letter,
+                            "Score": f"{player_legs} - {opponent_legs}",
+                            "Average": player_average
+                        }
+                    )
+
+                else:
+
+                    upcoming.append(
+                        {
+                            "Opponent": opponent_name,
+                            "Round": fixture.round_number
+                        }
+                    )
+
+            win_pct = 0
+
+            if played > 0:
+
+                win_pct = round(
+                    (wins / played) * 100,
+                    1
+                )
+
+            avg = 0
+
+            if averages:
+
+                avg = round(
+                    sum(averages) / len(averages),
+                    2
+                )
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric("Win %", win_pct)
+            col2.metric("3 Dart Average", avg)
+            col3.metric("Played", played)
+            col4.metric("Wins", wins)
+
+            col5, col6, col7 = st.columns(3)
+
+            col5.metric("Draws", draws)
+            col6.metric("Losses", losses)
+            col7.metric("Remaining Fixtures", len(upcoming))
+
+            st.divider()
+
+            st.subheader("Recent Results")
+
+            if results:
+
+                st.dataframe(
+                    pd.DataFrame(results),
+                    hide_index=True,
+                    use_container_width=True
+                )
+
+            else:
+
+                st.info("No results yet.")
+
+            st.divider()
+
+            st.subheader("Upcoming Fixtures")
+
+            if upcoming:
+
+                st.dataframe(
+                    pd.DataFrame(upcoming),
+                    hide_index=True,
+                    use_container_width=True
+                )
+
+            else:
+
+                st.info("No upcoming fixtures.")
+
+        db.close()
