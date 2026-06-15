@@ -1984,7 +1984,7 @@ if page == "League":
 
             st.rerun()
 
-        csv = display_df.to_csv(index=False)
+        pdf = display_df.to_pdf(index=False)
 
         st.download_button(
             "📄 Download League Table PDF",
