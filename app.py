@@ -1168,13 +1168,13 @@ if is_admin:
 
                 target.logo_path = logo_path
 
-                db_edit.commit()
+            db_edit.commit()
 
-                db_edit.close()
+        db_edit.close()
 
-                st.success("Player updated.")
+        st.success("Player updated.")
 
-                st.rerun()
+        st.rerun()
 
         with col4:
 
