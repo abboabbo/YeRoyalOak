@@ -882,7 +882,7 @@ if page == "My Profile":
                                 f"my_profile_nickname_{player_id}"
                             ]
 
-                        st.rerun()
+                        st.success("Profile updated. Refresh or change page to check.")
 
                     else:
 
