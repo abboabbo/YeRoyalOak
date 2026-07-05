@@ -431,51 +431,52 @@ st.markdown(
         font-weight: 700;
     }
 
-    .main {
-    background: linear-gradient(135deg, #050b12 0%, #0b111a 50%, #05080d 100%);
+    .royal-card {
+    background: linear-gradient(145deg,#111827,#050b12);
+    border:1px solid rgba(245,197,66,.45);
+    border-radius:20px;
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:0 0 22px rgba(245,197,66,.08);
     }
 
-    h1, h2, h3 {
-        color: #f5c542;
-        font-weight: 800;
+    .royal-card-title{
+        color:#f5c542;
+        font-size:16px;
+        font-weight:800;
+        text-transform:uppercase;
+        margin-bottom:12px;
     }
 
-        div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, #111827, #050b12);
-        border: 1px solid rgba(245, 197, 66, 0.35);
-        border-radius: 16px;
-        padding: 18px;
-        box-shadow: 0 0 18px rgba(245, 197, 66, 0.08);
+    .royal-card-value{
+        color:white;
+        font-size:34px;
+        font-weight:900;
     }
 
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #050b12 0%, #08111c 100%);
-        border-right: 1px solid rgba(245, 197, 66, 0.35);
+    .royal-card-subtitle{
+        color:#bfc5d2;
+        margin-top:6px;
+        font-size:14px;
     }
 
-    div.stButton > button {
-        background: linear-gradient(145deg, #111827, #0b111a);
-        color: white;
-        border: 1px solid rgba(245, 197, 66, 0.45);
-        border-radius: 12px;
-        font-weight: 800;
-        padding: 0.65rem;
-        transition: all 0.25s ease;
+    .match-card{
+        text-align:center;
     }
 
-    div.stButton > button:hover {
-        background: linear-gradient(145deg, #d4af37, #8a650f);
-        color: #050b12;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(212, 175, 55, 0.35);
+    .match-player{
+        color:white;
+        font-size:26px;
+        font-weight:800;
     }
 
-    div[data-testid="stDataFrame"] {
-        border: 1px solid rgba(245, 197, 66, 0.25);
-        border-radius: 14px;
-        overflow: hidden;
+    .match-score{
+        color:#f5c542;
+        font-size:34px;
+        font-weight:900;
+        margin:12px 0;
     }
-
+    
     </style>
     """,
     unsafe_allow_html=True
