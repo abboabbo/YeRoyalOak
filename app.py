@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
+import streamlit.components.v1 as components
 
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -1381,7 +1382,7 @@ if page == "My Profile":
                         width=180
                     )
 
-                st.markdown(
+                components.html(
                     f"""
                     <div style="
                         background: linear-gradient(160deg, #2b2108, #05080f 55%, #111827);
@@ -1390,69 +1391,31 @@ if page == "My Profile":
                         padding: 24px;
                         text-align: center;
                         box-shadow: 0 0 35px rgba(245,197,66,0.18);
-                        margin-top: 15px;
+                        font-family: Arial, sans-serif;
                     ">
-                        <div style="
-                            font-size: 54px;
-                            font-weight: 900;
-                            color: #f5c542;
-                            line-height: 1;
-                        ">
+                        <div style="font-size:54px; font-weight:900; color:#f5c542;">
                             {overall_rating}
                         </div>
 
-                        <div style="
-                            color: #bfc5d2;
-                            font-weight: 800;
-                            margin-bottom: 16px;
-                            letter-spacing: 1px;
-                        ">
+                        <div style="color:#bfc5d2; font-weight:800; margin-bottom:16px;">
                             OVR
                         </div>
 
-                        <div style="
-                            font-size: 28px;
-                            font-weight: 900;
-                            color: white;
-                            margin-top: 8px;
-                        ">
+                        <div style="font-size:28px; font-weight:900; color:white;">
                             {display_player_name(player)}
                         </div>
 
-                        <div style="
-                            color: #f5c542;
-                            font-size: 15px;
-                            font-weight: 700;
-                            margin-top: 5px;
-                        ">
+                        <div style="color:#f5c542; font-size:15px; font-weight:700;">
                             {player.name}
                         </div>
-
+        
                         <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
 
-                        <div style="
-                            display:grid;
-                            grid-template-columns:1fr 1fr;
-                            gap:12px;
-                            color:white;
-                            font-weight:800;
-                        ">
-                            <div>
-                                <div style="color:#f5c542; font-size:13px;">AVG</div>
-                                <div style="font-size:22px;">{avg}</div>
-                            </div>
-                            <div>
-                                <div style="color:#f5c542; font-size:13px;">WIN %</div>
-                                <div style="font-size:22px;">{win_pct}%</div>
-                            </div>
-                            <div>
-                                <div style="color:#f5c542; font-size:13px;">WINS</div>
-                                <div style="font-size:22px;">{wins}</div>
-                            </div>
-                            <div>
-                                <div style="color:#f5c542; font-size:13px;">PLAYED</div>
-                                <div style="font-size:22px;">{played}</div>
-                            </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; color:white; font-weight:800;">
+                            <div><span style="color:#f5c542;">AVG</span><br>{avg}</div>
+                            <div><span style="color:#f5c542;">WIN %</span><br>{win_pct}%</div>
+                            <div><span style="color:#f5c542;">WINS</span><br>{wins}</div>
+                            <div><span style="color:#f5c542;">PLAYED</span><br>{played}</div>
                         </div>
 
                         <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
@@ -1466,8 +1429,9 @@ if page == "My Profile":
                         </div>
                     </div>
                     """,
-                    unsafe_allow_html=True
+                    height=520
                 )
+
 
             with col2:
 
