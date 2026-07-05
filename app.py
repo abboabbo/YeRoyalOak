@@ -1047,86 +1047,92 @@ if page == "Home":
 
     st.divider()
 
-    col4, col5 = st.columns(2)
+col4, col5 = st.columns(2)
 
-    with col4:
+with col4:
 
-        st.markdown("### 📅 Next Fixture")
+    if next_fixture:
 
-        if next_fixture:
+        p1 = player_lookup.get(
+            next_fixture.player1_id,
+            "Unknown"
+        )
 
-            p1 = player_lookup.get(
-                next_fixture.player1_id,
-                "Unknown"
-            )
+        p2 = player_lookup.get(
+            next_fixture.player2_id,
+            "Unknown"
+        )
 
-            p2 = player_lookup.get(
-                next_fixture.player2_id,
-                "Unknown"
-            )
-
-            st.markdown(
-                f"""
-                <div style="
-                    background:#262730;
-                    border:1px solid #d4af37;
-                    border-radius:16px;
-                    padding:20px;
-                    text-align:center;
-                    font-weight:bold;
-                ">
-                    <div style="font-size:18px;">Round {next_fixture.round_number}</div>
-                    <div style="font-size:26px; margin-top:10px;">{p1}</div>
-                    <div style="font-size:18px; margin:8px;">VS</div>
-                    <div style="font-size:26px;">{p2}</div>
+        gold_card(
+            "📅 Next Fixture",
+            f"""
+            <div style="text-align:center;">
+                <div style="font-size:18px; color:#f5c542;">
+                    Round {next_fixture.round_number}
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        else:
-
-            st.info("No upcoming fixtures.")
-
-    with col5:
-
-        st.markdown("### 🔥 Latest Result")
-
-        if latest_result:
-
-            p1 = player_lookup.get(
-                latest_result.player1_id,
-                "Unknown"
-            )
-
-            p2 = player_lookup.get(
-                latest_result.player2_id,
-                "Unknown"
-            )
-
-            st.markdown(
-                f"""
-                <div style="
-                    background:#262730;
-                    border:1px solid #d4af37;
-                    border-radius:16px;
-                    padding:20px;
-                    text-align:center;
-                    font-weight:bold;
-                ">
-                    <div style="font-size:24px;">{p1}</div>
-                    <div style="font-size:32px; color:#d4af37; margin:10px;">
-                        {latest_result.player1_legs} - {latest_result.player2_legs}
-                    </div>
-                    <div style="font-size:24px;">{p2}</div>
+                <div style="font-size:28px; margin-top:10px;">
+                    {p1}
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                <div style="font-size:18px; margin:8px; color:#f5c542;">
+                    VS
+                </div>
+                <div style="font-size:28px;">
+                    {p2}
+                </div>
+            </div>
+            """
+        )
 
-        else:
+    else:
 
-            st.info("No results yet.")
+        gold_card(
+            "📅 Next Fixture",
+            "No upcoming fixtures."
+        )
+
+with col5:
+
+    if latest_result:
+
+        p1 = player_lookup.get(
+            latest_result.player1_id,
+            "Unknown"
+        )
+
+        p2 = player_lookup.get(
+            latest_result.player2_id,
+            "Unknown"
+        )
+
+        gold_card(
+            "🔥 Latest Result",
+            f"""
+            <div style="text-align:center;">
+                <div style="font-size:24px;">
+                    {p1}
+                </div>
+                <div style="
+                    font-size:34px;
+                    color:#f5c542;
+                    margin:10px;
+                ">
+                    {latest_result.player1_legs}
+                    -
+                    {latest_result.player2_legs}
+                </div>
+                <div style="font-size:24px;">
+                    {p2}
+                </div>
+            </div>
+            """
+        )
+
+    else:
+
+        gold_card(
+            "🔥 Latest Result",
+            "No results yet."
+        )
 
     st.divider()
 
