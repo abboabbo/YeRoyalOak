@@ -567,9 +567,8 @@ def get_sidebar_dashboard():
         "players_count": players_count,
         "played_count": played_count,
         "upcoming": upcoming_text,
-        "latest_result": latest_result_text,
-        "TikTok Followers": "301",
-        "TikTok Likes": "2.1K"
+        "latest_result": latest_result_text
+
     }
     
 # LOGIN
@@ -795,7 +794,7 @@ is_admin = st.session_state.get("role") == "admin"
 # TABS
 
 if "page" not in st.session_state:
-    st.session_state.page = "My Profile"
+    st.session_state.page = "Home"
 
 def get_base64_image(image_path):
 
@@ -839,10 +838,6 @@ with st.sidebar:
         <b>🔥 Latest Result</b><br>
         {dashboard["latest_result"]}
 
-        <br>
-        <b>🎵 TikTok Followers:</b> {dashboard["tiktok_followers"]}<br>
-        <b>❤️ TikTok Likes:</b> {dashboard["tiktok_likes"]}<br>
-        
         </div>
         """,
         unsafe_allow_html=True
@@ -851,6 +846,9 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown("## 🎯 Main Menu")
+
+    if st.button("🏠 Home", use_container_width=True):
+        st.session_state.page = "Home"
 
     if st.button("👤 My Profile", use_container_width=True):
         st.session_state.page = "My Profile"
@@ -933,6 +931,157 @@ with st.sidebar:
             """,
             unsafe_allow_html=True
         )
+
+if page == "Home":
+
+    st.header("🏆 Ye Royal Oak Darts League Dashboard")
+
+    db = SessionLocal()
+
+    players_count = db.query(Player).count()
+
+    fixtures_played = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).count()
+
+    latest_announcement = db.query(Announcement).order_by(
+        Announcement.id.desc()
+    ).first()
+
+    latest_result = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).order_by(
+        Fixture.id.desc()
+    ).first()
+
+    next_fixture = db.query(Fixture).filter(
+        Fixture.played == 0
+    ).order_by(
+        Fixture.round_number,
+        Fixture.id
+    ).first()
+
+    players = db.query(Player).all()
+
+    player_lookup = {
+        p.id: display_player_name(p)
+        for p in players
+    }
+
+    col1, col2 = st.columns(2)
+
+    col1.metric(
+        "👥 Registered Players",
+        players_count
+    )
+
+    col2.metric(
+        "🎯 Matches Played",
+        fixtures_played
+    )
+
+    st.divider()
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+
+        st.subheader("📅 Next Fixture")
+
+        if next_fixture:
+
+            p1 = player_lookup.get(
+                next_fixture.player1_id,
+                "Unknown"
+            )
+
+            p2 = player_lookup.get(
+                next_fixture.player2_id,
+                "Unknown"
+            )
+
+            st.markdown(
+                f"### Round {next_fixture.round_number}"
+            )
+
+            st.write(
+                f"🎯 {p1} vs {p2}"
+            )
+
+        else:
+
+            st.info("No upcoming fixtures.")
+
+    with col4:
+
+        st.subheader("🔥 Latest Result")
+
+        if latest_result:
+
+            p1 = player_lookup.get(
+                latest_result.player1_id,
+                "Unknown"
+            )
+
+            p2 = player_lookup.get(
+                latest_result.player2_id,
+                "Unknown"
+            )
+
+            st.markdown(
+                f"### {p1} {latest_result.player1_legs} - {latest_result.player2_legs} {p2}"
+            )
+
+        else:
+
+            st.info("No results yet.")
+
+    st.divider()
+
+    st.subheader("📢 Latest Announcement")
+
+    if latest_announcement:
+
+        st.markdown(
+            f"### {latest_announcement.title}"
+        )
+
+        st.caption(
+            latest_announcement.created_at
+        )
+
+        st.write(
+            latest_announcement.message
+        )
+
+    else:
+
+        st.info("No announcements yet.")
+
+    st.divider()
+
+    st.subheader("📱 Follow The League")
+
+    col5, col6 = st.columns(2)
+
+    with col5:
+
+        st.link_button(
+            "📘 Facebook Community",
+            "https://www.facebook.com/groups/1063585262569763/",
+            use_container_width=True
+        )
+
+    with col6:
+
+        st.link_button(
+            "🎵 TikTok Videos",
+            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc",
+            use_container_width=True
+        )
+
+    db.close()
+
 
 if page == "Announcements":
 
