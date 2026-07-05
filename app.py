@@ -1231,7 +1231,15 @@ if page == "Announcements":
 
 if page == "My Profile":
 
-    st.header("🎯 My Player Profile")
+    st.markdown(
+        """
+        <h1 style='text-align:center;'>🎴 My Player Card</h1>
+        <p style='text-align:center; color:#bfc5d2; font-size:17px;'>
+            Your personal Ye Royal Oak player profile
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
     player_id = st.session_state.get("player_id")
 
@@ -1251,28 +1259,235 @@ if page == "My Profile":
 
         else:
 
-            col1, col2 = st.columns([1, 4])
+            fixtures = db.query(Fixture).filter(
+                (
+                    Fixture.player1_id == player_id
+                )
+                |
+                (
+                    Fixture.player2_id == player_id
+                )
+            ).all()
+
+            played = 0
+            wins = 0
+            draws = 0
+            losses = 0
+            averages = []
+            recent_form = []
+            upcoming = []
+
+            for fixture in fixtures:
+
+                if fixture.played == 0:
+
+                    upcoming.append(fixture)
+
+                else:
+
+                    played += 1
+
+                    if fixture.player1_id == player_id:
+
+                        player_legs = fixture.player1_legs
+                        opponent_legs = fixture.player2_legs
+                        player_avg = fixture.player1_average
+
+                    else:
+
+                        player_legs = fixture.player2_legs
+                        opponent_legs = fixture.player1_legs
+                        player_avg = fixture.player2_average
+
+                    try:
+
+                        averages.append(
+                            float(player_avg)
+                        )
+
+                    except:
+
+                        pass
+
+                    if player_legs > opponent_legs:
+
+                        wins += 1
+                        recent_form.append("🟢")
+
+                    elif player_legs < opponent_legs:
+
+                        losses += 1
+                        recent_form.append("🔴")
+
+                    else:
+
+                        draws += 1
+                        recent_form.append("🟡")
+
+            win_pct = 0
+
+            if played > 0:
+
+                win_pct = round(
+                    (wins / played) * 100,
+                    1
+                )
+
+            avg = 0
+
+            if averages:
+
+                avg = round(
+                    sum(averages) / len(averages),
+                    2
+                )
+
+            overall_rating = int(
+                min(
+                    99,
+                    max(
+                        40,
+                        (
+                            win_pct * 0.45
+                            +
+                            avg * 0.45
+                            +
+                            played * 0.5
+                        )
+                    )
+                )
+            )
+
+            form_display = "".join(
+                recent_form[-5:]
+            )
+
+            if not form_display:
+
+                form_display = "No form yet"
+
+            col1, col2 = st.columns(
+                [1, 1.4]
+            )
 
             with col1:
+
+                logo_html = ""
 
                 if player.logo_path and os.path.exists(player.logo_path):
 
                     st.image(
                         player.logo_path,
-                        width=120
+                        width=180
                     )
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        background: linear-gradient(160deg, #2b2108, #05080f 55%, #111827);
+                        border: 2px solid #f5c542;
+                        border-radius: 28px;
+                        padding: 24px;
+                        text-align: center;
+                        box-shadow: 0 0 35px rgba(245,197,66,0.18);
+                        margin-top: 15px;
+                    ">
+                        <div style="
+                            font-size: 54px;
+                            font-weight: 900;
+                            color: #f5c542;
+                            line-height: 1;
+                        ">
+                            {overall_rating}
+                        </div>
+
+                        <div style="
+                            color: #bfc5d2;
+                            font-weight: 800;
+                            margin-bottom: 16px;
+                            letter-spacing: 1px;
+                        ">
+                            OVR
+                        </div>
+
+                        <div style="
+                            font-size: 28px;
+                            font-weight: 900;
+                            color: white;
+                            margin-top: 8px;
+                        ">
+                            {display_player_name(player)}
+                        </div>
+
+                        <div style="
+                            color: #f5c542;
+                            font-size: 15px;
+                            font-weight: 700;
+                            margin-top: 5px;
+                        ">
+                            {player.name}
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
+
+                        <div style="
+                            display:grid;
+                            grid-template-columns:1fr 1fr;
+                            gap:12px;
+                            color:white;
+                            font-weight:800;
+                        ">
+                            <div>
+                                <div style="color:#f5c542; font-size:13px;">AVG</div>
+                                <div style="font-size:22px;">{avg}</div>
+                            </div>
+                            <div>
+                                <div style="color:#f5c542; font-size:13px;">WIN %</div>
+                                <div style="font-size:22px;">{win_pct}%</div>
+                            </div>
+                            <div>
+                                <div style="color:#f5c542; font-size:13px;">WINS</div>
+                                <div style="font-size:22px;">{wins}</div>
+                            </div>
+                            <div>
+                                <div style="color:#f5c542; font-size:13px;">PLAYED</div>
+                                <div style="font-size:22px;">{played}</div>
+                            </div>
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
+
+                        <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
+                            Recent Form
+                        </div>
+
+                        <div style="font-size:24px; margin-top:6px;">
+                            {form_display}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             with col2:
 
-                st.subheader(player.name)
+                st.markdown("### 📊 Player Stats")
 
-                if player.nickname:
+                c1, c2, c3 = st.columns(3)
 
-                    st.write(f"Nickname: {player.nickname}")
+                c1.metric("Played", played)
+                c2.metric("Wins", wins)
+                c3.metric("Win %", f"{win_pct}%")
+
+                c4, c5, c6 = st.columns(3)
+
+                c4.metric("Draws", draws)
+                c5.metric("Losses", losses)
+                c6.metric("3 Dart Avg", avg)
 
                 st.divider()
 
-                st.subheader("Edit My Profile")
+                st.markdown("### ⚙️ Edit My Profile")
 
                 new_nickname = st.text_input(
                     "Nickname",
@@ -1286,72 +1501,10 @@ if page == "My Profile":
                     key="my_profile_logo"
                 )
 
-                st.divider()
-
-                st.subheader("🔒 Change Password")
-
-                current_password = st.text_input(
-                    "Current Password",
-                    type="password",
-                    key="current_password"
-                )
-
-                new_password = st.text_input(
-                    "New Password",
-                    type="password",
-                    key="new_password"
-                )
-
-                confirm_password = st.text_input(
-                    "Confirm New Password",
-                    type="password",
-                    key="confirm_password"
-                )
-
                 if st.button(
-                    "Update Password",
-                    key="update_password"
+                    "💾 Save Profile",
+                    use_container_width=True
                 ):
-
-                    user = db.query(User).filter(
-                        User.username == st.session_state.username
-                    ).first()
-
-                    if not user:
-
-                        st.error(
-                            "User account not found."
-                        )
-
-                    elif user.password != current_password:
-
-                        st.error(
-                            "Current password is incorrect."
-                        )
-
-                    elif new_password != confirm_password:
-
-                        st.error(
-                            "New passwords do not match."
-                        )
-
-                    elif len(new_password) < 6:
-
-                        st.error(
-                            "Password must be at least 6 characters."
-                        )
-
-                    else:
-
-                        user.password = new_password
-
-                        db.commit()
-
-                        st.success(
-                            "Password updated successfully."
-                        )
-
-                if st.button("Save My Profile"):
 
                     db_profile = SessionLocal()
 
@@ -1388,23 +1541,15 @@ if page == "My Profile":
                             target_player.logo_path = logo_path
 
                         db_profile.commit()
-
-                        db_profile.refresh(target_player)
-
                         db_profile.close()
 
                         if "league_standings" in st.session_state:
+
                             del st.session_state["league_standings"]
 
                         st.success("Profile updated.")
 
-                        if f"my_profile_nickname_{player.id}" in st.session_state:
-
-                            del st.session_state[
-                                f"my_profile_nickname_{player_id}"
-                            ]
-
-                        st.success("Profile updated. Refresh or change page to check.")
+                        st.rerun()
 
                     else:
 
@@ -1412,508 +1557,146 @@ if page == "My Profile":
 
                         st.error("Player not found.")
 
-            fixtures = db.query(Fixture).filter(
-                (
-                    Fixture.player1_id == player_id
-                )
-                |
-                (
-                    Fixture.player2_id == player_id
-                )
-            ).all()
+                st.divider()
 
-            played = 0
-            wins = 0
-            draws = 0
-            losses = 0
-            averages = []
+                st.markdown("### 🔒 Change Password")
 
-            upcoming = []
-
-            for fixture in fixtures:
-
-                if fixture.played == 0:
-
-                    upcoming.append(fixture)
-
-                else:
-
-                    played += 1
-
-                    if fixture.player1_id == player_id:
-
-                        player_legs = fixture.player1_legs
-                        opponent_legs = fixture.player2_legs
-
-                        try:
-                            averages.append(float(fixture.player1_average))
-                        except:
-                            pass
-
-                    else:
-
-                        player_legs = fixture.player2_legs
-                        opponent_legs = fixture.player1_legs
-
-                        try:
-                            averages.append(float(fixture.player2_average))
-                        except:
-                            pass
-
-                    if player_legs > opponent_legs:
-
-                        wins += 1
-
-                    elif player_legs < opponent_legs:
-
-                        losses += 1
-
-                    else:
-
-                        draws += 1
-
-            win_pct = 0
-
-            if played > 0:
-
-                win_pct = round(
-                    (wins / played) * 100,
-                    1
+                current_password = st.text_input(
+                    "Current Password",
+                    type="password",
+                    key="current_password"
                 )
 
-            avg = 0
-
-            if averages:
-
-                avg = round(
-                    sum(averages) / len(averages),
-                    2
+                new_password = st.text_input(
+                    "New Password",
+                    type="password",
+                    key="new_password"
                 )
 
-            col1, col2, col3, col4 = st.columns(4)
-
-            col1.metric("Win %", win_pct)
-            col2.metric("3 Dart Average", avg)
-            col3.metric("Played", played)
-            col4.metric("Wins", wins)
-
-            col5, col6, col7 = st.columns(3)
-
-            col5.metric("Draws", draws)
-            col6.metric("Losses", losses)
-            col7.metric("Remaining Fixtures", len(upcoming))
-
-            st.divider()
-
-            st.subheader("Upcoming Fixtures")
-
-            if not upcoming:
-
-                st.info("No upcoming fixtures.")
-
-            else:
-
-                players = db.query(Player).all()
-
-                player_lookup = {
-                    p.id: p.name
-                    for p in players
-                }
-
-                for fixture in upcoming:
-
-                    p1 = player_lookup.get(
-                        fixture.player1_id,
-                        "Unknown"
-                    )
-
-                    p2 = player_lookup.get(
-                        fixture.player2_id,
-                        "Unknown"
-                    )
-
-                    st.write(f"🎯 {p1} vs {p2}")
-
-            st.divider()
-
-            st.subheader("Recent Results")
-
-            recent_results = [
-                fixture
-                for fixture in fixtures
-                if fixture.played == 1
-            ]
-
-            recent_results = recent_results[-5:]
-
-            if not recent_results:
-
-                st.info("No results yet.")
-
-            else:
-
-                players = db.query(Player).all()
-
-                player_lookup = {
-                    p.id: p.name
-                    for p in players
-                }
-
-                for fixture in recent_results:
-
-                    p1 = player_lookup.get(
-                        fixture.player1_id,
-                        "Unknown"
-                    )
-
-                    p2 = player_lookup.get(
-                        fixture.player2_id,
-                        "Unknown"
-                    )
-
-                    st.write(
-                        f"{p1} {fixture.player1_legs} - "
-                        f"{fixture.player2_legs} {p2}"
-                    )
-
-        db.close()
-
-if is_admin:
-
-    if is_admin and page == "Players":
-
-        st.header("Add Player")
-
-        name = st.text_input("Player Name")
-
-        nickname = st.text_input("Nickname")
-
-        logo = st.file_uploader(
-            "Player Logo",
-            type=["png", "jpg", "jpeg"]
-        )
-
-        if st.button("Add Player"):
-
-            if name and logo:
-
-                os.makedirs("assets/logos", exist_ok=True)
-
-                logo_path = f"assets/logos/{logo.name}"
-
-                with open(logo_path, "wb") as f:
-                    f.write(logo.getbuffer())
-
-                db = SessionLocal()
-
-                player = Player(
-                    name=name,
-                    nickname=nickname,
-                    logo_path=logo_path
+                confirm_password = st.text_input(
+                    "Confirm New Password",
+                    type="password",
+                    key="confirm_password"
                 )
 
-                db.add(player)
-                db.commit()
-                db.close()
-
-                st.success("Player Added!")
-                st.rerun()
-
-            else:
-
-                st.error("Please enter a name and upload a logo.")
-
-        st.divider()
-
-        st.subheader("Current Players")
-
-        db = SessionLocal()
-        players = db.query(Player).all()
-        db.close()
-
-        for player in players:
-
-            with st.expander(
-                f"🎯 {player.name} - ID {player.id}"
-            ):
-
-                with st.form(
-                    key=f"edit_player_form_{player.id}"
+                if st.button(
+                    "Update Password",
+                    key="update_password",
+                    use_container_width=True
                 ):
 
-                    new_name = st.text_input(
-                        "Player Name",
-                        value=player.name,
-                        key=f"edit_name_{player.id}"
+                    user = db.query(User).filter(
+                        User.username == st.session_state.username
+                    ).first()
+
+                    if not user:
+
+                        st.error("User account not found.")
+
+                    elif user.password != current_password:
+
+                        st.error("Current password is incorrect.")
+
+                    elif new_password != confirm_password:
+
+                        st.error("New passwords do not match.")
+
+                    elif len(new_password) < 6:
+
+                        st.error("Password must be at least 6 characters.")
+
+                    else:
+
+                        user.password = new_password
+
+                        db.commit()
+
+                        st.success("Password updated successfully.")
+
+            st.divider()
+
+            col3, col4 = st.columns(2)
+
+            players = db.query(Player).all()
+
+            player_lookup = {
+                p.id: display_player_name(p)
+                for p in players
+            }
+
+            with col3:
+
+                st.markdown("### 📅 Upcoming Fixtures")
+
+                if not upcoming:
+
+                    dashboard_card(
+                        "No Fixtures",
+                        "None",
+                        "No upcoming fixtures"
                     )
-
-                    new_nickname = st.text_input(
-                        "Nickname",
-                        value=player.nickname if player.nickname else "",
-                        key=f"edit_nickname_{player.id}"
-                    )
-
-                    new_logo = st.file_uploader(
-                        "Upload New Logo",
-                        type=["png", "jpg", "jpeg"],
-                        key=f"edit_logo_{player.id}"
-                    )
-
-                    save_clicked = st.form_submit_button(
-                        "💾 Save Changes"
-                    )
-
-                    if save_clicked:
-
-                        db_edit = SessionLocal()
-
-                        rows_updated = db_edit.query(Player).filter(
-                            Player.id == player.id
-                        ).update(
-                            {
-                                "name": new_name.strip(),
-                                "nickname": new_nickname.strip()
-                            },
-                            synchronize_session=False
-                        )
-
-                        db_edit.commit()
-                        db_edit.close()
-
-                        if "league_standings" in st.session_state:
-
-                            del st.session_state["league_standings"]
-
-                        if rows_updated == 1:
-
-                            st.success(
-                                f"Player ID {player.id} updated."
-                            )
-
-                        else:
-
-                            st.error(
-                                "Player was not updated."
-                            )
-
-                        st.rerun()
-
-
-    if is_admin and page == "Users":
-
-        st.header("👤 User Accounts")
-
-        db = SessionLocal()
-
-        players = db.query(Player).all()
-
-        player_lookup = {
-            p.name: p.id
-            for p in players
-        }
-
-        username = st.text_input(
-            "Username",
-            key="new_user"
-        )
-
-        password = st.text_input(
-            "Password",
-            type="password",
-            key="new_pass"
-        )
-
-        role = st.selectbox(
-            "Role",
-            [
-                "viewer",
-                "admin"
-            ],
-            key="new_role"
-        )
-
-        player_names = list(player_lookup.keys())
-
-        selected_player = st.selectbox(
-            "Linked Player",
-            player_names if player_names else ["No players available"],
-            key="linked_player"
-        )
-
-        if st.button("Create User"):
-
-            if not username or not password:
-
-                st.error("Please enter a username and password.")
-
-            elif not player_names:
-
-                st.error("Please add players before creating user accounts.")
-
-            else:
-
-                existing_user = db.query(User).filter(
-                    User.username == username
-                ).first()
-
-                if existing_user:
-
-                    st.error("That username already exists.")
 
                 else:
 
-                    user = User(
-                        username=username,
-                        password=password,
-                        role=role,
-                        player_id=player_lookup[selected_player]
+                    for fixture in upcoming[:5]:
+
+                        p1 = player_lookup.get(
+                            fixture.player1_id,
+                            "Unknown"
+                        )
+
+                        p2 = player_lookup.get(
+                            fixture.player2_id,
+                            "Unknown"
+                        )
+
+                        match_card(
+                            f"Round {fixture.round_number}",
+                            p1,
+                            "VS",
+                            p2
+                        )
+
+            with col4:
+
+                st.markdown("### 🔥 Recent Results")
+
+                recent_results = [
+                    fixture
+                    for fixture in fixtures
+                    if fixture.played == 1
+                ]
+
+                recent_results = recent_results[-5:]
+
+                if not recent_results:
+
+                    dashboard_card(
+                        "No Results",
+                        "None",
+                        "No results yet"
                     )
 
-                    db.add(user)
-                    db.commit()
+                else:
 
-                    st.success("User Created")
-                    st.rerun()
+                    for fixture in recent_results:
 
-        st.divider()
+                        p1 = player_lookup.get(
+                            fixture.player1_id,
+                            "Unknown"
+                        )
 
-        st.subheader("Current Users")
+                        p2 = player_lookup.get(
+                            fixture.player2_id,
+                            "Unknown"
+                        )
 
-        users = db.query(User).all()
-
-        for user in users:
-
-            linked_player = db.get(Player, user.player_id) if user.player_id else None
-            player_name = linked_player.name if linked_player else "No linked player"
-
-            st.write(
-                f"{user.username} ({user.role}) - {player_name}"
-            )
-
-        db.close()
-
-
-    if is_admin and page == "Tournaments":
-
-        st.header("🏆 Create Tournament")
-
-        tournament_name = st.text_input(
-            "Tournament Name",
-            key="tournament_name"
-        )
-
-        format_type = st.selectbox(
-            "Format",
-            [
-                "League + Knockout",
-                "League Only",
-                "Knockout Only"
-            ],
-            key="tournament_format"
-        )
-
-        legs_format = st.selectbox(
-            "Match Format",
-            [
-                "Best of 3",
-                "Best of 5",
-                "Best of 6",
-                "Best of 7",
-                "Best of 9",
-                "Best of 11"
-            ],
-            key="legs_format"
-        )
-
-        db = SessionLocal()
-
-        all_players = db.query(Player).all()
-
-        player_options = {
-            p.name: p.id
-            for p in all_players
-        }
-
-        selected_players = st.multiselect(
-            "Select Players",
-            list(player_options.keys()),
-            key="tournament_players"
-        )
-
-        if st.button("Create Tournament"):
-
-            if not tournament_name:
-
-                st.error("Please enter a tournament name.")
-
-            elif len(selected_players) < 2:
-
-                st.error("Please select at least two players.")
-
-            else:
-
-                tournament = Tournament(
-                    name=tournament_name,
-                    format_type=format_type,
-                    legs_format=legs_format
-                )
-
-                db.add(tournament)
-                db.commit()
-                db.refresh(tournament)
-
-                for player_name in selected_players:
-
-                    link = TournamentPlayer(
-                        tournament_id=tournament.id,
-                        player_id=player_options[player_name]
-                    )
-
-                    db.add(link)
-
-                db.commit()
-
-                st.success("Tournament Created!")
-                st.rerun()
-
-        st.divider()
-
-        st.subheader("Existing Tournaments")
-
-        tournaments = db.query(Tournament).all()
-
-        for tournament in tournaments:
-
-            st.write(f"🏆 {tournament.name}")
-            st.write(f"Format: {tournament.format_type}")
-            st.write(f"Match Format: {tournament.legs_format}")
-
-            if st.button(
-                "🗑️ Remove Tournament",
-                key=f"remove_tournament_{tournament.id}"
-            ):
-
-                db.query(Fixture).filter(
-                    Fixture.tournament_id == tournament.id
-                ).delete()
-
-                db.query(TournamentPlayer).filter(
-                    TournamentPlayer.tournament_id == tournament.id
-                ).delete()
-
-                db.query(KnockoutMatch).filter(
-                    KnockoutMatch.tournament_id == tournament.id
-                ).delete()
-
-                db.delete(tournament)
-
-                db.commit()
-
-                st.success("Tournament removed successfully.")
-
-                st.rerun()
-
-        st.divider()
+                        match_card(
+                            "Result",
+                            p1,
+                            f"{fixture.player1_legs} - {fixture.player2_legs}",
+                            p2
+                        )
 
         db.close()
 
