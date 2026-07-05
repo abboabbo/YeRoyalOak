@@ -345,6 +345,7 @@ st.set_page_config(
     page_icon=icon,
     layout="wide",
     initial_sidebar_state="collapsed"
+
 )
 
 st.markdown(
@@ -365,41 +366,67 @@ st.markdown(
         font-weight: 700;
     }
 
-    section[data-testid="stSidebar"] .stRadio label {
-        background: #262730;
-        padding: 10px 14px;
-        border-radius: 10px;
-        margin-bottom: 8px;
-        font-weight: 700;
-        border: 1px solid #444;
+    .main {
+    background: linear-gradient(135deg, #050b12 0%, #0b111a 50%, #05080d 100%);
     }
 
-    section[data-testid="stSidebar"] .stRadio label:hover {
-        background: #3a3b45;
-        border: 1px solid #777;
+    h1, h2, h3 {
+        color: #f5c542;
+        font-weight: 800;
     }
 
-    section[data-testid="stSidebar"] .stLinkButton a {
-        border-radius: 10px;
+    .stDataFrame th {
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .stDataFrame td {
         font-weight: 700;
+    }
+
+    .main {
+    background: linear-gradient(135deg, #050b12 0%, #0b111a 50%, #05080d 100%);
+    }
+
+    h1, h2, h3 {
+        color: #f5c542;
+        font-weight: 800;
+    }
+
+        div[data-testid="stMetric"] {
+        background: linear-gradient(145deg, #111827, #050b12);
+        border: 1px solid rgba(245, 197, 66, 0.35);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 0 18px rgba(245, 197, 66, 0.08);
+    }
+
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #050b12 0%, #08111c 100%);
+        border-right: 1px solid rgba(245, 197, 66, 0.35);
     }
 
     div.stButton > button {
-    width: 100%;
-    border-radius: 12px;
-    border: 1px solid #444;
-    font-weight: 700;
-    transition: all 0.25s ease;
+        background: linear-gradient(145deg, #111827, #0b111a);
+        color: white;
+        border: 1px solid rgba(245, 197, 66, 0.45);
+        border-radius: 12px;
+        font-weight: 800;
+        padding: 0.65rem;
+        transition: all 0.25s ease;
     }
 
     div.stButton > button:hover {
-    border-color: #d4af37;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(212,175,55,0.35);
+        background: linear-gradient(145deg, #d4af37, #8a650f);
+        color: #050b12;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(212, 175, 55, 0.35);
     }
 
-    div.stButton > button:focus {
-    border-color: #d4af37;
+    div[data-testid="stDataFrame"] {
+        border: 1px solid rgba(245, 197, 66, 0.25);
+        border-radius: 14px;
+        overflow: hidden;
     }
 
     </style>
