@@ -175,9 +175,7 @@ def gold_card(title, body):
             margin-bottom: 18px;
         ">
             <h3 style="color:#f5c542; margin-bottom:10px;">{title}</h3>
-            <div style="color:white; font-size:17px; font-weight:600;">
-                {body}
-            </div>
+            {body}
         </div>
         """,
         unsafe_allow_html=True
