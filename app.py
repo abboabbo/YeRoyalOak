@@ -162,6 +162,27 @@ def display_player_name(player):
 
     return player.name
 
+def gold_card(title, body):
+
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(145deg, #111827, #050b12);
+            border: 1px solid rgba(245,197,66,0.45);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 0 22px rgba(245,197,66,0.08);
+            margin-bottom: 18px;
+        ">
+            <h3 style="color:#f5c542; margin-bottom:10px;">{title}</h3>
+            <div style="color:white; font-size:17px; font-weight:600;">
+                {body}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 def create_fixtures_pdf(fixture_rows, tournament_name):
 
     buffer = BytesIO()
