@@ -2231,63 +2231,46 @@ if page == "League":
             )
         )
 
-        table_html = """
-        <div class="league-table-wrapper">
-        <table class="league-table">
-        <thead>
-        <tr>
-        <th>Pos</th>
-        <th>Player</th>
-        <th>P</th>
-        <th>W</th>
-        <th>D</th>
-        <th>L</th>
-        <th>LF</th>
-        <th>LA</th>
-        <th>+/-</th>
-        <th>Avg</th>
-        <th>Pts</th>
-        </tr>
-        </thead>
-        <tbody>
-        """
 
-        for _, row in visible_df.iterrows():
+        visible_df["Form"] = "—"
+        visible_df["Trend"] = "►"
 
-            medal = ""
+        visible_df.loc[0, "Pos"] = "🥇"
+        if len(visible_df) > 1:
+            visible_df.loc[1, "Pos"] = "🥈"
+        if len(visible_df) > 2:
+            visible_df.loc[2, "Pos"] = "🥉"
 
-            if row["Pos"] == 1:
-                medal = "🥇 "
-            elif row["Pos"] == 2:
-                medal = "🥈 "
-            elif row["Pos"] == 3:
-                medal = "🥉 "
-
-            table_html += f"""
-            <tr>
-                <td>{row["Pos"]}</td>
-                <td class="player-name">{medal}{row["Player"]}</td>
-                <td>{row["P"]}</td>
-                <td>{row["W"]}</td>
-                <td>{row["D"]}</td>
-                <td>{row["L"]}</td>
-                <td>{row["LF"]}</td>
-                <td>{row["LA"]}</td>
-                <td>{row["+/-"]}</td>
-                <td>{row["Avg"]}</td>
-                <td class="points">{row["Pts"]}</td>
-            </tr>
-            """
-
-        table_html += """
-        </tbody>
-        </table>
-        </div>
-        """
-
-        st.markdown(
-            table_html,
-            unsafe_allow_html=True
+        st.data_editor(
+            visible_df,
+            column_config={
+                "Pos": st.column_config.TextColumn(
+                    "Pos",
+                    width="small"
+                ),
+                "Player": st.column_config.TextColumn(
+                    "Player",
+                    width="medium"
+                ),
+                "Pts": st.column_config.NumberColumn(
+                    "Pts",
+                    width="small"
+                ),
+                "Avg": st.column_config.NumberColumn(
+                    "Avg",
+                    format="%.2f"
+                ),
+                "Form": st.column_config.TextColumn(
+                    "Form"
+                ),
+                "Trend": st.column_config.TextColumn(
+                    "Trend",
+                    width="small"
+                )
+            },
+            hide_index=True,
+            use_container_width=True,
+            disabled=True
         )
         
 
