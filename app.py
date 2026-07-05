@@ -480,10 +480,6 @@ st.markdown(
         margin:12px 0;
     }
 
-    </style>
-    """,
-    unsafe_allow_html=True
-
     .league-st.table-wrapper {
         background: linear-gradient(145deg, #101827, #05080f);
         border: 1px solid rgba(245,197,66,0.45);
@@ -530,6 +526,11 @@ st.markdown(
         font-size: 18px;
         font-weight: 900;
     }
+    
+    </style>
+    """,
+    unsafe_allow_html=True
+
 )
 
 def create_league_table_pdf(league_rows):
