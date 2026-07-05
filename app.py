@@ -1990,7 +1990,15 @@ if page == "Fixtures":
 
 if page == "League":
 
-    st.header("🏆 League Table")
+    st.markdown(
+        """
+        <h1 style='text-align:center;'>🏆 League Table</h1>
+        <p style='text-align:center; color:#bfc5d2; font-size:17px;'>
+            Current Ye Royal Oak standings
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
     db = SessionLocal()
 
@@ -2018,6 +2026,13 @@ if page == "League":
 
     for fixture in fixtures:
 
+        if (
+            fixture.player1_id not in table
+            or fixture.player2_id not in table
+        ):
+
+            continue
+
         p1 = table[fixture.player1_id]
         p2 = table[fixture.player2_id]
 
@@ -2031,16 +2046,12 @@ if page == "League":
         p2["legs_against"] += fixture.player1_legs
 
         try:
-            p1["averages"].append(
-                float(fixture.player1_average)
-            )
+            p1["averages"].append(float(fixture.player1_average))
         except:
             pass
 
         try:
-            p2["averages"].append(
-                float(fixture.player2_average)
-            )
+            p2["averages"].append(float(fixture.player2_average))
         except:
             pass
 
@@ -2069,7 +2080,7 @@ if page == "League":
 
         avg = 0
 
-        if len(data["averages"]) > 0:
+        if data["averages"]:
 
             avg = round(
                 sum(data["averages"]) / len(data["averages"]),
@@ -2077,9 +2088,6 @@ if page == "League":
             )
 
         rows.append({
-            "logo": image_to_base64(
-                data["player"].logo_path
-            ),
             "Player": display_player_name(data["player"]),
             "Played": data["played"],
             "Won": data["won"],
@@ -2097,7 +2105,8 @@ if page == "League":
         rows,
         key=lambda x: (
             x["Points"],
-            x["Difference"]
+            x["Difference"],
+            x["3 Dart Average"]
         ),
         reverse=True
     )
@@ -2106,89 +2115,138 @@ if page == "League":
 
     if rows:
 
-        df = pd.DataFrame(rows)
+        leader = rows[0]
 
-        display_df = df.copy()
+        col1, col2, col3 = st.columns(3)
 
-        if "Player ID" in display_df.columns:
-            display_df = display_df.drop(columns=["Player ID"])
+        with col1:
 
-        display_df.insert(
-            0,
-            "Pos",
-            range(1, len(display_df) + 1)
+            dashboard_card(
+                "🥇 Current Leader",
+                leader["Player"],
+                f'{leader["Points"]} points'
+            )
+
+        with col2:
+
+            dashboard_card(
+                "🎯 Best Average",
+                max(rows, key=lambda x: x["3 Dart Average"])["Player"],
+                f'{max(rows, key=lambda x: x["3 Dart Average"])["3 Dart Average"]} avg'
+            )
+
+        with col3:
+
+            dashboard_card(
+                "🔥 Most Wins",
+                max(rows, key=lambda x: x["Won"])["Player"],
+                f'{max(rows, key=lambda x: x["Won"])["Won"]} wins'
+            )
+
+        st.divider()
+
+        table_rows = []
+
+        for index, row in enumerate(rows, start=1):
+
+            table_rows.append({
+                "Pos": index,
+                "Player": row["Player"],
+                "P": row["Played"],
+                "W": row["Won"],
+                "D": row["Drawn"],
+                "L": row["Lost"],
+                "LF": row["Legs For"],
+                "LA": row["Legs Against"],
+                "+/-": row["Difference"],
+                "Avg": row["3 Dart Average"],
+                "Pts": row["Points"],
+                "Player ID": row["Player ID"]
+            })
+
+        display_df = pd.DataFrame(table_rows)
+
+        visible_df = display_df.drop(
+            columns=["Player ID"]
         )
 
         styled_df = (
-        display_df.style.set_properties(
-             **{
-            "text-align": "center",
-            "font-weight": "bold",
-            "font-size": "15px"
-        }
-    )
-)
+            visible_df.style
+            .set_properties(
+                **{
+                    "text-align": "center",
+                    "font-weight": "bold",
+                    "font-size": "16px"
+                }
+            )
+        )
 
-        st.data_editor(
-            display_df,
-            column_config={
-                "logo": st.column_config.ImageColumn(
-                "Logo",
-                    width="small"
-                )
-            },
+        st.dataframe(
+            styled_df,
             hide_index=True,
-            use_container_width=True,
-            disabled=True
+            use_container_width=True
         )
 
         st.divider()
 
-        st.subheader("View Player")
+        col4, col5 = st.columns(2)
 
-        player_options = {
-            row["Player"]: row["Player ID"]
-            for row in rows
-        }
+        with col4:
 
-        selected_player_name = st.selectbox(
-            "Select Player",
-            list(player_options.keys()),
-            key="view_player_select"
-        )
+            st.markdown("### 🎴 View Player Card")
 
-        if st.button(
-            "View Player Profile",
-            key="view_player_button"
-        ):
+            player_options = {
+                row["Player"]: row["Player ID"]
+                for row in rows
+            }
 
-            st.session_state.view_player_id = player_options[
-                selected_player_name
-            ]
-
-            st.session_state.page = "View Player"
-
-            st.rerun()
-
-        league_pdf = create_league_table_pdf(
-            display_df.to_dict(
-                orient="records"
+            selected_player_name = st.selectbox(
+                "Select Player",
+                list(player_options.keys()),
+                key="view_player_select"
             )
-        )
 
-        st.download_button(
-            "📄 Download League Table PDF",
-            league_pdf,
-            "league_table.pdf",
-            "application/pdf"
-        )
+            if st.button(
+                "View Player Profile",
+                key="view_player_button",
+                use_container_width=True
+            ):
+
+                st.session_state.view_player_id = player_options[
+                    selected_player_name
+                ]
+
+                st.session_state.page = "View Player"
+
+                st.rerun()
+
+        with col5:
+
+            st.markdown("### 📄 Export")
+
+            league_pdf = create_league_table_pdf(
+                visible_df.to_dict(
+                    orient="records"
+                )
+            )
+
+            st.download_button(
+                "Download League Table PDF",
+                league_pdf,
+                "league_table.pdf",
+                "application/pdf",
+                use_container_width=True
+            )
 
     else:
 
-        st.info("No completed matches yet.")
+        dashboard_card(
+            "No League Data",
+            "No completed matches",
+            "League table will appear once results are entered"
+        )
 
     db.close()
-
 
 # KNOCKOUT TAB
 
