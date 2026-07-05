@@ -1467,7 +1467,7 @@ if page == "My Profile":
                     </div>
                     """,
                     unsafe_allow_html=True
-                    )
+                )
 
             with col2:
 
