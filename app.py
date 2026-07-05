@@ -934,7 +934,15 @@ with st.sidebar:
 
 if page == "Home":
 
-    st.header("🏆 Ye Royal Oak Darts League Dashboard")
+    st.markdown(
+        """
+        <h1 style='text-align:center;'>🏆 Ye Royal Oak Darts League</h1>
+        <p style='text-align:center; font-size:18px;'>
+            Official League Dashboard
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
     db = SessionLocal()
 
@@ -942,6 +950,10 @@ if page == "Home":
 
     fixtures_played = db.query(Fixture).filter(
         Fixture.played == 1
+    ).count()
+
+    fixtures_remaining = db.query(Fixture).filter(
+        Fixture.played == 0
     ).count()
 
     latest_announcement = db.query(Announcement).order_by(
@@ -968,10 +980,10 @@ if page == "Home":
         for p in players
     }
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     col1.metric(
-        "👥 Registered Players",
+        "👥 Players",
         players_count
     )
 
@@ -980,13 +992,18 @@ if page == "Home":
         fixtures_played
     )
 
+    col3.metric(
+        "📅 Fixtures Remaining",
+        fixtures_remaining
+    )
+
     st.divider()
 
-    col3, col4 = st.columns(2)
+    col4, col5 = st.columns(2)
 
-    with col3:
+    with col4:
 
-        st.subheader("📅 Next Fixture")
+        st.markdown("### 📅 Next Fixture")
 
         if next_fixture:
 
@@ -1001,20 +1018,31 @@ if page == "Home":
             )
 
             st.markdown(
-                f"### Round {next_fixture.round_number}"
-            )
-
-            st.write(
-                f"🎯 {p1} vs {p2}"
+                f"""
+                <div style="
+                    background:#262730;
+                    border:1px solid #d4af37;
+                    border-radius:16px;
+                    padding:20px;
+                    text-align:center;
+                    font-weight:bold;
+                ">
+                    <div style="font-size:18px;">Round {next_fixture.round_number}</div>
+                    <div style="font-size:26px; margin-top:10px;">{p1}</div>
+                    <div style="font-size:18px; margin:8px;">VS</div>
+                    <div style="font-size:26px;">{p2}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
         else:
 
             st.info("No upcoming fixtures.")
 
-    with col4:
+    with col5:
 
-        st.subheader("🔥 Latest Result")
+        st.markdown("### 🔥 Latest Result")
 
         if latest_result:
 
@@ -1029,7 +1057,23 @@ if page == "Home":
             )
 
             st.markdown(
-                f"### {p1} {latest_result.player1_legs} - {latest_result.player2_legs} {p2}"
+                f"""
+                <div style="
+                    background:#262730;
+                    border:1px solid #d4af37;
+                    border-radius:16px;
+                    padding:20px;
+                    text-align:center;
+                    font-weight:bold;
+                ">
+                    <div style="font-size:24px;">{p1}</div>
+                    <div style="font-size:32px; color:#d4af37; margin:10px;">
+                        {latest_result.player1_legs} - {latest_result.player2_legs}
+                    </div>
+                    <div style="font-size:24px;">{p2}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
         else:
@@ -1038,47 +1082,33 @@ if page == "Home":
 
     st.divider()
 
-    st.subheader("📢 Latest Announcement")
+    st.markdown("### 📢 Latest Announcement")
 
     if latest_announcement:
 
         st.markdown(
-            f"### {latest_announcement.title}"
-        )
-
-        st.caption(
-            latest_announcement.created_at
-        )
-
-        st.write(
-            latest_announcement.message
+            f"""
+            <div style="
+                background:#1e1f26;
+                border-left:5px solid #d4af37;
+                border-radius:12px;
+                padding:18px;
+            ">
+                <h3>{latest_announcement.title}</h3>
+                <p style="font-size:14px; opacity:0.8;">
+                    {latest_announcement.created_at}
+                </p>
+                <p style="font-size:17px;">
+                    {latest_announcement.message}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     else:
 
         st.info("No announcements yet.")
-
-    st.divider()
-
-    st.subheader("📱 Follow The League")
-
-    col5, col6 = st.columns(2)
-
-    with col5:
-
-        st.link_button(
-            "📘 Facebook Community",
-            "https://www.facebook.com/groups/1063585262569763/",
-            use_container_width=True
-        )
-
-    with col6:
-
-        st.link_button(
-            "🎵 TikTok Videos",
-            "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc",
-            use_container_width=True
-        )
 
     db.close()
 
