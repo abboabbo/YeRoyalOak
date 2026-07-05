@@ -492,7 +492,83 @@ def create_league_table_pdf(league_rows):
 
     return buffer
 
+def get_sidebar_dashboard():
 
+    db = SessionLocal()
+
+    players_count = db.query(Player).count()
+
+    played_count = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).count()
+
+    upcoming_fixture = db.query(Fixture).filter(
+        Fixture.played == 0
+    ).order_by(
+        Fixture.round_number,
+        Fixture.id
+    ).first()
+
+    latest_result = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).order_by(
+        Fixture.id.desc()
+    ).first()
+
+    players = db.query(Player).all()
+
+    player_lookup = {
+        p.id: display_player_name(p)
+        for p in players
+    }
+
+    upcoming_text = "No upcoming fixtures"
+
+    if upcoming_fixture:
+
+        p1 = player_lookup.get(
+            upcoming_fixture.player1_id,
+            "Unknown"
+        )
+
+        p2 = player_lookup.get(
+            upcoming_fixture.player2_id,
+            "Unknown"
+        )
+
+        upcoming_text = (
+            f"R{upcoming_fixture.round_number}: "
+            f"{p1} vs {p2}"
+        )
+
+    latest_result_text = "No results yet"
+
+    if latest_result:
+
+        p1 = player_lookup.get(
+            latest_result.player1_id,
+            "Unknown"
+        )
+
+        p2 = player_lookup.get(
+            latest_result.player2_id,
+            "Unknown"
+        )
+
+        latest_result_text = (
+            f"{p1} {latest_result.player1_legs}"
+            f" - "
+            f"{latest_result.player2_legs} {p2}"
+        )
+
+    db.close()
+
+    return {
+        "players_count": players_count,
+        "played_count": played_count,
+        "upcoming": upcoming_text,
+        "latest_result": latest_result_text
+    }
     
 # LOGIN
 
@@ -735,6 +811,37 @@ with st.sidebar:
         width=150
     )
 
+
+    dashboard = get_sidebar_dashboard()
+
+    st.markdown("---")
+
+    st.markdown("## 🏠 League Dashboard")
+
+    st.markdown(
+        f"""
+        <div style="
+            background-color:#262730;
+            border:1px solid #d4af37;
+            border-radius:12px;
+            padding:12px;
+            margin-bottom:10px;
+        ">
+
+        <b>👥 Players:</b> {dashboard["players_count"]}<br>
+        <b>🎯 Matches Played:</b> {dashboard["played_count"]}<br><br>
+
+        <b>📅 Next Fixture</b><br>
+        {dashboard["upcoming"]}<br><br>
+
+        <b>🔥 Latest Result</b><br>
+        {dashboard["latest_result"]}
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
     st.markdown("---")
 
     st.markdown("## 🎯 Main Menu")
