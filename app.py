@@ -1,3 +1,5 @@
+from curses import wrapper
+
 import streamlit as st
 import pandas as pd
 import os
@@ -481,6 +483,53 @@ st.markdown(
     </style>
     """,
     unsafe_allow_html=True
+
+    .league-st.table-wrapper {
+        background: linear-gradient(145deg, #101827, #05080f);
+        border: 1px solid rgba(245,197,66,0.45);
+        border-radius: 18px;
+        padding: 14px;
+        box-shadow: 0 0 28px rgba(245,197,66,0.08);
+        overflow-x: auto;
+    }
+
+    .league-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .league-table th {
+        color: #f5c542;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 14px 10px;
+        border-bottom: 1px solid rgba(245,197,66,0.45);
+        text-align: center;
+    }
+
+    .league-table td {
+        padding: 13px 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .league-table tr:hover {
+        background: rgba(245,197,66,0.08);
+    }
+
+    .league-table .player-name {
+        text-align: left;
+        font-size: 16px;
+    }
+
+    .league-table .points {
+        color: #f5c542;
+        font-size: 18px;
+        font-weight: 900;
+    }
 )
 
 def create_league_table_pdf(league_rows):
@@ -2181,11 +2230,65 @@ if page == "League":
             )
         )
 
-        st.dataframe(
-            styled_df,
-            hide_index=True,
-            use_container_width=True
+        table_html = """
+        <div class="league-table-wrapper">
+        <table class="league-table">
+        <thead>
+        <tr>
+        <th>Pos</th>
+        <th>Player</th>
+        <th>P</th>
+        <th>W</th>
+        <th>D</th>
+        <th>L</th>
+        <th>LF</th>
+        <th>LA</th>
+        <th>+/-</th>
+        <th>Avg</th>
+        <th>Pts</th>
+        </tr>
+        </thead>
+        <tbody>
+        """
+
+        for _, row in visible_df.iterrows():
+
+            medal = ""
+
+            if row["Pos"] == 1:
+                medal = "🥇 "
+            elif row["Pos"] == 2:
+                medal = "🥈 "
+            elif row["Pos"] == 3:
+                medal = "🥉 "
+
+            table_html += f"""
+            <tr>
+                <td>{row["Pos"]}</td>
+                <td class="player-name">{medal}{row["Player"]}</td>
+                <td>{row["P"]}</td>
+                <td>{row["W"]}</td>
+                <td>{row["D"]}</td>
+                <td>{row["L"]}</td>
+                <td>{row["LF"]}</td>
+                <td>{row["LA"]}</td>
+                <td>{row["+/-"]}</td>
+                <td>{row["Avg"]}</td>
+                <td class="points">{row["Pts"]}</td>
+            </tr>
+            """
+
+        table_html += """
+        </tbody>
+        </table>
+        </div>
+        """
+
+        st.markdown(
+            table_html,
+            unsafe_allow_html=True
         )
+        
 
         st.divider()
 
