@@ -2235,9 +2235,14 @@ if page == "League":
         visible_df["Form"] = "—"
         visible_df["Trend"] = "►"
 
-        visible_df.loc[0, "Pos"] = "🥇"
+        visible_df["Pos"] = visible_df["Pos"].astype(str)
+
+        if len(visible_df) > 0:
+            visible_df.loc[0, "Pos"] = "🥇"
+
         if len(visible_df) > 1:
             visible_df.loc[1, "Pos"] = "🥈"
+
         if len(visible_df) > 2:
             visible_df.loc[2, "Pos"] = "🥉"
 
