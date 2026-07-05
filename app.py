@@ -567,7 +567,9 @@ def get_sidebar_dashboard():
         "players_count": players_count,
         "played_count": played_count,
         "upcoming": upcoming_text,
-        "latest_result": latest_result_text
+        "latest_result": latest_result_text,
+        "TikTok Followers": "301",
+        "TikTok Likes": "2.1K"
     }
     
 # LOGIN
@@ -837,11 +839,15 @@ with st.sidebar:
         <b>🔥 Latest Result</b><br>
         {dashboard["latest_result"]}
 
+        <br>
+        <b>🎵 TikTok Followers:</b> {dashboard["tiktok_followers"]}<br>
+        <b>❤️ TikTok Likes:</b> {dashboard["tiktok_likes"]}<br>
+        
         </div>
         """,
         unsafe_allow_html=True
     )
-    
+
     st.markdown("---")
 
     st.markdown("## 🎯 Main Menu")
