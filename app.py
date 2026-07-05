@@ -162,6 +162,34 @@ def display_player_name(player):
 
     return player.name
 
+def dashboard_card(title, value, subtitle=""):
+
+    st.markdown(
+        f"""
+        <div class="royal-card">
+            <div class="royal-card-title">{title}</div>
+            <div class="royal-card-value">{value}</div>
+            <div class="royal-card-subtitle">{subtitle}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def match_card(title, line1, score_or_vs, line2):
+
+    st.markdown(
+        f"""
+        <div class="royal-card match-card">
+            <div class="royal-card-title">{title}</div>
+            <div class="match-player">{line1}</div>
+            <div class="match-score">{score_or_vs}</div>
+            <div class="match-player">{line2}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 def gold_card(title, body):
 
     st.markdown(
