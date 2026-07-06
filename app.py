@@ -2561,7 +2561,15 @@ if page == "Statistics":
 
 if page == "View Player":
 
-    st.header("🎯 Player Profile")
+    st.markdown(
+        """
+        <h1 style='text-align:center;'>🎴 Player Card</h1>
+        <p style='text-align:center; color:#bfc5d2; font-size:17px;'>
+            View player profile and performance
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
     player_id = st.session_state.get("view_player_id")
 
@@ -2584,25 +2592,6 @@ if page == "View Player":
 
         else:
 
-            col1, col2 = st.columns([1, 4])
-
-            with col1:
-
-                if player.logo_path and os.path.exists(player.logo_path):
-
-                    st.image(
-                        player.logo_path,
-                        width=120
-                    )
-
-            with col2:
-
-                st.subheader(player.name)
-
-                if player.nickname:
-
-                    st.write(f"Nickname: {player.nickname}")
-
             fixtures = db.query(Fixture).filter(
                 (
                     Fixture.player1_id == player_id
@@ -2618,7 +2607,7 @@ if page == "View Player":
             draws = 0
             losses = 0
             averages = []
-
+            recent_form = []
             results = []
             upcoming = []
 
@@ -2672,16 +2661,19 @@ if page == "View Player":
 
                         wins += 1
                         result_letter = "W"
+                        recent_form.append("🟢")
 
                     elif player_legs < opponent_legs:
 
                         losses += 1
                         result_letter = "L"
+                        recent_form.append("🔴")
 
                     else:
 
                         draws += 1
                         result_letter = "D"
+                        recent_form.append("🟡")
 
                     results.append(
                         {
@@ -2719,49 +2711,139 @@ if page == "View Player":
                     2
                 )
 
-            col1, col2, col3, col4 = st.columns(4)
+            overall_rating = int(
+                min(
+                    99,
+                    max(
+                        40,
+                        (
+                            win_pct * 0.45
+                            +
+                            avg * 0.45
+                            +
+                            played * 0.5
+                        )
+                    )
+                )
+            )
 
-            col1.metric("Win %", win_pct)
-            col2.metric("3 Dart Average", avg)
-            col3.metric("Played", played)
-            col4.metric("Wins", wins)
+            form_display = "".join(
+                recent_form[-5:]
+            )
 
-            col5, col6, col7 = st.columns(3)
+            if not form_display:
 
-            col5.metric("Draws", draws)
-            col6.metric("Losses", losses)
-            col7.metric("Remaining Fixtures", len(upcoming))
+                form_display = "No form yet"
 
-            st.divider()
+            col1, col2 = st.columns(
+                [1, 1.4]
+            )
 
-            st.subheader("Recent Results")
+            with col1:
 
-            if results:
+                if player.logo_path and os.path.exists(player.logo_path):
 
-                st.dataframe(
-                    pd.DataFrame(results),
-                    hide_index=True,
-                    use_container_width=True
+                    st.image(
+                        player.logo_path,
+                        width=180
+                    )
+
+                components.html(
+                    f"""
+                    <div style="
+                        background: linear-gradient(160deg, #2b2108, #05080f 55%, #111827);
+                        border: 2px solid #f5c542;
+                        border-radius: 28px;
+                        padding: 24px;
+                        text-align: center;
+                        box-shadow: 0 0 35px rgba(245,197,66,0.18);
+                        font-family: Arial, sans-serif;
+                    ">
+                        <div style="font-size:54px; font-weight:900; color:#f5c542;">
+                            {overall_rating}
+                        </div>
+
+                        <div style="color:#bfc5d2; font-weight:800; margin-bottom:16px;">
+                            OVR
+                        </div>
+
+                        <div style="font-size:28px; font-weight:900; color:white;">
+                            {display_player_name(player)}
+                        </div>
+
+                        <div style="color:#f5c542; font-size:15px; font-weight:700;">
+                            {player.name}
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; color:white; font-weight:800;">
+                            <div><span style="color:#f5c542;">AVG</span><br>{avg}</div>
+                            <div><span style="color:#f5c542;">WIN %</span><br>{win_pct}%</div>
+                            <div><span style="color:#f5c542;">WINS</span><br>{wins}</div>
+                            <div><span style="color:#f5c542;">PLAYED</span><br>{played}</div>
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
+
+                        <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
+                            Recent Form
+                        </div>
+
+                        <div style="font-size:24px; margin-top:6px;">
+                            {form_display}
+                        </div>
+                    </div>
+                    """,
+                    height=520
                 )
 
-            else:
+            with col2:
 
-                st.info("No results yet.")
+                st.markdown("### 📊 Player Stats")
 
-            st.divider()
+                c1, c2, c3 = st.columns(3)
 
-            st.subheader("Upcoming Fixtures")
+                c1.metric("Played", played)
+                c2.metric("Wins", wins)
+                c3.metric("Win %", f"{win_pct}%")
 
-            if upcoming:
+                c4, c5, c6 = st.columns(3)
 
-                st.dataframe(
-                    pd.DataFrame(upcoming),
-                    hide_index=True,
-                    use_container_width=True
-                )
+                c4.metric("Draws", draws)
+                c5.metric("Losses", losses)
+                c6.metric("3 Dart Avg", avg)
 
-            else:
+                st.divider()
 
-                st.info("No upcoming fixtures.")
+                st.subheader("🔥 Recent Results")
+
+                if results:
+
+                    st.dataframe(
+                        pd.DataFrame(results),
+                        hide_index=True,
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info("No results yet.")
+
+                st.divider()
+
+                st.subheader("📅 Upcoming Fixtures")
+
+                if upcoming:
+
+                    st.dataframe(
+                        pd.DataFrame(upcoming),
+                        hide_index=True,
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info("No upcoming fixtures.")
 
         db.close()
