@@ -706,118 +706,59 @@ if not st.session_state.logged_in:
 
     if "public_page" not in st.session_state:
         st.session_state.public_page = "Login"
-    
+
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
 
-    elif st.session_state.public_page == "League Table":
+    col1, col2, col3 = st.columns([1, 2, 1])
 
-        st.subheader("🏆 League Table")
+    with col2:
 
-    db = SessionLocal()
+        st.image("assets/royal_oak_logo.png", width=250)
+        st.title("Ye Royal Oak Darts League")
+        st.caption("Welcome to the official league portal")
 
-    players = db.query(Player).all()
+        public_col1, public_col2, public_col3 = st.columns(3)
 
-    fixtures = db.query(Fixture).filter(
-        Fixture.played == 1
-    ).all()
+        with public_col1:
+            if st.button("🔐 Login", use_container_width=True):
+                st.session_state.public_page = "Login"
 
-    table = {}
+        with public_col2:
+            if st.button("🏆 League Table", use_container_width=True):
+                st.session_state.public_page = "League Table"
 
-    for player in players:
+        with public_col3:
+            if st.button("📱 Socials", use_container_width=True):
+                st.session_state.public_page = "Socials"
 
-        table[player.id] = {
-            "player": player,
-            "played": 0,
-            "won": 0,
-            "drawn": 0,
-            "lost": 0,
-            "legs_for": 0,
-            "legs_against": 0,
-            "points": 0,
-            "averages": []
-        }
+        st.divider()
 
-    for fixture in fixtures:
+        if st.session_state.public_page == "Login":
 
-        if (
-            fixture.player1_id not in table
-            or fixture.player2_id not in table
-        ):
-            continue
+            # KEEP your existing login/create account code here
 
-        p1 = table[fixture.player1_id]
-        p2 = table[fixture.player2_id]
+        elif st.session_state.public_page == "League Table":
 
-        p1["played"] += 1
-        p2["played"] += 1
+            # PASTE the public league table code here
 
-        p1["legs_for"] += fixture.player1_legs
-        p1["legs_against"] += fixture.player2_legs
+        elif st.session_state.public_page == "Socials":
 
-        p2["legs_for"] += fixture.player2_legs
-        p2["legs_against"] += fixture.player1_legs
+            st.subheader("📱 Follow Ye Royal Oak Darts")
 
-        if fixture.player1_legs > fixture.player2_legs:
-            p1["won"] += 1
-            p1["points"] += 2
-            p2["lost"] += 1
+            st.link_button(
+                "📘 Facebook Community",
+                "https://www.facebook.com/groups/1063585262569763/",
+                use_container_width=True
+            )
 
-        elif fixture.player2_legs > fixture.player1_legs:
-            p2["won"] += 1
-            p2["points"] += 2
-            p1["lost"] += 1
+            st.link_button(
+                "🎵 TikTok Videos",
+                "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc",
+                use_container_width=True
+            )
 
-        else:
-            p1["drawn"] += 1
-            p2["drawn"] += 1
-            p1["points"] += 1
-            p2["points"] += 1
-
-    rows = []
-
-    for data in table.values():
-
-        rows.append({
-            "Player": display_player_name(data["player"]),
-            "P": data["played"],
-            "W": data["won"],
-            "D": data["drawn"],
-            "L": data["lost"],
-            "+/-": data["legs_for"] - data["legs_against"],
-            "Pts": data["points"]
-        })
-
-    rows = sorted(
-        rows,
-        key=lambda x: (
-            x["Pts"],
-            x["+/-"]
-        ),
-        reverse=True
-    )
-
-    if rows:
-
-        df = pd.DataFrame(rows)
-
-        df.insert(
-            0,
-            "Pos",
-            range(1, len(df) + 1)
-        )
-
-        st.dataframe(
-            df,
-            hide_index=True,
-            use_container_width=True
-        )
-
-    else:
-
-        st.info("No league table available yet.")
-
-    db.close()    
+    st.stop()   
 
     col1, col2, col3 = st.columns([1, 2, 1])
 
