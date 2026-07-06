@@ -721,15 +721,27 @@ if not st.session_state.logged_in:
         public_col1, public_col2, public_col3 = st.columns(3)
 
         with public_col1:
-            if st.button("🔐 Login", use_container_width=True):
+            if st.button(
+                "🔐 Login",
+                key="public_login_button",
+                use_container_width=True
+        ):
                 st.session_state.public_page = "Login"
 
         with public_col2:
-            if st.button("🏆 League Table", use_container_width=True):
+            if st.button(
+                "🏆 League Table",
+                key="public_league_button",
+                use_container_width=True
+            ):
                 st.session_state.public_page = "League Table"
 
         with public_col3:
-            if st.button("📱 Socials", use_container_width=True):
+            if st.button(
+                "📱 Socials",
+                key="public_socials_button",
+                use_container_width=True
+            ):
                 st.session_state.public_page = "Socials"
 
         st.divider()
@@ -739,11 +751,19 @@ if not st.session_state.logged_in:
             btn_col1, btn_col2 = st.columns(2)
 
             with btn_col1:
-                if st.button("🔐 Login", use_container_width=True):
+                if st.button(
+                    "🔐 Login",
+                    key="login_mode_button",
+                    use_container_width=True
+            ):
                     st.session_state.login_mode = "login"
 
             with btn_col2:
-                if st.button("🆕 Create Account", use_container_width=True):
+                if st.button(
+                    "🆕 Create Account",
+                    key="create_mode_button",
+                    use_container_width=True
+            ):
                     st.session_state.login_mode = "create"
 
             if st.session_state.login_mode == "login":
