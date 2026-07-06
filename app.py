@@ -710,6 +710,115 @@ if not st.session_state.logged_in:
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
 
+    elif st.session_state.public_page == "League Table":
+
+        st.subheader("🏆 League Table")
+
+    db = SessionLocal()
+
+    players = db.query(Player).all()
+
+    fixtures = db.query(Fixture).filter(
+        Fixture.played == 1
+    ).all()
+
+    table = {}
+
+    for player in players:
+
+        table[player.id] = {
+            "player": player,
+            "played": 0,
+            "won": 0,
+            "drawn": 0,
+            "lost": 0,
+            "legs_for": 0,
+            "legs_against": 0,
+            "points": 0,
+            "averages": []
+        }
+
+    for fixture in fixtures:
+
+        if (
+            fixture.player1_id not in table
+            or fixture.player2_id not in table
+        ):
+            continue
+
+        p1 = table[fixture.player1_id]
+        p2 = table[fixture.player2_id]
+
+        p1["played"] += 1
+        p2["played"] += 1
+
+        p1["legs_for"] += fixture.player1_legs
+        p1["legs_against"] += fixture.player2_legs
+
+        p2["legs_for"] += fixture.player2_legs
+        p2["legs_against"] += fixture.player1_legs
+
+        if fixture.player1_legs > fixture.player2_legs:
+            p1["won"] += 1
+            p1["points"] += 2
+            p2["lost"] += 1
+
+        elif fixture.player2_legs > fixture.player1_legs:
+            p2["won"] += 1
+            p2["points"] += 2
+            p1["lost"] += 1
+
+        else:
+            p1["drawn"] += 1
+            p2["drawn"] += 1
+            p1["points"] += 1
+            p2["points"] += 1
+
+    rows = []
+
+    for data in table.values():
+
+        rows.append({
+            "Player": display_player_name(data["player"]),
+            "P": data["played"],
+            "W": data["won"],
+            "D": data["drawn"],
+            "L": data["lost"],
+            "+/-": data["legs_for"] - data["legs_against"],
+            "Pts": data["points"]
+        })
+
+    rows = sorted(
+        rows,
+        key=lambda x: (
+            x["Pts"],
+            x["+/-"]
+        ),
+        reverse=True
+    )
+
+    if rows:
+
+        df = pd.DataFrame(rows)
+
+        df.insert(
+            0,
+            "Pos",
+            range(1, len(df) + 1)
+        )
+
+        st.dataframe(
+            df,
+            hide_index=True,
+            use_container_width=True
+        )
+
+    else:
+
+        st.info("No league table available yet.")
+
+    db.close()    
+
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
@@ -882,6 +991,7 @@ if not st.session_state.logged_in:
             else:
 
                 st.info("All players already have accounts.")
+
 
             db.close()
 
