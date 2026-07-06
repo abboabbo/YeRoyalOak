@@ -704,6 +704,9 @@ if "logged_in" not in st.session_state:
 
 if not st.session_state.logged_in:
 
+    if "public_page" not in st.session_state:
+        st.session_state.public_page = "Login"
+    
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
 
@@ -719,6 +722,22 @@ if not st.session_state.logged_in:
         st.title("Ye Royal Oak Darts League")
 
         st.caption("Welcome to the official league portal")
+
+        public_col1, public_col2, public_col3 = st.columns(3)
+
+        with public_col1:
+            if st.button("🔐 Login", use_container_width=True):
+                st.session_state.public_page = "Login"
+
+        with public_col2:
+            if st.button("🏆 League Table", use_container_width=True):
+                st.session_state.public_page = "League Table"
+
+        with public_col3:
+            if st.button("📱 Socials", use_container_width=True):
+                st.session_state.public_page = "Socials"
+
+        st.divider()
 
         btn_col1, btn_col2 = st.columns(2)
 
