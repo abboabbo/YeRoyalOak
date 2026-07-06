@@ -736,11 +736,197 @@ if not st.session_state.logged_in:
 
         if st.session_state.public_page == "Login":
 
-            # KEEP your existing login/create account code here
+            btn_col1, btn_col2 = st.columns(2)
+
+            with btn_col1:
+                if st.button("🔐 Login", use_container_width=True):
+                    st.session_state.login_mode = "login"
+
+            with btn_col2:
+                if st.button("🆕 Create Account", use_container_width=True):
+                    st.session_state.login_mode = "create"
+
+            if st.session_state.login_mode == "login":
+
+                st.subheader("Player Login")
+
+                username = st.text_input("Username", key="login_username")
+                password = st.text_input("Password", type="password", key="login_password")
+
+                if st.button("Enter League Portal", use_container_width=True):
+
+                    db = SessionLocal()
+
+                    user = db.query(User).filter(
+                        User.username == username,
+                        User.password == password
+                    ).first()
+
+                    db.close()
+
+                    if user:
+                        st.session_state.logged_in = True
+                        st.session_state.role = user.role
+                        st.session_state.username = user.username
+                        st.session_state.player_id = user.player_id
+                        st.rerun()
+                    else:
+                        st.error("Invalid login")
+
+            else:
+
+                st.subheader("Create Player Account")
+
+                db = SessionLocal()
+
+                players = db.query(Player).all()
+                users = db.query(User).all()
+
+                used_player_ids = [
+                    user.player_id
+                    for user in users
+                    if user.player_id
+                ]
+
+                available_players = {
+                    player.name: player.id
+                    for player in players
+                    if player.id not in used_player_ids
+                }
+
+                if available_players:
+
+                    new_username = st.text_input("Choose Username", key="create_user")
+                    new_password = st.text_input("Choose Password", type="password", key="create_pass")
+
+                    selected_player = st.selectbox(
+                        "Select Your Player Profile",
+                        list(available_players.keys()),
+                        key="create_player"
+                    )
+
+                    if st.button("Create Account", key="create_account_btn", use_container_width=True):
+
+                        existing_user = db.query(User).filter(
+                            User.username == new_username
+                        ).first()
+
+                        if existing_user:
+                            st.error("Username already exists.")
+                        elif not new_username or not new_password:
+                            st.error("Please enter a username and password.")
+                        else:
+                            user = User(
+                                username=new_username,
+                                password=new_password,
+                                role="viewer",
+                                player_id=available_players[selected_player]
+                            )
+
+                            db.add(user)
+                            db.commit()
+
+                            st.success("Account created successfully. You can now log in.")
+                            st.session_state.login_mode = "login"
+
+                else:
+                    st.info("All players already have accounts.")
+
+                db.close()
 
         elif st.session_state.public_page == "League Table":
 
-            # PASTE the public league table code here
+            st.subheader("🏆 League Table")
+
+            db = SessionLocal()
+
+            players = db.query(Player).all()
+            fixtures = db.query(Fixture).filter(Fixture.played == 1).all()
+
+            table = {}
+
+            for player in players:
+                table[player.id] = {
+                    "player": player,
+                    "played": 0,
+                    "won": 0,
+                    "drawn": 0,
+                    "lost": 0,
+                    "legs_for": 0,
+                    "legs_against": 0,
+                    "points": 0
+                }
+
+            for fixture in fixtures:
+
+                if fixture.player1_id not in table or fixture.player2_id not in table:
+                    continue
+
+                p1 = table[fixture.player1_id]
+                p2 = table[fixture.player2_id]
+
+                p1["played"] += 1
+                p2["played"] += 1
+
+                p1["legs_for"] += fixture.player1_legs
+                p1["legs_against"] += fixture.player2_legs
+
+                p2["legs_for"] += fixture.player2_legs
+                p2["legs_against"] += fixture.player1_legs
+
+                if fixture.player1_legs > fixture.player2_legs:
+                    p1["won"] += 1
+                    p1["points"] += 2
+                    p2["lost"] += 1
+                elif fixture.player2_legs > fixture.player1_legs:
+                    p2["won"] += 1
+                    p2["points"] += 2
+                    p1["lost"] += 1
+                else:
+                    p1["drawn"] += 1
+                    p2["drawn"] += 1
+                    p1["points"] += 1
+                    p2["points"] += 1
+
+            rows = []
+
+            for data in table.values():
+                rows.append({
+                    "Player": display_player_name(data["player"]),
+                    "P": data["played"],
+                    "W": data["won"],
+                    "D": data["drawn"],
+                    "L": data["lost"],
+                    "+/-": data["legs_for"] - data["legs_against"],
+                    "Pts": data["points"]
+                })
+
+            rows = sorted(
+                rows,
+                key=lambda x: (x["Pts"], x["+/-"]),
+                reverse=True
+            )
+
+            if rows:
+
+                df = pd.DataFrame(rows)
+
+                df.insert(
+                    0,
+                    "Pos",
+                    range(1, len(df) + 1)
+                )
+
+                st.dataframe(
+                    df,
+                    hide_index=True,
+                    use_container_width=True
+                )
+
+            else:
+                st.info("No league table available yet.")
+
+            db.close()
 
         elif st.session_state.public_page == "Socials":
 
