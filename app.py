@@ -699,6 +699,15 @@ def get_sidebar_dashboard():
     
 # LOGIN
 
+st.image(
+    "assets/royal_oak_logo.png",
+    width=250
+)
+
+st.title("Ye Royal Oak Darts League")
+
+st.caption("Welcome to the official league portal")
+
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -969,15 +978,6 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-
-        st.image(
-            "assets/royal_oak_logo.png",
-            width=250
-        )
-
-        st.title("Ye Royal Oak Darts League")
-
-        st.caption("Welcome to the official league portal")
 
         public_col1, public_col2, public_col3 = st.columns(3)
 
