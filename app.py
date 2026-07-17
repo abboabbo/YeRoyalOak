@@ -750,7 +750,42 @@ if not st.session_state.logged_in:
 
     public_db.close()
 
+    # ---------------------------------------------------------
+    # LANDING PAGE HEADER
+    # ---------------------------------------------------------
 
+    st.markdown(
+        """
+        <div style="text-align:center;">
+        """,
+        unsafe_allow_html=True,
+    )
+
+    logo_left, logo_centre, logo_right = st.columns([2, 1, 2])
+
+    with logo_centre:
+        st.image(
+            "assets/royal_oak_logo.png",
+            use_container_width=True
+        )
+
+    st.markdown(
+        """
+        <h1 style="text-align:center; margin-bottom:0;">
+            Ye Royal Oak Darts League
+        </h1>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:18px;
+            margin-top:8px;
+        ">
+            Official League Portal
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # ---------------------------------------------------------
     # PUBLIC NAVIGATION
