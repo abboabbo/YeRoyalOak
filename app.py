@@ -767,6 +767,10 @@ if not st.session_state.logged_in:
 
         st.markdown(
             """
+             <h1 style="text-align:center; margin-bottom:0;">
+                Ye Royal Oak Darts League
+            </h1>
+
             <h1 style="
                 text-align:center;
                 margin-bottom:0;
