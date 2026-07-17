@@ -750,44 +750,7 @@ if not st.session_state.logged_in:
 
     public_db.close()
 
-    # ---------------------------------------------------------
-    # LANDING PAGE HEADER
-    # ---------------------------------------------------------
 
-    header_left, header_centre, header_right = st.columns(
-        [1, 2, 1]
-    )
-
-    with header_centre:
-
-        st.image(
-            "assets/royal_oak_logo.png",
-            width=240
-        )
-
-        st.markdown(
-            """
-            <h1 style="text-align:center; margin-bottom:0;">
-            </h1>
-
-            <h1 style="
-                text-align:center;
-                margin-bottom:0;
-            ">
-                Ye Royal Oak Darts League
-            </h1>
-
-            <p style="
-                text-align:center;
-                color:#bfc5d2;
-                font-size:17px;
-                margin-top:5px;
-            ">
-                Official League Portal
-            </p>
-            """,
-            unsafe_allow_html=True
-        )
 
     # ---------------------------------------------------------
     # PUBLIC NAVIGATION
