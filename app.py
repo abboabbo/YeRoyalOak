@@ -710,247 +710,608 @@ if not st.session_state.logged_in:
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # ---------------------------------------------------------
+    # LOAD PUBLIC DASHBOARD INFORMATION
+    # ---------------------------------------------------------
 
-    with col2:
+    public_db = SessionLocal()
 
-        st.image("assets/royal_oak_logo.png", width=250)
-        st.title("Ye Royal Oak Darts League")
-        st.caption("Welcome to the official league portal")
+    public_players = public_db.query(Player).all()
 
-        public_col1, public_col2, public_col3 = st.columns(3)
+    public_player_lookup = {
+        player.id: display_player_name(player)
+        for player in public_players
+    }
 
-        with public_col1:
-            if st.button(
-                "🔐 Login",
-                key="public_login_button",
-                use_container_width=True
+    public_next_fixture = public_db.query(Fixture).filter(
+        Fixture.played == 0
+    ).order_by(
+        Fixture.round_number,
+        Fixture.id
+    ).first()
+
+    public_latest_result = public_db.query(Fixture).filter(
+        Fixture.played == 1
+    ).order_by(
+        Fixture.id.desc()
+    ).first()
+
+    public_latest_announcement = public_db.query(
+        Announcement
+    ).order_by(
+        Announcement.id.desc()
+    ).first()
+
+    public_players_count = len(public_players)
+
+    public_matches_played = public_db.query(Fixture).filter(
+        Fixture.played == 1
+    ).count()
+
+    public_db.close()
+
+    # ---------------------------------------------------------
+    # LANDING PAGE HEADER
+    # ---------------------------------------------------------
+
+    header_left, header_centre, header_right = st.columns(
+        [1, 2, 1]
+    )
+
+    with header_centre:
+
+        st.image(
+            "assets/royal_oak_logo.png",
+            width=240
+        )
+
+        st.markdown(
+            """
+            <h1 style="
+                text-align:center;
+                margin-bottom:0;
+            ">
+                Ye Royal Oak Darts League
+            </h1>
+
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:17px;
+                margin-top:5px;
+            ">
+                Official League Portal
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ---------------------------------------------------------
+    # PUBLIC NAVIGATION
+    # ---------------------------------------------------------
+
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
+
+    with nav_col1:
+
+        if st.button(
+            "🔐 Login",
+            key="landing_login_page",
+            use_container_width=True
         ):
-                st.session_state.public_page = "Login"
 
-        with public_col2:
-            if st.button(
-                "🏆 League Table",
-                key="public_league_button",
-                use_container_width=True
-            ):
-                st.session_state.public_page = "League Table"
+            st.session_state.public_page = "Login"
+            st.rerun()
 
-        with public_col3:
-            if st.button(
-                "📱 Socials",
-                key="public_socials_button",
-                use_container_width=True
-            ):
-                st.session_state.public_page = "Socials"
+    with nav_col2:
 
-        st.divider()
+        if st.button(
+            "🏆 League Table",
+            key="landing_league_page",
+            use_container_width=True
+        ):
 
-        if st.session_state.public_page == "Login":
+            st.session_state.public_page = "League Table"
+            st.rerun()
 
-            btn_col1, btn_col2 = st.columns(2)
+    with nav_col3:
 
-            with btn_col1:
+        if st.button(
+            "📱 Social Media",
+            key="landing_socials_page",
+            use_container_width=True
+        ):
+
+            st.session_state.public_page = "Socials"
+            st.rerun()
+
+    st.divider()
+
+    # ---------------------------------------------------------
+    # PUBLIC DASHBOARD CARDS
+    # ---------------------------------------------------------
+
+    stat_col1, stat_col2 = st.columns(2)
+
+    with stat_col1:
+
+        dashboard_card(
+            "👥 Registered Players",
+            public_players_count,
+            "Current league members"
+        )
+
+    with stat_col2:
+
+        dashboard_card(
+            "🎯 Matches Played",
+            public_matches_played,
+            "Completed league matches"
+        )
+
+    fixture_col, result_col = st.columns(2)
+
+    with fixture_col:
+
+        if public_next_fixture:
+
+            next_p1 = public_player_lookup.get(
+                public_next_fixture.player1_id,
+                "Unknown"
+            )
+
+            next_p2 = public_player_lookup.get(
+                public_next_fixture.player2_id,
+                "Unknown"
+            )
+
+            match_card(
+                "📅 Next Fixture",
+                next_p1,
+                f"Round {public_next_fixture.round_number}",
+                next_p2
+            )
+
+        else:
+
+            dashboard_card(
+                "📅 Next Fixture",
+                "None",
+                "No upcoming fixtures"
+            )
+
+    with result_col:
+
+        if public_latest_result:
+
+            result_p1 = public_player_lookup.get(
+                public_latest_result.player1_id,
+                "Unknown"
+            )
+
+            result_p2 = public_player_lookup.get(
+                public_latest_result.player2_id,
+                "Unknown"
+            )
+
+            match_card(
+                "🔥 Latest Result",
+                result_p1,
+                (
+                    f"{public_latest_result.player1_legs}"
+                    f" - "
+                    f"{public_latest_result.player2_legs}"
+                ),
+                result_p2
+            )
+
+        else:
+
+            dashboard_card(
+                "🔥 Latest Result",
+                "None",
+                "No completed results yet"
+            )
+
+    if public_latest_announcement:
+
+        dashboard_card(
+            "📢 Latest Announcement",
+            public_latest_announcement.title,
+            public_latest_announcement.message
+        )
+
+    st.divider()
+
+    # ---------------------------------------------------------
+    # LOGIN / CREATE ACCOUNT PAGE
+    # ---------------------------------------------------------
+
+    if st.session_state.public_page == "Login":
+
+        form_left, form_centre, form_right = st.columns(
+            [1, 1.5, 1]
+        )
+
+        with form_centre:
+
+            login_col, create_col = st.columns(2)
+
+            with login_col:
+
                 if st.button(
-                    "🔐 Login",
-                    key="login_mode_button",
+                    "🔐 Player Login",
+                    key="landing_login_mode",
                     use_container_width=True
-            ):
-                    st.session_state.login_mode = "login"
+                ):
 
-            with btn_col2:
+                    st.session_state.login_mode = "login"
+                    st.rerun()
+
+            with create_col:
+
                 if st.button(
                     "🆕 Create Account",
-                    key="create_mode_button",
+                    key="landing_create_mode",
                     use_container_width=True
-            ):
+                ):
+
                     st.session_state.login_mode = "create"
+                    st.rerun()
+
+            st.divider()
 
             if st.session_state.login_mode == "login":
 
-                st.subheader("Player Login")
+                st.markdown("### 🔐 Player Login")
 
-                username = st.text_input("Username", key="login_username")
-                password = st.text_input("Password", type="password", key="login_password")
+                username = st.text_input(
+                    "Username",
+                    key="landing_login_username"
+                )
 
-                if st.button("Enter League Portal", use_container_width=True):
+                password = st.text_input(
+                    "Password",
+                    type="password",
+                    key="landing_login_password"
+                )
 
-                    db = SessionLocal()
+                if st.button(
+                    "Enter League Portal",
+                    key="landing_enter_portal",
+                    use_container_width=True
+                ):
 
-                    user = db.query(User).filter(
+                    login_db = SessionLocal()
+
+                    user = login_db.query(User).filter(
                         User.username == username,
                         User.password == password
                     ).first()
 
-                    db.close()
-
                     if user:
+
                         st.session_state.logged_in = True
                         st.session_state.role = user.role
                         st.session_state.username = user.username
                         st.session_state.player_id = user.player_id
+                        st.session_state.page = "Home"
+
+                        login_db.close()
+
                         st.rerun()
+
                     else:
-                        st.error("Invalid login")
+
+                        login_db.close()
+
+                        st.error(
+                            "Incorrect username or password."
+                        )
 
             else:
 
-                st.subheader("Create Player Account")
+                st.markdown("### 🆕 Create Player Account")
 
-                db = SessionLocal()
+                create_db = SessionLocal()
 
-                players = db.query(Player).all()
-                users = db.query(User).all()
+                account_players = create_db.query(Player).all()
+                existing_users = create_db.query(User).all()
 
-                used_player_ids = [
+                used_player_ids = {
                     user.player_id
-                    for user in users
-                    if user.player_id
-                ]
+                    for user in existing_users
+                    if user.player_id is not None
+                }
 
                 available_players = {
                     player.name: player.id
-                    for player in players
+                    for player in account_players
                     if player.id not in used_player_ids
                 }
 
-                if available_players:
+                if not available_players:
 
-                    new_username = st.text_input("Choose Username", key="create_user")
-                    new_password = st.text_input("Choose Password", type="password", key="create_pass")
+                    st.info(
+                        "All player profiles already have accounts."
+                    )
+
+                else:
+
+                    new_username = st.text_input(
+                        "Choose Username",
+                        key="landing_create_username"
+                    )
+
+                    new_password = st.text_input(
+                        "Choose Password",
+                        type="password",
+                        key="landing_create_password"
+                    )
+
+                    confirm_password = st.text_input(
+                        "Confirm Password",
+                        type="password",
+                        key="landing_confirm_password"
+                    )
 
                     selected_player = st.selectbox(
                         "Select Your Player Profile",
                         list(available_players.keys()),
-                        key="create_player"
+                        key="landing_select_player"
                     )
 
-                    if st.button("Create Account", key="create_account_btn", use_container_width=True):
+                    if st.button(
+                        "Create My Account",
+                        key="landing_create_account",
+                        use_container_width=True
+                    ):
 
-                        existing_user = db.query(User).filter(
-                            User.username == new_username
+                        existing_username = create_db.query(
+                            User
+                        ).filter(
+                            User.username == new_username.strip()
                         ).first()
 
-                        if existing_user:
-                            st.error("Username already exists.")
-                        elif not new_username or not new_password:
-                            st.error("Please enter a username and password.")
-                        else:
-                            user = User(
-                                username=new_username,
-                                password=new_password,
-                                role="viewer",
-                                player_id=available_players[selected_player]
+                        if not new_username.strip():
+
+                            st.error(
+                                "Please choose a username."
                             )
 
-                            db.add(user)
-                            db.commit()
+                        elif not new_password:
 
-                            st.success("Account created successfully. You can now log in.")
+                            st.error(
+                                "Please choose a password."
+                            )
+
+                        elif len(new_password) < 6:
+
+                            st.error(
+                                "Password must contain at least 6 characters."
+                            )
+
+                        elif new_password != confirm_password:
+
+                            st.error(
+                                "The passwords do not match."
+                            )
+
+                        elif existing_username:
+
+                            st.error(
+                                "That username is already in use."
+                            )
+
+                        else:
+
+                            new_user = User(
+                                username=new_username.strip(),
+                                password=new_password,
+                                role="viewer",
+                                player_id=available_players[
+                                    selected_player
+                                ]
+                            )
+
+                            create_db.add(new_user)
+                            create_db.commit()
+
+                            st.success(
+                                "Account created successfully. "
+                                "You can now log in."
+                            )
+
                             st.session_state.login_mode = "login"
 
-                else:
-                    st.info("All players already have accounts.")
+                            create_db.close()
 
-                db.close()
+                            st.rerun()
 
-        elif st.session_state.public_page == "League Table":
+                create_db.close()
 
-            st.subheader("🏆 League Table")
+    # ---------------------------------------------------------
+    # PUBLIC LEAGUE TABLE
+    # ---------------------------------------------------------
 
-            db = SessionLocal()
+    elif st.session_state.public_page == "League Table":
 
-            players = db.query(Player).all()
-            fixtures = db.query(Fixture).filter(Fixture.played == 1).all()
+        st.markdown(
+            """
+            <h2 style="text-align:center;">
+                🏆 Current League Table
+            </h2>
+            """,
+            unsafe_allow_html=True
+        )
 
-            table = {}
+        league_db = SessionLocal()
 
-            for player in players:
-                table[player.id] = {
-                    "player": player,
-                    "played": 0,
-                    "won": 0,
-                    "drawn": 0,
-                    "lost": 0,
-                    "legs_for": 0,
-                    "legs_against": 0,
-                    "points": 0
-                }
+        league_players = league_db.query(Player).all()
 
-            for fixture in fixtures:
+        completed_fixtures = league_db.query(Fixture).filter(
+            Fixture.played == 1
+        ).all()
 
-                if fixture.player1_id not in table or fixture.player2_id not in table:
-                    continue
+        public_table = {}
 
-                p1 = table[fixture.player1_id]
-                p2 = table[fixture.player2_id]
+        for player in league_players:
 
-                p1["played"] += 1
-                p2["played"] += 1
+            public_table[player.id] = {
+                "player": player,
+                "played": 0,
+                "won": 0,
+                "drawn": 0,
+                "lost": 0,
+                "legs_for": 0,
+                "legs_against": 0,
+                "points": 0
+            }
 
-                p1["legs_for"] += fixture.player1_legs
-                p1["legs_against"] += fixture.player2_legs
+        for fixture in completed_fixtures:
 
-                p2["legs_for"] += fixture.player2_legs
-                p2["legs_against"] += fixture.player1_legs
+            if (
+                fixture.player1_id not in public_table
+                or fixture.player2_id not in public_table
+            ):
 
-                if fixture.player1_legs > fixture.player2_legs:
-                    p1["won"] += 1
-                    p1["points"] += 2
-                    p2["lost"] += 1
-                elif fixture.player2_legs > fixture.player1_legs:
-                    p2["won"] += 1
-                    p2["points"] += 2
-                    p1["lost"] += 1
-                else:
-                    p1["drawn"] += 1
-                    p2["drawn"] += 1
-                    p1["points"] += 1
-                    p2["points"] += 1
+                continue
 
-            rows = []
+            p1 = public_table[fixture.player1_id]
+            p2 = public_table[fixture.player2_id]
 
-            for data in table.values():
-                rows.append({
-                    "Player": display_player_name(data["player"]),
-                    "P": data["played"],
-                    "W": data["won"],
-                    "D": data["drawn"],
-                    "L": data["lost"],
-                    "+/-": data["legs_for"] - data["legs_against"],
-                    "Pts": data["points"]
-                })
+            p1["played"] += 1
+            p2["played"] += 1
 
-            rows = sorted(
-                rows,
-                key=lambda x: (x["Pts"], x["+/-"]),
-                reverse=True
-            )
+            p1["legs_for"] += fixture.player1_legs
+            p1["legs_against"] += fixture.player2_legs
 
-            if rows:
+            p2["legs_for"] += fixture.player2_legs
+            p2["legs_against"] += fixture.player1_legs
 
-                df = pd.DataFrame(rows)
+            if fixture.player1_legs > fixture.player2_legs:
 
-                df.insert(
-                    0,
-                    "Pos",
-                    range(1, len(df) + 1)
-                )
+                p1["won"] += 1
+                p1["points"] += 2
+                p2["lost"] += 1
 
-                st.dataframe(
-                    df,
-                    hide_index=True,
-                    use_container_width=True
-                )
+            elif fixture.player2_legs > fixture.player1_legs:
+
+                p2["won"] += 1
+                p2["points"] += 2
+                p1["lost"] += 1
 
             else:
-                st.info("No league table available yet.")
 
-            db.close()
+                p1["drawn"] += 1
+                p2["drawn"] += 1
 
-        elif st.session_state.public_page == "Socials":
+                p1["points"] += 1
+                p2["points"] += 1
 
-            st.subheader("📱 Follow Ye Royal Oak Darts")
+        public_rows = []
+
+        for table_data in public_table.values():
+
+            public_rows.append(
+                {
+                    "Player": display_player_name(
+                        table_data["player"]
+                    ),
+                    "P": table_data["played"],
+                    "W": table_data["won"],
+                    "D": table_data["drawn"],
+                    "L": table_data["lost"],
+                    "LF": table_data["legs_for"],
+                    "LA": table_data["legs_against"],
+                    "+/-": (
+                        table_data["legs_for"]
+                        -
+                        table_data["legs_against"]
+                    ),
+                    "Pts": table_data["points"]
+                }
+            )
+
+        public_rows = sorted(
+            public_rows,
+            key=lambda row: (
+                row["Pts"],
+                row["+/-"],
+                row["W"]
+            ),
+            reverse=True
+        )
+
+        if public_rows:
+
+            public_league_df = pd.DataFrame(
+                public_rows
+            )
+
+            public_league_df.insert(
+                0,
+                "Pos",
+                range(
+                    1,
+                    len(public_league_df) + 1
+                )
+            )
+
+            public_league_df["Pos"] = (
+                public_league_df["Pos"].astype(str)
+            )
+
+            if len(public_league_df) > 0:
+                public_league_df.loc[0, "Pos"] = "🥇"
+
+            if len(public_league_df) > 1:
+                public_league_df.loc[1, "Pos"] = "🥈"
+
+            if len(public_league_df) > 2:
+                public_league_df.loc[2, "Pos"] = "🥉"
+
+            st.dataframe(
+                public_league_df,
+                hide_index=True,
+                use_container_width=True
+            )
+
+        else:
+
+            st.info(
+                "The league table will appear after results are entered."
+            )
+
+        league_db.close()
+
+    # ---------------------------------------------------------
+    # SOCIAL MEDIA PAGE
+    # ---------------------------------------------------------
+
+    elif st.session_state.public_page == "Socials":
+
+        socials_left, socials_centre, socials_right = st.columns(
+            [1, 1.5, 1]
+        )
+
+        with socials_centre:
+
+            st.markdown(
+                """
+                <h2 style="text-align:center;">
+                    📱 Follow The League
+                </h2>
+
+                <p style="
+                    text-align:center;
+                    color:#bfc5d2;
+                ">
+                    Keep up with league news, videos and results.
+                </p>
+                """,
+                unsafe_allow_html=True
+            )
 
             st.link_button(
                 "📘 Facebook Community",
