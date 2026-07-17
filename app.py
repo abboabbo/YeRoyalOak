@@ -1687,6 +1687,582 @@ with st.sidebar:
             unsafe_allow_html=True
         )
 
+# =========================================================
+# ADMIN: PLAYERS
+# =========================================================
+
+if page == "Players":
+
+    if not is_admin:
+        st.error("Administrator access is required.")
+
+    else:
+        st.header("➕ Player Management")
+
+        db = SessionLocal()
+
+        st.subheader("Add New Player")
+
+        name = st.text_input(
+            "Player Name",
+            key="admin_add_player_name"
+        )
+
+        nickname = st.text_input(
+            "Nickname",
+            key="admin_add_player_nickname"
+        )
+
+        logo = st.file_uploader(
+            "Player Logo",
+            type=["png", "jpg", "jpeg"],
+            key="admin_add_player_logo"
+        )
+
+        if st.button(
+            "➕ Add Player",
+            key="admin_add_player_button",
+            use_container_width=True
+        ):
+
+            if not name.strip():
+                st.error("Please enter the player's name.")
+
+            elif logo is None:
+                st.error("Please upload a player logo.")
+
+            else:
+                os.makedirs(
+                    "assets/logos",
+                    exist_ok=True
+                )
+
+                safe_filename = (
+                    f"player_{logo.name}"
+                )
+
+                logo_path = os.path.join(
+                    "assets/logos",
+                    safe_filename
+                )
+
+                with open(logo_path, "wb") as file:
+                    file.write(logo.getbuffer())
+
+                new_player = Player(
+                    name=name.strip(),
+                    nickname=nickname.strip(),
+                    logo_path=logo_path
+                )
+
+                db.add(new_player)
+                db.commit()
+
+                if "league_standings" in st.session_state:
+                    del st.session_state["league_standings"]
+
+                db.close()
+
+                st.success("Player added successfully.")
+                st.rerun()
+
+        st.divider()
+        st.subheader("Current Players")
+
+        players = db.query(Player).order_by(
+            Player.name
+        ).all()
+
+        if not players:
+            st.info("No players have been added yet.")
+
+        for player in players:
+
+            player_title = display_player_name(player)
+
+            with st.expander(
+                f"🎯 {player_title} — Player ID {player.id}"
+            ):
+
+                info_col, edit_col = st.columns(
+                    [1, 3]
+                )
+
+                with info_col:
+
+                    if (
+                        player.logo_path
+                        and os.path.exists(player.logo_path)
+                    ):
+                        st.image(
+                            player.logo_path,
+                            width=130
+                        )
+                    else:
+                        st.info("No logo")
+
+                with edit_col:
+
+                    with st.form(
+                        key=f"admin_player_form_{player.id}"
+                    ):
+
+                        updated_name = st.text_input(
+                            "Player Name",
+                            value=player.name or "",
+                            key=f"admin_player_name_{player.id}"
+                        )
+
+                        updated_nickname = st.text_input(
+                            "Nickname",
+                            value=player.nickname or "",
+                            key=f"admin_player_nickname_{player.id}"
+                        )
+
+                        updated_logo = st.file_uploader(
+                            "Upload Replacement Logo",
+                            type=["png", "jpg", "jpeg"],
+                            key=f"admin_player_logo_{player.id}"
+                        )
+
+                        save_player = st.form_submit_button(
+                            "💾 Save Changes",
+                            use_container_width=True
+                        )
+
+                    if save_player:
+
+                        edit_db = SessionLocal()
+
+                        target_player = edit_db.get(
+                            Player,
+                            player.id
+                        )
+
+                        if not target_player:
+                            edit_db.close()
+                            st.error("Player could not be found.")
+
+                        elif not updated_name.strip():
+                            edit_db.close()
+                            st.error("Player name cannot be empty.")
+
+                        else:
+                            target_player.name = (
+                                updated_name.strip()
+                            )
+
+                            target_player.nickname = (
+                                updated_nickname.strip()
+                            )
+
+                            if updated_logo is not None:
+
+                                os.makedirs(
+                                    "assets/logos",
+                                    exist_ok=True
+                                )
+
+                                replacement_path = os.path.join(
+                                    "assets/logos",
+                                    f"player_{player.id}_{updated_logo.name}"
+                                )
+
+                                with open(
+                                    replacement_path,
+                                    "wb"
+                                ) as file:
+                                    file.write(
+                                        updated_logo.getbuffer()
+                                    )
+
+                                target_player.logo_path = (
+                                    replacement_path
+                                )
+
+                            edit_db.commit()
+                            edit_db.close()
+
+                            if "league_standings" in st.session_state:
+                                del st.session_state[
+                                    "league_standings"
+                                ]
+
+                            st.success(
+                                f"{updated_name.strip()} updated."
+                            )
+
+                            st.rerun()
+
+                st.divider()
+
+                if st.button(
+                    "🗑 Delete Player",
+                    key=f"admin_delete_player_{player.id}",
+                    use_container_width=True
+                ):
+
+                    delete_db = SessionLocal()
+
+                    linked_users = delete_db.query(User).filter(
+                        User.player_id == player.id
+                    ).all()
+
+                    linked_fixtures = delete_db.query(Fixture).filter(
+                        (
+                            Fixture.player1_id == player.id
+                        )
+                        |
+                        (
+                            Fixture.player2_id == player.id
+                        )
+                    ).count()
+
+                    if linked_users:
+                        st.error(
+                            "This player is linked to a user account. "
+                            "Remove or reassign that account first."
+                        )
+
+                    elif linked_fixtures > 0:
+                        st.error(
+                            "This player has fixtures and cannot be "
+                            "deleted safely."
+                        )
+
+                    else:
+                        target_player = delete_db.get(
+                            Player,
+                            player.id
+                        )
+
+                        if target_player:
+                            delete_db.delete(target_player)
+                            delete_db.commit()
+
+                        if "league_standings" in st.session_state:
+                            del st.session_state[
+                                "league_standings"
+                            ]
+
+                        delete_db.close()
+
+                        st.success("Player deleted.")
+                        st.rerun()
+
+                    delete_db.close()
+
+        db.close()
+
+# =========================================================
+# ADMIN: USERS
+# =========================================================
+
+if page == "Users":
+
+    if not is_admin:
+        st.error("Administrator access is required.")
+
+    else:
+        st.header("👥 User Account Management")
+
+        db = SessionLocal()
+
+        players = db.query(Player).order_by(
+            Player.name
+        ).all()
+
+        player_options = {
+            display_player_name(player): player.id
+            for player in players
+        }
+
+        st.subheader("Create User")
+
+        new_username = st.text_input(
+            "Username",
+            key="admin_new_username"
+        )
+
+        new_password = st.text_input(
+            "Password",
+            type="password",
+            key="admin_new_password"
+        )
+
+        new_role = st.selectbox(
+            "Account Role",
+            ["viewer", "admin"],
+            key="admin_new_role"
+        )
+
+        linked_player_options = {
+            "No linked player": None,
+            **player_options
+        }
+
+        selected_player_name = st.selectbox(
+            "Linked Player",
+            list(linked_player_options.keys()),
+            key="admin_new_linked_player"
+        )
+
+        if st.button(
+            "➕ Create User",
+            key="admin_create_user_button",
+            use_container_width=True
+        ):
+
+            username_clean = new_username.strip()
+
+            existing_user = db.query(User).filter(
+                User.username == username_clean
+            ).first()
+
+            selected_player_id = linked_player_options[
+                selected_player_name
+            ]
+
+            player_already_linked = None
+
+            if selected_player_id is not None:
+                player_already_linked = db.query(User).filter(
+                    User.player_id == selected_player_id
+                ).first()
+
+            if not username_clean:
+                st.error("Please enter a username.")
+
+            elif not new_password:
+                st.error("Please enter a password.")
+
+            elif len(new_password) < 6:
+                st.error(
+                    "Password must contain at least six characters."
+                )
+
+            elif existing_user:
+                st.error("That username already exists.")
+
+            elif player_already_linked:
+                st.error(
+                    "That player is already linked to another account."
+                )
+
+            else:
+                new_user = User(
+                    username=username_clean,
+                    password=new_password,
+                    role=new_role,
+                    player_id=selected_player_id
+                )
+
+                db.add(new_user)
+                db.commit()
+                db.close()
+
+                st.success("User account created.")
+                st.rerun()
+
+        st.divider()
+        st.subheader("Current Users")
+
+        users = db.query(User).order_by(
+            User.username
+        ).all()
+
+        if not users:
+            st.info("No user accounts were found.")
+
+        for user in users:
+
+            linked_player = None
+
+            if user.player_id is not None:
+                linked_player = db.get(
+                    Player,
+                    user.player_id
+                )
+
+            linked_name = (
+                display_player_name(linked_player)
+                if linked_player
+                else "No linked player"
+            )
+
+            with st.expander(
+                f"👤 {user.username} — {user.role}"
+            ):
+
+                st.write(f"**Linked player:** {linked_name}")
+
+                editable_player_options = {
+                    "No linked player": None,
+                    **player_options
+                }
+
+                current_player_name = "No linked player"
+
+                for option_name, option_id in (
+                    editable_player_options.items()
+                ):
+                    if option_id == user.player_id:
+                        current_player_name = option_name
+                        break
+
+                option_names = list(
+                    editable_player_options.keys()
+                )
+
+                current_player_index = option_names.index(
+                    current_player_name
+                )
+
+                edited_role = st.selectbox(
+                    "Role",
+                    ["viewer", "admin"],
+                    index=(
+                        1
+                        if str(user.role).lower() == "admin"
+                        else 0
+                    ),
+                    key=f"admin_edit_role_{user.id}"
+                )
+
+                edited_player_name = st.selectbox(
+                    "Linked Player",
+                    option_names,
+                    index=current_player_index,
+                    key=f"admin_edit_player_{user.id}"
+                )
+
+                new_user_password = st.text_input(
+                    "New Password",
+                    type="password",
+                    help=(
+                        "Leave blank to keep the existing password."
+                    ),
+                    key=f"admin_edit_password_{user.id}"
+                )
+
+                action_col1, action_col2 = st.columns(2)
+
+                with action_col1:
+
+                    if st.button(
+                        "💾 Save User",
+                        key=f"admin_save_user_{user.id}",
+                        use_container_width=True
+                    ):
+
+                        edit_db = SessionLocal()
+
+                        target_user = edit_db.get(
+                            User,
+                            user.id
+                        )
+
+                        selected_player_id = (
+                            editable_player_options[
+                                edited_player_name
+                            ]
+                        )
+
+                        conflicting_user = None
+
+                        if selected_player_id is not None:
+                            conflicting_user = (
+                                edit_db.query(User).filter(
+                                    User.player_id
+                                    == selected_player_id,
+                                    User.id != user.id
+                                ).first()
+                            )
+
+                        if not target_user:
+                            st.error(
+                                "The user account could not be found."
+                            )
+
+                        elif conflicting_user:
+                            st.error(
+                                "That player is already linked to "
+                                "another account."
+                            )
+
+                        elif (
+                            new_user_password
+                            and len(new_user_password) < 6
+                        ):
+                            st.error(
+                                "The new password must contain at "
+                                "least six characters."
+                            )
+
+                        else:
+                            target_user.role = edited_role
+                            target_user.player_id = (
+                                selected_player_id
+                            )
+
+                            if new_user_password:
+                                target_user.password = (
+                                    new_user_password
+                                )
+
+                            edit_db.commit()
+
+                            if (
+                                user.username
+                                == st.session_state.get("username")
+                            ):
+                                st.session_state.role = edited_role
+                                st.session_state.player_id = (
+                                    selected_player_id
+                                )
+
+                            st.success("User updated.")
+                            st.rerun()
+
+                        edit_db.close()
+
+                with action_col2:
+
+                    if st.button(
+                        "🗑 Delete User",
+                        key=f"admin_delete_user_{user.id}",
+                        use_container_width=True
+                    ):
+
+                        if (
+                            user.username
+                            == st.session_state.get("username")
+                        ):
+                            st.error(
+                                "You cannot delete the account "
+                                "you are currently using."
+                            )
+
+                        else:
+                            delete_db = SessionLocal()
+
+                            target_user = delete_db.get(
+                                User,
+                                user.id
+                            )
+
+                            if target_user:
+                                delete_db.delete(target_user)
+                                delete_db.commit()
+
+                            delete_db.close()
+
+                            st.success("User account deleted.")
+                            st.rerun()
+
+        db.close()
+
+
 if page == "Home":
 
     st.markdown(
