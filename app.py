@@ -2143,6 +2143,7 @@ if page == "Tournaments":
             [
                 "Best of 3",
                 "Best of 5",
+                "Best of 6",
                 "Best of 7",
                 "Best of 9",
                 "Best of 11"
