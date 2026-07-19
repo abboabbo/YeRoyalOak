@@ -3961,11 +3961,29 @@ if page == "League":
 
             st.markdown("### 📄 Export")
 
+            pdf_rows = []
+
+        for position, row in enumerate(rows, start=1):
+
+            pdf_rows.append(
+                {
+                "Pos": position,
+                "Player": row["Player"],
+                "Played": row["Played"],
+                "Won": row["Won"],
+                "Drawn": row["Drawn"],
+                "Lost": row["Lost"],
+                "Legs For": row["Legs For"],
+                "Legs Against": row["Legs Against"],
+                "Difference": row["Difference"],
+                "3 Dart Average": row["3 Dart Average"],
+                "Points": row["Points"]
+            }
+        )
+
             league_pdf = create_league_table_pdf(
-                visible_df.to_dict(
-                    orient="records"
-                )
-            )
+                pdf_rows
+        )
 
             st.download_button(
                 "Download League Table PDF",
