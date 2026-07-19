@@ -2094,6 +2094,347 @@ if page == "Users":
 
         db.close()
 
+# =========================================================
+# ADMIN: TOURNAMENTS
+# =========================================================
+
+if page == "Tournaments":
+
+    if not is_admin:
+        st.error("Administrator access is required.")
+
+    else:
+        st.header("🏆 Tournament Management")
+
+        db = SessionLocal()
+
+        all_players = db.query(Player).order_by(
+            Player.name
+        ).all()
+
+        player_options = {
+            display_player_name(player): player.id
+            for player in all_players
+        }
+
+        # -----------------------------------------------------
+        # CREATE TOURNAMENT
+        # -----------------------------------------------------
+
+        st.subheader("Create Tournament")
+
+        tournament_name = st.text_input(
+            "Tournament Name",
+            key="admin_tournament_name"
+        )
+
+        format_type = st.selectbox(
+            "Tournament Format",
+            [
+                "League + Knockout",
+                "League Only",
+                "Knockout Only"
+            ],
+            key="admin_tournament_format"
+        )
+
+        legs_format = st.selectbox(
+            "Match Format",
+            [
+                "Best of 3",
+                "Best of 5",
+                "Best of 7",
+                "Best of 9",
+                "Best of 11"
+            ],
+            key="admin_tournament_legs"
+        )
+
+        selected_players = st.multiselect(
+            "Select Players",
+            list(player_options.keys()),
+            key="admin_tournament_players"
+        )
+
+        if st.button(
+            "🏆 Create Tournament",
+            key="admin_create_tournament",
+            use_container_width=True
+        ):
+
+            clean_name = tournament_name.strip()
+
+            existing_tournament = db.query(Tournament).filter(
+                Tournament.name == clean_name
+            ).first()
+
+            if not clean_name:
+                st.error("Please enter a tournament name.")
+
+            elif existing_tournament:
+                st.error(
+                    "A tournament with that name already exists."
+                )
+
+            elif len(selected_players) < 2:
+                st.error(
+                    "Please select at least two players."
+                )
+
+            else:
+                tournament = Tournament(
+                    name=clean_name,
+                    format_type=format_type,
+                    legs_format=legs_format
+                )
+
+                db.add(tournament)
+                db.commit()
+                db.refresh(tournament)
+
+                for player_name in selected_players:
+
+                    link = TournamentPlayer(
+                        tournament_id=tournament.id,
+                        player_id=player_options[player_name]
+                    )
+
+                    db.add(link)
+
+                db.commit()
+                db.close()
+
+                st.success("Tournament created successfully.")
+                st.rerun()
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # EXISTING TOURNAMENTS
+        # -----------------------------------------------------
+
+        st.subheader("Existing Tournaments")
+
+        tournaments = db.query(Tournament).order_by(
+            Tournament.id.desc()
+        ).all()
+
+        if not tournaments:
+            st.info("No tournaments have been created yet.")
+
+        for tournament in tournaments:
+
+            tournament_links = db.query(
+                TournamentPlayer
+            ).filter(
+                TournamentPlayer.tournament_id == tournament.id
+            ).all()
+
+            tournament_player_ids = [
+                link.player_id
+                for link in tournament_links
+            ]
+
+            tournament_players = [
+                player
+                for player in all_players
+                if player.id in tournament_player_ids
+            ]
+
+            player_names = [
+                display_player_name(player)
+                for player in tournament_players
+            ]
+
+            fixtures_count = db.query(Fixture).filter(
+                Fixture.tournament_id == tournament.id
+            ).count()
+
+            played_count = db.query(Fixture).filter(
+                Fixture.tournament_id == tournament.id,
+                Fixture.played == 1
+            ).count()
+
+            with st.expander(
+                f"🏆 {tournament.name}",
+                expanded=False
+            ):
+
+                info_col1, info_col2, info_col3 = st.columns(3)
+
+                with info_col1:
+                    st.metric(
+                        "Players",
+                        len(tournament_player_ids)
+                    )
+
+                with info_col2:
+                    st.metric(
+                        "Fixtures",
+                        fixtures_count
+                    )
+
+                with info_col3:
+                    st.metric(
+                        "Played",
+                        played_count
+                    )
+
+                st.write(
+                    f"**Format:** {tournament.format_type}"
+                )
+
+                st.write(
+                    f"**Match format:** {tournament.legs_format}"
+                )
+
+                if player_names:
+                    st.write(
+                        "**Players:** "
+                        + ", ".join(player_names)
+                    )
+                else:
+                    st.warning(
+                        "No players are linked to this tournament."
+                    )
+
+                st.divider()
+
+                action_col1, action_col2 = st.columns(2)
+
+                # ---------------------------------------------
+                # GENERATE FIXTURES
+                # ---------------------------------------------
+
+                with action_col1:
+
+                    if st.button(
+                        "🎯 Generate Fixtures",
+                        key=f"admin_generate_fixtures_{tournament.id}",
+                        use_container_width=True
+                    ):
+
+                        if fixtures_count > 0:
+                            st.warning(
+                                "Fixtures have already been generated "
+                                "for this tournament."
+                            )
+
+                        elif len(tournament_player_ids) < 2:
+                            st.error(
+                                "At least two players are required."
+                            )
+
+                        elif tournament.format_type == "Knockout Only":
+                            st.info(
+                                "Knockout-only tournament selected. "
+                                "League fixtures were not generated."
+                            )
+
+                        else:
+                            generated_fixtures = generate_round_robin(
+                                tournament_player_ids
+                            )
+
+                            fixture_db = SessionLocal()
+
+                            for (
+                                round_number,
+                                player1_id,
+                                player2_id
+                            ) in generated_fixtures:
+
+                                fixture = Fixture(
+                                    tournament_id=tournament.id,
+                                    round_number=round_number,
+                                    player1_id=player1_id,
+                                    player2_id=player2_id,
+                                    played=0
+                                )
+
+                                fixture_db.add(fixture)
+
+                            fixture_db.commit()
+                            fixture_db.close()
+
+                            st.success(
+                                "Fixtures generated successfully."
+                            )
+
+                            st.rerun()
+
+                # ---------------------------------------------
+                # DELETE TOURNAMENT
+                # ---------------------------------------------
+
+                with action_col2:
+
+                    confirm_delete = st.checkbox(
+                        "Confirm deletion",
+                        key=f"confirm_tournament_delete_{tournament.id}"
+                    )
+
+                    if st.button(
+                        "🗑 Delete Tournament",
+                        key=f"admin_delete_tournament_{tournament.id}",
+                        use_container_width=True
+                    ):
+
+                        if not confirm_delete:
+                            st.warning(
+                                "Tick Confirm deletion first."
+                            )
+
+                        else:
+                            delete_db = SessionLocal()
+
+                            delete_db.query(Fixture).filter(
+                                Fixture.tournament_id
+                                == tournament.id
+                            ).delete(
+                                synchronize_session=False
+                            )
+
+                            delete_db.query(KnockoutMatch).filter(
+                                KnockoutMatch.tournament_id
+                                == tournament.id
+                            ).delete(
+                                synchronize_session=False
+                            )
+
+                            delete_db.query(TournamentPlayer).filter(
+                                TournamentPlayer.tournament_id
+                                == tournament.id
+                            ).delete(
+                                synchronize_session=False
+                            )
+
+                            target_tournament = delete_db.get(
+                                Tournament,
+                                tournament.id
+                            )
+
+                            if target_tournament:
+                                delete_db.delete(
+                                    target_tournament
+                                )
+
+                            delete_db.commit()
+                            delete_db.close()
+
+                            if "league_standings" in st.session_state:
+                                del st.session_state[
+                                    "league_standings"
+                                ]
+
+                            st.success(
+                                "Tournament deleted successfully."
+                            )
+
+                            st.rerun()
+
+        db.close()
+
 if page == "Home":
 
     st.markdown(
