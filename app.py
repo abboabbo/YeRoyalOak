@@ -3992,7 +3992,7 @@ if page == "League":
                 mime="application/pdf",
                 key="download_league_table_pdf",
                 use_container_width=True
-            )
+        )
 
     else:
 
