@@ -3786,11 +3786,129 @@ if page == "League":
 
         st.divider()
 
-                # =====================================================
-        # STYLED LEAGUE TABLE
+        # =====================================================
+        # MODERN SPORTS STANDINGS
         # =====================================================
 
-        visible_rows = []
+        st.markdown(
+            """
+            <style>
+            .standings-header {
+                background: linear-gradient(90deg, #2b220b, #111827);
+                border: 1px solid rgba(245, 197, 66, 0.55);
+                border-radius: 14px;
+                padding: 12px 10px;
+                margin-bottom: 8px;
+                color: #f5c542;
+                font-size: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+            }
+
+            .standings-row {
+                background: linear-gradient(90deg, #151d2a, #080d15);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 14px;
+                padding: 10px;
+                margin-bottom: 8px;
+                transition: 0.2s ease;
+            }
+
+            .standings-row:hover {
+                border-color: rgba(245, 197, 66, 0.55);
+                transform: translateY(-1px);
+                box-shadow: 0 7px 18px rgba(0, 0, 0, 0.3);
+            }
+
+            .standings-leader {
+                background: linear-gradient(90deg, #4a390c, #151923);
+                border-color: rgba(245, 197, 66, 0.85);
+                box-shadow: 0 0 20px rgba(245, 197, 66, 0.08);
+            }
+
+            .standings-position {
+                font-size: 21px;
+                font-weight: 900;
+                color: #f5c542;
+                text-align: center;
+                padding-top: 7px;
+            }
+
+            .standings-player {
+                color: white;
+                font-size: 17px;
+                font-weight: 900;
+                padding-top: 7px;
+            }
+
+            .standings-stat {
+                color: #e6e9ef;
+                font-size: 15px;
+                font-weight: 800;
+                text-align: center;
+                padding-top: 8px;
+            }
+
+            .standings-average {
+                color: #7dd3fc;
+            }
+
+            .standings-positive {
+                color: #45df8b;
+            }
+
+            .standings-negative {
+                color: #ff7078;
+            }
+
+            .standings-points {
+                color: #f5c542;
+                font-size: 20px;
+                font-weight: 950;
+                text-align: center;
+                padding-top: 5px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+        header_columns = st.columns(
+            [0.6, 3.0, 0.65, 0.65, 0.65, 0.65, 0.75, 0.75, 0.75, 1.0, 0.75]
+        )
+
+        header_names = [
+            "Pos",
+            "Player",
+            "P",
+            "W",
+            "D",
+            "L",
+            "LF",
+            "LA",
+            "+/-",
+            "Avg",
+            "Pts"
+        ]
+
+        for header_column, header_name in zip(
+            header_columns,
+            header_names
+        ):
+
+            with header_column:
+
+                st.markdown(
+                    f"""
+                    <div class="standings-header">
+                        {header_name}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        pdf_rows = []
 
         for position, row in enumerate(rows, start=1):
 
@@ -3809,119 +3927,111 @@ if page == "League":
             difference = row["Difference"]
 
             if difference > 0:
-                difference_display = f"+{difference}"
-            else:
-                difference_display = str(difference)
 
-            visible_rows.append(
+                difference_display = f"+{difference}"
+                difference_class = "standings-positive"
+
+            elif difference < 0:
+
+                difference_display = str(difference)
+                difference_class = "standings-negative"
+
+            else:
+
+                difference_display = "0"
+                difference_class = ""
+
+            row_columns = st.columns(
+                [0.6, 3.0, 0.65, 0.65, 0.65, 0.65, 0.75, 0.75, 0.75, 1.0, 0.75]
+            )
+
+            row_class = "standings-row"
+
+            if position == 1:
+                row_class += " standings-leader"
+
+            values = [
+                (
+                    position_display,
+                    "standings-position"
+                ),
+                (
+                    row["Player"],
+                    "standings-player"
+                ),
+                (
+                    row["Played"],
+                    "standings-stat"
+                ),
+                (
+                    row["Won"],
+                    "standings-stat"
+                ),
+                (
+                    row["Drawn"],
+                    "standings-stat"
+                ),
+                (
+                    row["Lost"],
+                    "standings-stat"
+                ),
+                (
+                    row["Legs For"],
+                    "standings-stat"
+                ),
+                (
+                    row["Legs Against"],
+                    "standings-stat"
+                ),
+                (
+                    difference_display,
+                    f"standings-stat {difference_class}"
+                ),
+                (
+                    f'{row["3 Dart Average"]:.2f}',
+                    "standings-stat standings-average"
+                ),
+                (
+                    row["Points"],
+                    "standings-points"
+                )
+            ]
+
+            for row_column, value_data in zip(
+                row_columns,
+                values
+            ):
+
+                value, value_class = value_data
+
+                with row_column:
+
+                    st.markdown(
+                        f"""
+                        <div class="{row_class}">
+                            <div class="{value_class}">
+                                {value}
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            pdf_rows.append(
                 {
-                    "Pos": position_display,
+                    "Pos": position,
                     "Player": row["Player"],
-                    "P": row["Played"],
-                    "W": row["Won"],
-                    "D": row["Drawn"],
-                    "L": row["Lost"],
-                    "LF": row["Legs For"],
-                    "LA": row["Legs Against"],
-                    "+/-": difference_display,
-                    "Average": row["3 Dart Average"],
+                    "Played": row["Played"],
+                    "Won": row["Won"],
+                    "Drawn": row["Drawn"],
+                    "Lost": row["Lost"],
+                    "Legs For": row["Legs For"],
+                    "Legs Against": row["Legs Against"],
+                    "Difference": row["Difference"],
+                    "3 Dart Average": row["3 Dart Average"],
                     "Points": row["Points"]
                 }
             )
-
-        visible_df = pd.DataFrame(
-            visible_rows
-        )
-
-        styled_league_table = (
-            visible_df.style
-            .hide(axis="index")
-            .format(
-                {
-                    "Average": "{:.2f}"
-                }
-            )
-            .set_properties(
-                subset=["Player"],
-                **{
-                    "text-align": "left",
-                    "font-weight": "bold"
-                }
-            )
-            .set_properties(
-                subset=["Points"],
-                **{
-                    "font-weight": "bold",
-                    "font-size": "18px"
-                }
-            )
-            .set_properties(
-                subset=["Pos"],
-                **{
-                    "font-size": "18px",
-                    "font-weight": "bold"
-                }
-            )
-        )
-
-        st.dataframe(
-            styled_league_table,
-            hide_index=True,
-            use_container_width=True,
-            height=(
-                min(
-                    70 + len(visible_df) * 42,
-                    760
-                )
-            ),
-            column_config={
-                "Pos": st.column_config.TextColumn(
-                    "Pos",
-                    width="small"
-                ),
-                "Player": st.column_config.TextColumn(
-                    "Player",
-                    width="large"
-                ),
-                "P": st.column_config.NumberColumn(
-                    "P",
-                    width="small"
-                ),
-                "W": st.column_config.NumberColumn(
-                    "W",
-                    width="small"
-                ),
-                "D": st.column_config.NumberColumn(
-                    "D",
-                    width="small"
-                ),
-                "L": st.column_config.NumberColumn(
-                    "L",
-                    width="small"
-                ),
-                "LF": st.column_config.NumberColumn(
-                    "LF",
-                    width="small"
-                ),
-                "LA": st.column_config.NumberColumn(
-                    "LA",
-                    width="small"
-                ),
-                "+/-": st.column_config.TextColumn(
-                    "+/-",
-                    width="small"
-                ),
-                "Average": st.column_config.NumberColumn(
-                    "AVG",
-                    format="%.2f",
-                    width="small"
-                ),
-                "Points": st.column_config.NumberColumn(
-                    "PTS",
-                    width="small"
-                )
-            }
-        )
         
 
         st.divider()
