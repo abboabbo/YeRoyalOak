@@ -4013,16 +4013,15 @@ if page == "League":
             if position == 1:
                 row_class = "leader-row"
 
-            table_body_html += f"""
+            table_body_html += dedent(
+                f"""
                 <tr class="{row_class}">
-
                     <td class="position-cell">
                         {position_display}
                     </td>
 
                     <td class="player-cell">
                         <div class="player-profile">
-
                             {player_logo_html}
 
                             <div>
@@ -4032,7 +4031,6 @@ if page == "League":
 
                                 {player_real_name}
                             </div>
-
                         </div>
                     </td>
 
@@ -4058,9 +4056,9 @@ if page == "League":
                     <td class="points-cell">
                         {row["Points"]}
                     </td>
-
                 </tr>
-            """
+                """
+            )
 
             # Keep this data for the PDF download further below.
             visible_rows.append(
