@@ -3786,120 +3786,13 @@ if page == "League":
 
         st.divider()
 
+                # =====================================================
+        # STYLED LEAGUE TABLE
         # =====================================================
-        # PREMIUM LEAGUE TABLE
-        # =====================================================
-
-        player_objects = {
-            player.id: player
-            for player in players
-        }
-
-        def get_player_form(player_id):
-
-            player_fixtures = [
-                fixture
-                for fixture in fixtures
-                if (
-                    fixture.played == 1
-                    and (
-                        fixture.player1_id == player_id
-                        or fixture.player2_id == player_id
-                    )
-                )
-            ]
-
-            player_fixtures = sorted(
-                player_fixtures,
-                key=lambda fixture: fixture.id
-            )
-
-            recent_fixtures = player_fixtures[-5:]
-
-            form_results = []
-
-            for fixture in recent_fixtures:
-
-                if fixture.player1_id == player_id:
-
-                    player_legs = fixture.player1_legs
-                    opponent_legs = fixture.player2_legs
-
-                else:
-
-                    player_legs = fixture.player2_legs
-                    opponent_legs = fixture.player1_legs
-
-                if player_legs > opponent_legs:
-                    form_results.append("W")
-
-                elif player_legs < opponent_legs:
-                    form_results.append("L")
-
-                else:
-                    form_results.append("D")
-
-            return form_results
-
-
-        def create_form_html(form_results):
-
-            form_html = ""
-
-            for result in form_results:
-
-                if result == "W":
-
-                    form_html += (
-                        '<span class="form-badge form-win">'
-                        'W'
-                        '</span>'
-                    )
-
-                elif result == "D":
-
-                    form_html += (
-                        '<span class="form-badge form-draw">'
-                        'D'
-                        '</span>'
-                    )
-
-                else:
-
-                    form_html += (
-                        '<span class="form-badge form-loss">'
-                        'L'
-                        '</span>'
-                    )
-
-            empty_spaces = 5 - len(form_results)
-
-            for _ in range(empty_spaces):
-
-                form_html += (
-                    '<span class="form-badge form-empty">'
-                    '–'
-                    '</span>'
-                )
-
-            return form_html
-
-
-        table_body_html = ""
 
         visible_rows = []
 
         for position, row in enumerate(rows, start=1):
-
-            player_id = row["Player ID"]
-
-            player = player_objects.get(
-                player_id
-            )
-
-            # ---------------------------------------------
-            # POSITION / MEDAL
-            # ---------------------------------------------
 
             if position == 1:
                 position_display = "🥇"
@@ -3913,206 +3806,121 @@ if page == "League":
             else:
                 position_display = str(position)
 
-            # ---------------------------------------------
-            # PLAYER LOGO
-            # ---------------------------------------------
-
-            player_logo_html = (
-                '<div class="player-placeholder-logo">'
-                '🎯'
-                '</div>'
-            )
-
-            if player and player.logo_path:
-
-                logo_source = image_to_base64(
-                    player.logo_path
-                )
-
-                if logo_source:
-
-                    player_logo_html = (
-                        f'<img '
-                        f'src="{logo_source}" '
-                        f'class="player-table-logo">'
-                    )
-
-            # ---------------------------------------------
-            # PLAYER NAME
-            # ---------------------------------------------
-
-            player_display_name = row["Player"]
-
-            player_real_name = ""
-
-            if (
-                player
-                and player.nickname
-                and player.nickname.strip()
-                and player.nickname.strip() != player.name
-            ):
-
-                player_real_name = (
-                    f'<div class="player-real-name">'
-                    f'{player.name}'
-                    f'</div>'
-                )
-
-            # ---------------------------------------------
-            # RECENT FORM
-            # ---------------------------------------------
-
-            form_results = get_player_form(
-                player_id
-            )
-
-            form_html = create_form_html(
-                form_results
-            )
-
-            # ---------------------------------------------
-            # GOAL / LEG DIFFERENCE STYLE
-            # ---------------------------------------------
-
             difference = row["Difference"]
 
             if difference > 0:
-
-                difference_display = (
-                    f"+{difference}"
-                )
-
-                difference_class = (
-                    "difference-positive"
-                )
-
-            elif difference < 0:
-
-                difference_display = str(
-                    difference
-                )
-
-                difference_class = (
-                    "difference-negative"
-                )
-
+                difference_display = f"+{difference}"
             else:
+                difference_display = str(difference)
 
-                difference_display = "0"
-
-                difference_class = (
-                    "difference-neutral"
-                )
-
-            # ---------------------------------------------
-            # LEADER HIGHLIGHT
-            # ---------------------------------------------
-
-            row_class = ""
-
-            if position == 1:
-                row_class = "leader-row"
-
-            table_body_html += dedent(
-                f"""
-                <tr class="{row_class}">
-                    <td class="position-cell">
-                        {position_display}
-                    </td>
-
-                    <td class="player-cell">
-                        <div class="player-profile">
-                            {player_logo_html}
-
-                            <div>
-                                <div class="player-primary-name">
-                                    {player_display_name}
-                                </div>
-
-                                {player_real_name}
-                            </div>
-                        </div>
-                    </td>
-
-                    <td>{row["Played"]}</td>
-                    <td>{row["Won"]}</td>
-                    <td>{row["Drawn"]}</td>
-                    <td>{row["Lost"]}</td>
-                    <td>{row["Legs For"]}</td>
-                    <td>{row["Legs Against"]}</td>
-
-                    <td class="{difference_class}">
-                        {difference_display}
-                    </td>
-
-                    <td class="average-cell">
-                        {row["3 Dart Average"]:.2f}
-                    </td>
-
-                    <td class="form-cell">
-                        {form_html}
-                    </td>
-
-                    <td class="points-cell">
-                        {row["Points"]}
-                    </td>
-                </tr>
-                """
-            )
-
-            # Keep this data for the PDF download further below.
             visible_rows.append(
                 {
-                    "Pos": position,
-                    "Player": player_display_name,
+                    "Pos": position_display,
+                    "Player": row["Player"],
                     "P": row["Played"],
                     "W": row["Won"],
                     "D": row["Drawn"],
                     "L": row["Lost"],
                     "LF": row["Legs For"],
                     "LA": row["Legs Against"],
-                    "+/-": row["Difference"],
-                    "Avg": row["3 Dart Average"],
-                    "Pts": row["Points"]
+                    "+/-": difference_display,
+                    "Average": row["3 Dart Average"],
+                    "Points": row["Points"]
                 }
             )
 
-        premium_table_html = dedent(
-            f"""
-            <div class="premium-table-wrapper">
-                <table class="premium-league-table">
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th class="player-heading">Player</th>
-                            <th>P</th>
-                            <th>W</th>
-                            <th>D</th>
-                            <th>L</th>
-                            <th>LF</th>
-                            <th>LA</th>
-                            <th>+/-</th>
-                            <th>Avg</th>
-                            <th>Form</th>
-                            <th>Pts</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {table_body_html}
-                    </tbody>
-                </table>
-            </div>
-            """
-        ).strip()
-
-        st.markdown(
-            premium_table_html,
-            unsafe_allow_html=True
-        )
-
         visible_df = pd.DataFrame(
             visible_rows
+        )
+
+        styled_league_table = (
+            visible_df.style
+            .hide(axis="index")
+            .format(
+                {
+                    "Average": "{:.2f}"
+                }
+            )
+            .set_properties(
+                subset=["Player"],
+                **{
+                    "text-align": "left",
+                    "font-weight": "bold"
+                }
+            )
+            .set_properties(
+                subset=["Points"],
+                **{
+                    "font-weight": "bold",
+                    "font-size": "18px"
+                }
+            )
+            .set_properties(
+                subset=["Pos"],
+                **{
+                    "font-size": "18px",
+                    "font-weight": "bold"
+                }
+            )
+        )
+
+        st.dataframe(
+            styled_league_table,
+            hide_index=True,
+            use_container_width=True,
+            height=(
+                min(
+                    70 + len(visible_df) * 42,
+                    760
+                )
+            ),
+            column_config={
+                "Pos": st.column_config.TextColumn(
+                    "Pos",
+                    width="small"
+                ),
+                "Player": st.column_config.TextColumn(
+                    "Player",
+                    width="large"
+                ),
+                "P": st.column_config.NumberColumn(
+                    "P",
+                    width="small"
+                ),
+                "W": st.column_config.NumberColumn(
+                    "W",
+                    width="small"
+                ),
+                "D": st.column_config.NumberColumn(
+                    "D",
+                    width="small"
+                ),
+                "L": st.column_config.NumberColumn(
+                    "L",
+                    width="small"
+                ),
+                "LF": st.column_config.NumberColumn(
+                    "LF",
+                    width="small"
+                ),
+                "LA": st.column_config.NumberColumn(
+                    "LA",
+                    width="small"
+                ),
+                "+/-": st.column_config.TextColumn(
+                    "+/-",
+                    width="small"
+                ),
+                "Average": st.column_config.NumberColumn(
+                    "AVG",
+                    format="%.2f",
+                    width="small"
+                ),
+                "Points": st.column_config.NumberColumn(
+                    "PTS",
+                    width="small"
+                )
+            }
         )
         
 
