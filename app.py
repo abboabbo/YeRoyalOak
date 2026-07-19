@@ -1662,10 +1662,25 @@ with st.sidebar:
     if st.button("🎯 Knockout", use_container_width=True):
         st.session_state.page = "Knockout"
 
-    if st.button("📊 Statistics", use_container_width=True):
+    if st.button(
+        "📊 Statistics",
+        key="sidebar_statistics",
+        use_container_width=True
+    ):
         st.session_state.page = "Statistics"
 
-    if st.button("📢 Announcements", use_container_width=True):
+    if st.button(
+        "🏅 Awards",
+        key="sidebar_awards",
+        use_container_width=True
+    ):
+        st.session_state.page = "Awards"
+
+    if st.button(
+        "📢 Announcements",
+        key="sidebar_announcements",
+        use_container_width=True
+    ):
         st.session_state.page = "Announcements"
 
     
@@ -2789,6 +2804,594 @@ if page == "Home":
         )
 
     db.close()
+
+# =========================================================
+# AWARDS PAGE
+# =========================================================
+
+if page == "Awards":
+
+    st.markdown(
+        """
+        <h1 style="text-align:center;">
+            🏅 League Awards
+        </h1>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            Outstanding performances from the current league campaign
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    awards_db = SessionLocal()
+
+    awards_players = awards_db.query(
+        Player
+    ).all()
+
+    completed_fixtures = awards_db.query(
+        Fixture
+    ).filter(
+        Fixture.played == 1
+    ).order_by(
+        Fixture.round_number,
+        Fixture.id
+    ).all()
+
+    player_lookup = {
+        player.id: player
+        for player in awards_players
+    }
+
+    if not completed_fixtures:
+
+        st.info(
+            "Awards will appear after match results have been entered."
+        )
+
+        awards_db.close()
+
+    else:
+
+        available_rounds = sorted(
+            {
+                fixture.round_number
+                for fixture in completed_fixtures
+                if fixture.round_number is not None
+            }
+        )
+
+        if not available_rounds:
+
+            st.warning(
+                "Completed fixtures do not have round numbers."
+            )
+
+            awards_db.close()
+
+        else:
+
+            selected_round = st.selectbox(
+                "Choose Round",
+                available_rounds,
+                index=len(available_rounds) - 1,
+                key="awards_selected_round"
+            )
+
+            round_fixtures = [
+                fixture
+                for fixture in completed_fixtures
+                if fixture.round_number == selected_round
+            ]
+
+            st.markdown(
+                f"""
+                <div style="
+                    text-align:center;
+                    color:#f5c542;
+                    font-size:21px;
+                    font-weight:900;
+                    margin:12px 0 24px 0;
+                ">
+                    Round {selected_round}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            round_performances = []
+
+            for fixture in round_fixtures:
+
+                player1 = player_lookup.get(
+                    fixture.player1_id
+                )
+
+                player2 = player_lookup.get(
+                    fixture.player2_id
+                )
+
+                if not player1 or not player2:
+                    continue
+
+                try:
+                    player1_average = float(
+                        fixture.player1_average
+                    )
+                except (TypeError, ValueError):
+                    player1_average = 0.0
+
+                try:
+                    player2_average = float(
+                        fixture.player2_average
+                    )
+                except (TypeError, ValueError):
+                    player2_average = 0.0
+
+                player1_legs = fixture.player1_legs or 0
+                player2_legs = fixture.player2_legs or 0
+
+                player1_won = (
+                    player1_legs > player2_legs
+                )
+
+                player2_won = (
+                    player2_legs > player1_legs
+                )
+
+                player1_margin = (
+                    player1_legs - player2_legs
+                    if player1_won
+                    else 0
+                )
+
+                player2_margin = (
+                    player2_legs - player1_legs
+                    if player2_won
+                    else 0
+                )
+
+                round_performances.append(
+                    {
+                        "player": player1,
+                        "opponent": player2,
+                        "average": player1_average,
+                        "legs_for": player1_legs,
+                        "legs_against": player2_legs,
+                        "won": player1_won,
+                        "margin": player1_margin,
+                        "fixture": fixture
+                    }
+                )
+
+                round_performances.append(
+                    {
+                        "player": player2,
+                        "opponent": player1,
+                        "average": player2_average,
+                        "legs_for": player2_legs,
+                        "legs_against": player1_legs,
+                        "won": player2_won,
+                        "margin": player2_margin,
+                        "fixture": fixture
+                    }
+                )
+
+            if not round_performances:
+
+                st.info(
+                    "No valid results were found for this round."
+                )
+
+            else:
+
+                highest_average = max(
+                    round_performances,
+                    key=lambda item: item["average"]
+                )
+
+                winning_performances = [
+                    performance
+                    for performance in round_performances
+                    if performance["won"]
+                ]
+
+                best_margin = None
+
+                if winning_performances:
+
+                    best_margin = max(
+                        winning_performances,
+                        key=lambda item: (
+                            item["margin"],
+                            item["average"]
+                        )
+                    )
+
+                # Weighted performance score:
+                # average rewards scoring quality
+                # margin rewards match dominance
+                # win bonus ensures victories are recognised
+
+                for performance in round_performances:
+
+                    performance["performance_score"] = (
+                        performance["average"]
+                        +
+                        performance["margin"] * 3
+                        +
+                        (10 if performance["won"] else 0)
+                    )
+
+                performance_of_round = max(
+                    round_performances,
+                    key=lambda item: item[
+                        "performance_score"
+                    ]
+                )
+
+                # Player of the Round prioritises winning,
+                # average and winning margin.
+
+                player_of_round = max(
+                    round_performances,
+                    key=lambda item: (
+                        1 if item["won"] else 0,
+                        item["average"],
+                        item["margin"]
+                    )
+                )
+
+                def award_player_name(performance):
+
+                    return display_player_name(
+                        performance["player"]
+                    )
+
+                def award_opponent_name(performance):
+
+                    return display_player_name(
+                        performance["opponent"]
+                    )
+
+                def show_award_card(
+                    icon,
+                    title,
+                    player_name,
+                    detail,
+                    featured=False
+                ):
+
+                    featured_class = (
+                        "award-featured"
+                        if featured
+                        else ""
+                    )
+
+                    st.markdown(
+                        f"""
+                        <div class="award-card {featured_class}">
+                            <div class="award-icon">
+                                {icon}
+                            </div>
+
+                            <div class="award-title">
+                                {title}
+                            </div>
+
+                            <div class="award-player">
+                                {player_name}
+                            </div>
+
+                            <div class="award-detail">
+                                {detail}
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                st.markdown(
+                    """
+                    <style>
+                    .award-card {
+                        min-height: 225px;
+                        background:
+                            linear-gradient(
+                                145deg,
+                                #111827,
+                                #05080f
+                            );
+                        border:
+                            1px solid
+                            rgba(245,197,66,0.42);
+                        border-radius: 20px;
+                        padding: 22px;
+                        text-align: center;
+                        margin-bottom: 18px;
+                        box-shadow:
+                            0 10px 28px
+                            rgba(0,0,0,0.28);
+                    }
+
+                    .award-card:hover {
+                        border-color:
+                            rgba(245,197,66,0.85);
+                        transform: translateY(-2px);
+                    }
+
+                    .award-featured {
+                        background:
+                            linear-gradient(
+                                145deg,
+                                #4b3909,
+                                #111827 55%,
+                                #05080f
+                            );
+                        border:
+                            2px solid #f5c542;
+                        box-shadow:
+                            0 0 28px
+                            rgba(245,197,66,0.15);
+                    }
+
+                    .award-icon {
+                        font-size: 42px;
+                        margin-bottom: 10px;
+                    }
+
+                    .award-title {
+                        color: #f5c542;
+                        font-size: 14px;
+                        font-weight: 900;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
+
+                    .award-player {
+                        color: white;
+                        font-size: 25px;
+                        font-weight: 950;
+                        margin-top: 13px;
+                    }
+
+                    .award-detail {
+                        color: #bfc5d2;
+                        font-size: 14px;
+                        font-weight: 700;
+                        margin-top: 9px;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                featured_left, featured_centre, featured_right = (
+                    st.columns([1, 1.5, 1])
+                )
+
+                with featured_centre:
+
+                    show_award_card(
+                        "🏆",
+                        "Player of the Round",
+                        award_player_name(
+                            player_of_round
+                        ),
+                        (
+                            f'{player_of_round["legs_for"]}'
+                            f'–{player_of_round["legs_against"]}'
+                            f' vs '
+                            f'{award_opponent_name(player_of_round)}'
+                            f' · '
+                            f'{player_of_round["average"]:.2f} AVG'
+                        ),
+                        featured=True
+                    )
+
+                award_col1, award_col2, award_col3 = (
+                    st.columns(3)
+                )
+
+                with award_col1:
+
+                    show_award_card(
+                        "🎯",
+                        "Highest Match Average",
+                        award_player_name(
+                            highest_average
+                        ),
+                        (
+                            f'{highest_average["average"]:.2f}'
+                            f' against '
+                            f'{award_opponent_name(highest_average)}'
+                        )
+                    )
+
+                with award_col2:
+
+                    if best_margin:
+
+                        show_award_card(
+                            "💥",
+                            "Biggest Victory",
+                            award_player_name(
+                                best_margin
+                            ),
+                            (
+                                f'{best_margin["legs_for"]}'
+                                f'–{best_margin["legs_against"]}'
+                                f' against '
+                                f'{award_opponent_name(best_margin)}'
+                            )
+                        )
+
+                    else:
+
+                        show_award_card(
+                            "💥",
+                            "Biggest Victory",
+                            "No winner",
+                            "No completed winning result"
+                        )
+
+                with award_col3:
+
+                    show_award_card(
+                        "🔥",
+                        "Performance of the Round",
+                        award_player_name(
+                            performance_of_round
+                        ),
+                        (
+                            f'{performance_of_round["average"]:.2f}'
+                            f' AVG · '
+                            f'{performance_of_round["legs_for"]}'
+                            f'–'
+                            f'{performance_of_round["legs_against"]}'
+                        )
+                    )
+
+                st.divider()
+                st.markdown("## 🌟 Season Awards")
+
+                player_season_stats = {}
+
+                for player in awards_players:
+
+                    player_season_stats[player.id] = {
+                        "player": player,
+                        "played": 0,
+                        "wins": 0,
+                        "averages": []
+                    }
+
+                for fixture in completed_fixtures:
+
+                    if (
+                        fixture.player1_id
+                        not in player_season_stats
+                        or fixture.player2_id
+                        not in player_season_stats
+                    ):
+                        continue
+
+                    player1_stats = player_season_stats[
+                        fixture.player1_id
+                    ]
+
+                    player2_stats = player_season_stats[
+                        fixture.player2_id
+                    ]
+
+                    player1_stats["played"] += 1
+                    player2_stats["played"] += 1
+
+                    try:
+                        player1_stats["averages"].append(
+                            float(fixture.player1_average)
+                        )
+                    except (TypeError, ValueError):
+                        pass
+
+                    try:
+                        player2_stats["averages"].append(
+                            float(fixture.player2_average)
+                        )
+                    except (TypeError, ValueError):
+                        pass
+
+                    if (
+                        fixture.player1_legs
+                        >
+                        fixture.player2_legs
+                    ):
+
+                        player1_stats["wins"] += 1
+
+                    elif (
+                        fixture.player2_legs
+                        >
+                        fixture.player1_legs
+                    ):
+
+                        player2_stats["wins"] += 1
+
+                season_rows = []
+
+                for stats in player_season_stats.values():
+
+                    season_average = 0.0
+
+                    if stats["averages"]:
+
+                        season_average = (
+                            sum(stats["averages"])
+                            /
+                            len(stats["averages"])
+                        )
+
+                    season_rows.append(
+                        {
+                            "player": stats["player"],
+                            "wins": stats["wins"],
+                            "played": stats["played"],
+                            "average": season_average
+                        }
+                    )
+
+                most_wins = max(
+                    season_rows,
+                    key=lambda item: (
+                        item["wins"],
+                        item["average"]
+                    )
+                )
+
+                best_overall_average = max(
+                    season_rows,
+                    key=lambda item: (
+                        item["average"],
+                        item["wins"]
+                    )
+                )
+
+                season_col1, season_col2 = st.columns(2)
+
+                with season_col1:
+
+                    show_award_card(
+                        "👑",
+                        "Most League Wins",
+                        display_player_name(
+                            most_wins["player"]
+                        ),
+                        (
+                            f'{most_wins["wins"]} wins from '
+                            f'{most_wins["played"]} matches'
+                        )
+                    )
+
+                with season_col2:
+
+                    show_award_card(
+                        "📈",
+                        "Best Overall Average",
+                        display_player_name(
+                            best_overall_average["player"]
+                        ),
+                        (
+                            f'{best_overall_average["average"]:.2f}'
+                            f' season average'
+                        )
+                    )
+
+            awards_db.close()    
 
 if page == "Announcements":
 
