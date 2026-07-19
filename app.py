@@ -11,6 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+from textwrap import dedent
 
 from PIL import Image
 from itertools import combinations
@@ -4078,17 +4079,14 @@ if page == "League":
                 }
             )
 
-        premium_table_html = f"""
+        premium_table_html = dedent(
+            f"""
             <div class="premium-table-wrapper">
-
                 <table class="premium-league-table">
-
                     <thead>
                         <tr>
                             <th>Pos</th>
-                            <th class="player-heading">
-                                Player
-                            </th>
+                            <th class="player-heading">Player</th>
                             <th>P</th>
                             <th>W</th>
                             <th>D</th>
@@ -4105,11 +4103,10 @@ if page == "League":
                     <tbody>
                         {table_body_html}
                     </tbody>
-
                 </table>
-
             </div>
-        """
+            """
+        ).strip()
 
         st.markdown(
             premium_table_html,
