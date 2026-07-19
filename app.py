@@ -3967,31 +3967,31 @@ if page == "League":
 
             pdf_rows.append(
                 {
-                "Pos": position,
-                "Player": row["Player"],
-                "Played": row["Played"],
-                "Won": row["Won"],
-                "Drawn": row["Drawn"],
-                "Lost": row["Lost"],
-                "Legs For": row["Legs For"],
-                "Legs Against": row["Legs Against"],
-                "Difference": row["Difference"],
-                "3 Dart Average": row["3 Dart Average"],
-                "Points": row["Points"]
-            }
+                    "Pos": position,
+                    "Player": row["Player"],
+                    "Played": row["Played"],
+                    "Won": row["Won"],
+                    "Drawn": row["Drawn"],
+                    "Lost": row["Lost"],
+                    "Legs For": row["Legs For"],
+                    "Legs Against": row["Legs Against"],
+                    "Difference": row["Difference"],
+                    "3 Dart Average": row["3 Dart Average"],
+                    "Points": row["Points"]
+                }
+            )
+
+        league_pdf = create_league_table_pdf(
+            pdf_rows
         )
 
-            league_pdf = create_league_table_pdf(
-                pdf_rows
-        )
-
-            st.download_button(
-                label="Download League Table PDF",
-                data=league_pdf,
-                file_name="league_table.pdf",
-                mime="application/pdf",
-                key="download_league_table_pdf",
-                use_container_width=True
+        st.download_button(
+            label="Download League Table PDF",
+            data=league_pdf,
+            file_name="league_table.pdf",
+            mime="application/pdf",
+            key="download_league_table_pdf",
+            use_container_width=True
         )
 
     else:
