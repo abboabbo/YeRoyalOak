@@ -3986,10 +3986,11 @@ if page == "League":
         )
 
             st.download_button(
-                "Download League Table PDF",
-                league_pdf,
-                "league_table.pdf",
-                "application/pdf",
+                label="Download League Table PDF",
+                data=league_pdf,
+                file_name="league_table.pdf",
+                mime="application/pdf",
+                key="download_league_table_pdf",
                 use_container_width=True
             )
 
