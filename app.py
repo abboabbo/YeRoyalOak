@@ -527,6 +527,218 @@ st.markdown(
         font-weight: 900;
     }
     
+/* =====================================================
+   PREMIUM LEAGUE TABLE
+   ===================================================== */
+
+.premium-table-wrapper {
+    background: linear-gradient(145deg, #111827, #05080f);
+    border: 1px solid rgba(245, 197, 66, 0.5);
+    border-radius: 20px;
+    padding: 12px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.35),
+        0 0 25px rgba(245, 197, 66, 0.06);
+    overflow-x: auto;
+}
+
+.premium-league-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 7px;
+    color: white;
+    min-width: 950px;
+}
+
+.premium-league-table thead th {
+    color: #f5c542;
+    padding: 12px 10px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom: 1px solid rgba(245, 197, 66, 0.35);
+}
+
+.premium-league-table thead th.player-heading {
+    text-align: left;
+}
+
+.premium-league-table tbody tr {
+    background: linear-gradient(
+        90deg,
+        rgba(23, 31, 44, 0.96),
+        rgba(10, 15, 24, 0.96)
+    );
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.premium-league-table tbody tr:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(
+        90deg,
+        rgba(49, 43, 23, 0.96),
+        rgba(15, 20, 29, 0.96)
+    );
+    box-shadow: 0 7px 22px rgba(0, 0, 0, 0.3);
+}
+
+.premium-league-table tbody td {
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 750;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.premium-league-table tbody td:first-child {
+    border-radius: 13px 0 0 13px;
+}
+
+.premium-league-table tbody td:last-child {
+    border-radius: 0 13px 13px 0;
+}
+
+.position-cell {
+    width: 55px;
+    font-size: 19px !important;
+    color: #d8dde7;
+}
+
+.player-cell {
+    text-align: left !important;
+    min-width: 210px;
+}
+
+.player-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-table-logo {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #080d15;
+    border: 2px solid rgba(245, 197, 66, 0.65);
+    box-shadow: 0 0 12px rgba(245, 197, 66, 0.12);
+}
+
+.player-placeholder-logo {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #080d15;
+    border: 2px solid rgba(245, 197, 66, 0.5);
+    font-size: 22px;
+}
+
+.player-primary-name {
+    color: white;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+.player-real-name {
+    color: #929bab;
+    font-size: 12px;
+    font-weight: 650;
+    margin-top: 4px;
+}
+
+.form-cell {
+    min-width: 145px;
+    white-space: nowrap;
+}
+
+.form-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    margin: 0 2px;
+    border-radius: 7px;
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.form-win {
+    background: #118848;
+    box-shadow: 0 0 7px rgba(17, 136, 72, 0.4);
+}
+
+.form-draw {
+    background: #b18416;
+}
+
+.form-loss {
+    background: #b52d38;
+}
+
+.form-empty {
+    background: #313846;
+    color: #9da5b3;
+}
+
+.average-cell {
+    color: #e5e9f0;
+    font-weight: 850 !important;
+}
+
+.difference-positive {
+    color: #38d981;
+}
+
+.difference-negative {
+    color: #ff6670;
+}
+
+.difference-neutral {
+    color: #bfc5d2;
+}
+
+.points-cell {
+    color: #f5c542;
+    font-size: 20px !important;
+    font-weight: 950 !important;
+}
+
+.leader-row {
+    background: linear-gradient(
+        90deg,
+        rgba(80, 62, 14, 0.9),
+        rgba(20, 22, 25, 0.98)
+    ) !important;
+}
+
+@media (max-width: 800px) {
+    .premium-table-wrapper {
+        padding: 7px;
+        border-radius: 14px;
+    }
+
+    .premium-league-table tbody td {
+        padding: 11px 8px;
+    }
+}
+
     </style>
     """,
     unsafe_allow_html=True
@@ -3573,87 +3785,339 @@ if page == "League":
 
         st.divider()
 
-        table_rows = []
+        # =====================================================
+        # PREMIUM LEAGUE TABLE
+        # =====================================================
 
-        for index, row in enumerate(rows, start=1):
+        player_objects = {
+            player.id: player
+            for player in players
+        }
 
-            table_rows.append({
-                "Pos": index,
-                "Player": row["Player"],
-                "P": row["Played"],
-                "W": row["Won"],
-                "D": row["Drawn"],
-                "L": row["Lost"],
-                "LF": row["Legs For"],
-                "LA": row["Legs Against"],
-                "+/-": row["Difference"],
-                "Avg": row["3 Dart Average"],
-                "Pts": row["Points"],
-                "Player ID": row["Player ID"]
-            })
+        def get_player_form(player_id):
 
-        display_df = pd.DataFrame(table_rows)
+            player_fixtures = [
+                fixture
+                for fixture in fixtures
+                if (
+                    fixture.played == 1
+                    and (
+                        fixture.player1_id == player_id
+                        or fixture.player2_id == player_id
+                    )
+                )
+            ]
 
-        visible_df = display_df.drop(
-            columns=["Player ID"]
-        )
+            player_fixtures = sorted(
+                player_fixtures,
+                key=lambda fixture: fixture.id
+            )
 
-        styled_df = (
-            visible_df.style
-            .set_properties(
-                **{
-                    "text-align": "center",
-                    "font-weight": "bold",
-                    "font-size": "16px"
+            recent_fixtures = player_fixtures[-5:]
+
+            form_results = []
+
+            for fixture in recent_fixtures:
+
+                if fixture.player1_id == player_id:
+
+                    player_legs = fixture.player1_legs
+                    opponent_legs = fixture.player2_legs
+
+                else:
+
+                    player_legs = fixture.player2_legs
+                    opponent_legs = fixture.player1_legs
+
+                if player_legs > opponent_legs:
+                    form_results.append("W")
+
+                elif player_legs < opponent_legs:
+                    form_results.append("L")
+
+                else:
+                    form_results.append("D")
+
+            return form_results
+
+
+        def create_form_html(form_results):
+
+            form_html = ""
+
+            for result in form_results:
+
+                if result == "W":
+
+                    form_html += (
+                        '<span class="form-badge form-win">'
+                        'W'
+                        '</span>'
+                    )
+
+                elif result == "D":
+
+                    form_html += (
+                        '<span class="form-badge form-draw">'
+                        'D'
+                        '</span>'
+                    )
+
+                else:
+
+                    form_html += (
+                        '<span class="form-badge form-loss">'
+                        'L'
+                        '</span>'
+                    )
+
+            empty_spaces = 5 - len(form_results)
+
+            for _ in range(empty_spaces):
+
+                form_html += (
+                    '<span class="form-badge form-empty">'
+                    '–'
+                    '</span>'
+                )
+
+            return form_html
+
+
+        table_body_html = ""
+
+        visible_rows = []
+
+        for position, row in enumerate(rows, start=1):
+
+            player_id = row["Player ID"]
+
+            player = player_objects.get(
+                player_id
+            )
+
+            # ---------------------------------------------
+            # POSITION / MEDAL
+            # ---------------------------------------------
+
+            if position == 1:
+                position_display = "🥇"
+
+            elif position == 2:
+                position_display = "🥈"
+
+            elif position == 3:
+                position_display = "🥉"
+
+            else:
+                position_display = str(position)
+
+            # ---------------------------------------------
+            # PLAYER LOGO
+            # ---------------------------------------------
+
+            player_logo_html = (
+                '<div class="player-placeholder-logo">'
+                '🎯'
+                '</div>'
+            )
+
+            if player and player.logo_path:
+
+                logo_source = image_to_base64(
+                    player.logo_path
+                )
+
+                if logo_source:
+
+                    player_logo_html = (
+                        f'<img '
+                        f'src="{logo_source}" '
+                        f'class="player-table-logo">'
+                    )
+
+            # ---------------------------------------------
+            # PLAYER NAME
+            # ---------------------------------------------
+
+            player_display_name = row["Player"]
+
+            player_real_name = ""
+
+            if (
+                player
+                and player.nickname
+                and player.nickname.strip()
+                and player.nickname.strip() != player.name
+            ):
+
+                player_real_name = (
+                    f'<div class="player-real-name">'
+                    f'{player.name}'
+                    f'</div>'
+                )
+
+            # ---------------------------------------------
+            # RECENT FORM
+            # ---------------------------------------------
+
+            form_results = get_player_form(
+                player_id
+            )
+
+            form_html = create_form_html(
+                form_results
+            )
+
+            # ---------------------------------------------
+            # GOAL / LEG DIFFERENCE STYLE
+            # ---------------------------------------------
+
+            difference = row["Difference"]
+
+            if difference > 0:
+
+                difference_display = (
+                    f"+{difference}"
+                )
+
+                difference_class = (
+                    "difference-positive"
+                )
+
+            elif difference < 0:
+
+                difference_display = str(
+                    difference
+                )
+
+                difference_class = (
+                    "difference-negative"
+                )
+
+            else:
+
+                difference_display = "0"
+
+                difference_class = (
+                    "difference-neutral"
+                )
+
+            # ---------------------------------------------
+            # LEADER HIGHLIGHT
+            # ---------------------------------------------
+
+            row_class = ""
+
+            if position == 1:
+                row_class = "leader-row"
+
+            table_body_html += f"""
+                <tr class="{row_class}">
+
+                    <td class="position-cell">
+                        {position_display}
+                    </td>
+
+                    <td class="player-cell">
+                        <div class="player-profile">
+
+                            {player_logo_html}
+
+                            <div>
+                                <div class="player-primary-name">
+                                    {player_display_name}
+                                </div>
+
+                                {player_real_name}
+                            </div>
+
+                        </div>
+                    </td>
+
+                    <td>{row["Played"]}</td>
+                    <td>{row["Won"]}</td>
+                    <td>{row["Drawn"]}</td>
+                    <td>{row["Lost"]}</td>
+                    <td>{row["Legs For"]}</td>
+                    <td>{row["Legs Against"]}</td>
+
+                    <td class="{difference_class}">
+                        {difference_display}
+                    </td>
+
+                    <td class="average-cell">
+                        {row["3 Dart Average"]:.2f}
+                    </td>
+
+                    <td class="form-cell">
+                        {form_html}
+                    </td>
+
+                    <td class="points-cell">
+                        {row["Points"]}
+                    </td>
+
+                </tr>
+            """
+
+            # Keep this data for the PDF download further below.
+            visible_rows.append(
+                {
+                    "Pos": position,
+                    "Player": player_display_name,
+                    "P": row["Played"],
+                    "W": row["Won"],
+                    "D": row["Drawn"],
+                    "L": row["Lost"],
+                    "LF": row["Legs For"],
+                    "LA": row["Legs Against"],
+                    "+/-": row["Difference"],
+                    "Avg": row["3 Dart Average"],
+                    "Pts": row["Points"]
                 }
             )
+
+        premium_table_html = f"""
+            <div class="premium-table-wrapper">
+
+                <table class="premium-league-table">
+
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th class="player-heading">
+                                Player
+                            </th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>LF</th>
+                            <th>LA</th>
+                            <th>+/-</th>
+                            <th>Avg</th>
+                            <th>Form</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {table_body_html}
+                    </tbody>
+
+                </table>
+
+            </div>
+        """
+
+        st.markdown(
+            premium_table_html,
+            unsafe_allow_html=True
         )
 
-
-        visible_df["Form"] = "—"
-        visible_df["Trend"] = "►"
-
-        visible_df["Pos"] = visible_df["Pos"].astype(str)
-
-        if len(visible_df) > 0:
-            visible_df.loc[0, "Pos"] = "🥇"
-
-        if len(visible_df) > 1:
-            visible_df.loc[1, "Pos"] = "🥈"
-
-        if len(visible_df) > 2:
-            visible_df.loc[2, "Pos"] = "🥉"
-
-        st.data_editor(
-            visible_df,
-            column_config={
-                "Pos": st.column_config.TextColumn(
-                    "Pos",
-                    width="small"
-                ),
-                "Player": st.column_config.TextColumn(
-                    "Player",
-                    width="medium"
-                ),
-                "Pts": st.column_config.NumberColumn(
-                    "Pts",
-                    width="small"
-                ),
-                "Avg": st.column_config.NumberColumn(
-                    "Avg",
-                    format="%.2f"
-                ),
-                "Form": st.column_config.TextColumn(
-                    "Form"
-                ),
-                "Trend": st.column_config.TextColumn(
-                    "Trend",
-                    width="small"
-                )
-            },
-            hide_index=True,
-            use_container_width=True,
-            disabled=True
+        visible_df = pd.DataFrame(
+            visible_rows
         )
         
 
