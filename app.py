@@ -157,6 +157,7 @@ def generate_round_robin(player_ids):
         rounds.extend(round_matches)
 
     return rounds
+    
 
 # =========================================================
 # KNOCKOUT HELPER FUNCTIONS
@@ -1935,39 +1936,140 @@ if not st.session_state.logged_in:
 
     elif st.session_state.public_page == "Socials":
 
-        socials_left, socials_centre, socials_right = st.columns(
-            [1, 1.5, 1]
+        st.markdown(
+            """
+            <h2 style='text-align:center;'>
+                📱 Follow Ye Royal Oak Darts
+            </h2>
+
+            <p style='text-align:center; color:#bfc5d2;'>
+                Keep up to date with fixtures, highlights, league news and events.
+            </p>
+            """,
+            unsafe_allow_html=True
         )
 
-        with socials_centre:
+        st.divider()
 
-            st.markdown(
-                """
-                <h2 style="text-align:center;">
-                    📱 Follow The League
-                </h2>
+        fb_col1, fb_col2 = st.columns([1,4])
 
-                <p style="
-                    text-align:center;
-                    color:#bfc5d2;
-                ">
-                    Keep up with league news, videos and results.
-                </p>
-                """,
-                unsafe_allow_html=True
+        with fb_col1:
+            st.markdown("# 📘")
+
+        with fb_col2:
+
+            st.subheader("Facebook Community")
+
+            st.write(
+                "League announcements, fixtures, results, photos and player discussion."
             )
 
             st.link_button(
-                "📘 Facebook Community",
+                "Visit Facebook",
                 "https://www.facebook.com/groups/1063585262569763/",
                 use_container_width=True
             )
 
+        st.divider()
+
+        yt_col1, yt_col2 = st.columns([1,4])
+
+        with yt_col1:
+            st.markdown("# ▶️")
+
+        with yt_col2:
+
+            st.subheader("YouTube")
+
+            st.write(
+                "Watch match highlights, tournament finals, player interviews and league content."
+            )
+
             st.link_button(
-                "🎵 TikTok Videos",
+                "Watch on YouTube",
+                "https://www.youtube.com/@YeRoyalOakDarts",
+                use_container_width=True
+            )
+
+        st.divider()
+
+        tt_col1, tt_col2 = st.columns([1,4])
+
+        with tt_col1:
+            st.markdown("# 🎵")
+
+        with tt_col2:
+
+            st.subheader("TikTok")
+
+            st.write(
+                "180s, big checkouts, funny moments and behind-the-scenes clips."
+            )
+
+            st.link_button(
+                "Follow on TikTok",
                 "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc",
                 use_container_width=True
             )
+
+        st.divider()
+
+        st.markdown(
+            """
+            <h3 style='text-align:center; color:#f5c542;'>
+                🎯 League Night
+            </h3>
+            """,
+            unsafe_allow_html=True
+        )
+
+        info1, info2 = st.columns(2)
+
+        with info1:
+
+            st.info(
+                """
+    **Venue**
+
+    Ye Royal Oak
+
+    The Shambles
+
+    Chesterfield
+
+    Derbyshire
+    """
+            )
+
+        with info2:
+
+            st.success(
+                """
+    **League Nights**
+
+    Every Thursday
+
+    Start Time: 7:30 PM
+
+    First Match: 7.45 PM
+    """
+        )
+
+        st.divider()
+
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#999;
+                font-size:14px;
+                padding-top:10px;
+            ">
+            © Ye Royal Oak Darts League
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     st.stop()   
 
