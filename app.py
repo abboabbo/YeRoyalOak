@@ -1680,7 +1680,7 @@ if not st.session_state.logged_in:
                 margin-top:0;
                 margin-bottom:12px;
             ">
-                Ye Royal Oak Darts League <br>
+                Ye Royal Oak Darts League
             </h1>
 
             <p style="
