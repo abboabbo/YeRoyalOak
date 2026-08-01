@@ -1608,158 +1608,38 @@ if not st.session_state.logged_in:
     # ---------------------------------------------------------
 
     st.markdown(
-        dedent
-            """
-            <style>
-            .landing-hero {
-                background:
-                    radial-gradient(
-                        circle at top,
-                        rgba(245,197,66,0.18),
-                        transparent 42%
-                    ),
-                    linear-gradient(
-                        145deg,
-                        #172033,
-                        #05080f 70%
-                    );
-                border:
-                    1px solid
-                    rgba(245,197,66,0.55);
-                border-radius: 28px;
-                padding: 28px 22px;
-                margin-bottom: 22px;
-                text-align: center;
-                box-shadow:
-                    0 16px 45px rgba(0,0,0,0.38),
-                    0 0 30px rgba(245,197,66,0.08);
-            }
+    dedent(
+        """
+        <style>
 
-            .landing-eyebrow {
-                color: #f5c542;
-                font-size: 13px;
-                font-weight: 900;
-                letter-spacing: 2px;
-                text-transform: uppercase;
-            }
-
-            .landing-title {
-                color: white;
-                font-size: clamp(
-                    34px,
-                    6vw,
-                    62px
+        .landing-hero {
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(245,197,66,0.18),
+                    transparent 42%
+                ),
+                linear-gradient(
+                    145deg,
+                    #172033,
+                    #05080f 70%
                 );
-                font-weight: 950;
-                line-height: 1.05;
-                margin-top: 12px;
-            }
+            border:
+                1px solid
+                rgba(245,197,66,0.55);
+            border-radius: 28px;
+            padding: 28px 22px;
+            margin-bottom: 22px;
+            text-align: center;
+        }
 
-            .landing-subtitle {
-                color: #bfc5d2;
-                font-size: 18px;
-                margin-top: 12px;
-            }
+        /* Keep the rest of your landing CSS here */
 
-            .landing-panel {
-                min-height: 210px;
-                background:
-                    linear-gradient(
-                        145deg,
-                        #111827,
-                        #05080f
-                    );
-                border:
-                    1px solid
-                    rgba(245,197,66,0.38);
-                border-radius: 20px;
-                padding: 22px;
-                margin-bottom: 16px;
-                text-align: center;
-                box-shadow:
-                    0 10px 25px
-                    rgba(0,0,0,0.25);
-            }
-
-            .landing-panel-title {
-                color: #f5c542;
-                font-size: 14px;
-                font-weight: 900;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .landing-panel-value {
-                color: white;
-                font-size: 28px;
-                font-weight: 950;
-                margin-top: 14px;
-            }
-
-            .landing-panel-detail {
-                color: #aeb6c5;
-                font-size: 14px;
-                margin-top: 9px;
-            }
-
-            .landing-vs {
-                color: #f5c542;
-                font-size: 19px;
-                font-weight: 950;
-                margin: 8px 0;
-            }
-
-            .landing-announcement {
-                background:
-                    linear-gradient(
-                        90deg,
-                        rgba(245,197,66,0.13),
-                        rgba(17,24,39,0.94)
-                    );
-                border-left:
-                    5px solid #f5c542;
-                border-radius: 16px;
-                padding: 20px;
-                margin: 8px 0 20px 0;
-            }
-
-            .landing-social-card {
-                min-height: 160px;
-                background:
-                    linear-gradient(
-                        145deg,
-                        #111827,
-                        #05080f
-                    );
-                border:
-                    1px solid
-                    rgba(255,255,255,0.08);
-                border-radius: 18px;
-                padding: 18px;
-                text-align: center;
-                margin-bottom: 12px;
-            }
-
-            .landing-social-icon {
-                font-size: 38px;
-            }
-
-            .landing-social-name {
-                color: white;
-                font-size: 20px;
-                font-weight: 900;
-                margin-top: 8px;
-            }
-
-            .landing-social-description {
-                color: #9da5b3;
-                font-size: 13px;
-                margin-top: 6px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+        </style>
+        """
+    ).strip(),
+    unsafe_allow_html=True
+)
 
     # ---------------------------------------------------------
     # HERO
