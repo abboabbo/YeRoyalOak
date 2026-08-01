@@ -1092,6 +1092,90 @@ st.markdown(
 
 )
 
+def get_winning_legs(legs_format):
+
+    if not legs_format:
+        return None
+
+    try:
+
+        best_of_number = int(
+            str(legs_format)
+            .lower()
+            .replace("best of", "")
+            .strip()
+        )
+
+    except (TypeError, ValueError):
+
+        return None
+
+    return (best_of_number // 2) + 1
+
+
+def validate_match_score(
+    player1_score,
+    player2_score,
+    legs_format
+):
+
+    try:
+
+        player1_score = int(player1_score)
+        player2_score = int(player2_score)
+
+    except (TypeError, ValueError):
+
+        return False, "Both scores must be whole numbers."
+
+    if player1_score < 0 or player2_score < 0:
+
+        return False, "Scores cannot be negative."
+
+    if player1_score == player2_score:
+
+        return False, "A darts match cannot finish as a draw."
+
+    winning_legs = get_winning_legs(
+        legs_format
+    )
+
+    if winning_legs is None:
+
+        return (
+            False,
+            "The tournament match format could not be recognised."
+        )
+
+    highest_score = max(
+        player1_score,
+        player2_score
+    )
+
+    lowest_score = min(
+        player1_score,
+        player2_score
+    )
+
+    if highest_score != winning_legs:
+
+        return (
+            False,
+            (
+                f"A {legs_format} match must be won "
+                f"with exactly {winning_legs} legs."
+            )
+        )
+
+    if lowest_score >= winning_legs:
+
+        return (
+            False,
+            "The losing player must finish below the winning score."
+        )
+
+    return True, ""
+
 def create_league_table_pdf(league_rows):
 
     buffer = BytesIO()
@@ -3196,6 +3280,11 @@ if page == "Awards":
         selected_tournament_id = tournament_options[
             selected_tournament_name
         ]
+
+        selected_tournament_object = db.get(
+            Tournament,
+            selected_tournament_id
+        )
 
         players = awards_db.query(
             Player
@@ -5490,26 +5579,121 @@ if page == "Fixtures":
 
                                         if save_result:
 
-                                            if (
-                                                player1_legs
-                                                == player2_legs
-                                            ):
+                                            if save_result:
 
-                                                st.error(
-                                                    "A darts match cannot "
-                                                    "finish as a draw."
+                                                score_is_valid, score_error = (
+                                                    validate_match_score(
+                                                        player1_legs,
+                                                        player2_legs,
+                                                        selected_tournament_object.legs_format
+                                                    )
                                                 )
 
-                                            elif (
-                                                player1_legs == 0
-                                                and player2_legs == 0
-                                            ):
+                                                if not score_is_valid:
 
-                                                st.error(
-                                                    "Please enter the "
-                                                    "match score."
-                                                )
+                                                    st.error(
+                                                        score_error
+                                                    )
 
+                                                elif player1_average > 200:
+
+                                                    st.error(
+                                                        f"{player1_name}'s average cannot exceed 200."
+                                                    )
+
+                                                elif player2_average > 200:
+
+                                                    st.error(
+                                                        f"{player2_name}'s average cannot exceed 200."
+                                                    )
+
+                                                elif player1_checkout > 170:
+
+                                                    st.error(
+                                                        f"{player1_name}'s highest checkout cannot exceed 170."
+                                                    )
+
+                                                elif player2_checkout > 170:
+
+                                                    st.error(
+                                                        f"{player2_name}'s highest checkout cannot exceed 170."
+                                                    )
+
+                                                else:
+
+                                                    save_db = SessionLocal()
+
+                                                    target_fixture = save_db.get(
+                                                        Fixture,
+                                                        fixture.id
+                                                    )
+
+                                                    if not target_fixture:
+
+                                                        st.error(
+                                                            "Fixture could not be found."
+                                                        )
+
+                                                        save_db.close()
+
+                                                    else:
+
+                                                        target_fixture.player1_legs = (
+                                                            player1_legs
+                                                        )
+
+                                                        target_fixture.player2_legs = (
+                                                            player2_legs
+                                                        )
+
+                                                        target_fixture.player1_average = (
+                                                            player1_average
+                                                        )
+
+                                                        target_fixture.player2_average = (
+                                                            player2_average
+                                                        )
+
+                                                        target_fixture.player1_180s = (
+                                                            player1_180s
+                                                        )
+
+                                                        target_fixture.player2_180s = (
+                                                            player2_180s
+                                                        )
+
+                                                        target_fixture.player1_high_checkout = (
+                                                            player1_checkout
+                                                        )
+
+                                                        target_fixture.player2_high_checkout = (
+                                                            player2_checkout
+                                                        )
+
+                                                        target_fixture.date_played = (
+                                                            match_date
+                                                        )
+
+                                                        target_fixture.played = 1
+
+                                                        save_db.commit()
+                                                        save_db.close()
+
+                                                        if (
+                                                            "league_standings"
+                                                            in st.session_state
+                                                        ):
+
+                                                            del st.session_state[
+                                                                "league_standings"
+                                                            ]
+
+                                                        st.success(
+                                                            "Result saved."
+                                                        )
+
+                                                        st.rerun()
+                                                        
                                             else:
 
                                                 save_db = SessionLocal()
