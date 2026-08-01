@@ -25,7 +25,8 @@ from models import (
     TournamentPlayer,
     Fixture,
     KnockoutMatch,
-    Announcement
+    Announcement,
+    LeaguePost
 )
 
 FACEBOOK_URL = (
