@@ -1737,77 +1737,54 @@ if not st.session_state.logged_in:
     # FEATURE CARDS
     # ---------------------------------------------------------
 
-    feature_col1, feature_col2, feature_col3 = (
-        st.columns(3)
-    )
+    feature_col1, feature_col2, feature_col3 = st.columns(3)
 
-    with feature_col1:
+with feature_col1:
+
+    with st.container(border=True):
+
+        st.markdown("### 📅 Next League Night")
 
         st.markdown(
-            dedent(
-                f"""
-                <div class="landing-panel">
+            f"## {league_night_date}"
+        )
 
-                    <div class="landing-panel-title">
-                        📅 Next League Night
-                    </div>
+        st.write(
+            "First match at 8:00 PM"
+        )
 
-                    <div class="landing-panel-value">
-                        {league_night_date}
-                    </div>
+        st.metric(
+            "Countdown",
+            league_countdown
+        )
 
-                    <div class="landing-panel-detail">
-                        First match at 8:00 PM
-                    </div>
 
-                    <div style="
-                        color:#f5c542;
-                        font-size:20px;
-                        font-weight:900;
-                        margin-top:14px;
-                    ">
-                        {league_countdown}
-                    </div>
+with feature_col2:
 
-                </div>
-                """
-            ).strip(),
+    with st.container(border=True):
+
+        st.markdown("### 👑 Current League Leader")
+
+        st.markdown(
+            f"## {public_leader_name}"
+        )
+
+        st.metric(
+            "League Points",
+            public_leader_points
+        )
+
+        st.markdown(
+            "<div style='text-align:center; font-size:38px;'>🥇</div>",
             unsafe_allow_html=True
         )
 
-    with feature_col2:
 
-        st.markdown(
-            dedent(
-                f"""
-                <div class="landing-panel">
+with feature_col3:
 
-                    <div class="landing-panel-title">
-                        👑 Current League Leader
-                    </div>
+    with st.container(border=True):
 
-                    <div class="landing-panel-value">
-                        {public_leader_name}
-                    </div>
-
-                    <div class="landing-panel-detail">
-                        {public_leader_points} league points
-                    </div>
-
-                    <div style="
-                        font-size:34px;
-                        margin-top:13px;
-                    ">
-                        🥇
-                    </div>
-
-                </div>
-                """
-            ).strip(),
-            unsafe_allow_html=True
-        )
-
-    with feature_col3:
+        st.markdown("### 🎯 Next Fixture")
 
         if public_next_fixture:
 
@@ -1822,40 +1799,27 @@ if not st.session_state.logged_in:
             )
 
             st.markdown(
-                dedent(
-                    f"""
-                    <div class="landing-panel">
+                f"## {next_player1}"
+            )
 
-                        <div class="landing-panel-title">
-                            🎯 Next Fixture
-                        </div>
-
-                        <div class="landing-panel-value">
-                            {next_player1}
-                        </div>
-
-                        <div class="landing-vs">
-                            VS
-                        </div>
-
-                        <div style="
-                            color:white;
-                            font-size:24px;
-                            font-weight:900;
-                        ">
-                            {next_player2}
-                        </div>
-
-                        <div class="landing-panel-detail">
-                            Round {public_next_fixture.round_number}
-                        </div>
-
-                    </div>
-                    """
-                ).strip(),
+            st.markdown(
+                "<h3 style='text-align:center; color:#f5c542;'>VS</h3>",
                 unsafe_allow_html=True
             )
 
+            st.markdown(
+                f"## {next_player2}"
+            )
+
+            st.caption(
+                f"Round {public_next_fixture.round_number}"
+            )
+
+        else:
+
+            st.info(
+                "No fixture is currently scheduled."
+            )
     # ---------------------------------------------------------
     # LEAGUE ACTIVITY
     # ---------------------------------------------------------
@@ -1913,41 +1877,25 @@ if not st.session_state.logged_in:
 
     if public_latest_announcement:
 
-        st.markdown(
-            f"""
-            <div class="landing-announcement">
+        with st.container(border=True):
 
-                <div style="
-                    color:#f5c542;
-                    font-size:14px;
-                    font-weight:900;
-                    text-transform:uppercase;
-                    letter-spacing:1px;
-                ">
-                    📢 Latest Announcement
-                </div>
+            st.markdown(
+                "### 📢 Latest Announcement"
+            )
 
-                <div style="
-                    color:white;
-                    font-size:24px;
-                    font-weight:900;
-                    margin-top:9px;
-                ">
-                    {public_latest_announcement.title}
-                </div>
+            st.markdown(
+                f"## {public_latest_announcement.title}"
+            )
 
-                <div style="
-                    color:#c6ccd6;
-                    font-size:16px;
-                    margin-top:8px;
-                ">
-                    {public_latest_announcement.message}
-                </div>
+            st.write(
+                public_latest_announcement.message
+            )
 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+            if public_latest_announcement.created_at:
+
+                st.caption(
+                    public_latest_announcement.created_at
+                )
 
     # ---------------------------------------------------------
     # SOCIAL MEDIA PREVIEW
@@ -1976,62 +1924,33 @@ if not st.session_state.logged_in:
 
     with social_col1:
 
-        st.markdown(
-            """
-            <div class="landing-social-card">
+        with st.container(border=True):
 
-                <div class="landing-social-icon">
-                    📘
-                </div>
+            st.markdown("# 📘")
 
-                <div class="landing-social-name">
-                    Facebook
-                </div>
+            st.subheader("Facebook")
 
-                <div class="landing-social-description">
-                    Community news, fixtures
-                    and league discussion
-                </div>
+            st.write(
+                "Community news, fixtures and league discussion."
+            )
 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.link_button(
-            "Visit Facebook",
-            FACEBOOK_URL,
-            use_container_width=True
-        )
+            st.link_button(
+                "Visit Facebook",
+                FACEBOOK_URL,
+                use_container_width=True
+            )
 
     with social_col2:
 
-        st.markdown(
-            """
-            <div class="landing-social-card">
+        with st.container(border=True):
 
-                <div class="landing-social-icon">
-                    ▶️
-                </div>
+            st.markdown("# ▶️")
 
-                <div class="landing-social-name">
-                    YouTube
-                </div>
+            st.subheader("YouTube")
 
-                <div class="landing-social-description">
-                    Match highlights, finals
-                    and player features
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        if (
-            YOUTUBE_URL
-            != "PASTE_YOUR_YOUTUBE_CHANNEL_LINK_HERE"
-        ):
+            st.write(
+                "Match highlights, finals and player features."
+            )
 
             st.link_button(
                 "Watch on YouTube",
@@ -2039,44 +1958,23 @@ if not st.session_state.logged_in:
                 use_container_width=True
             )
 
-        else:
-
-            st.button(
-                "YouTube Coming Soon",
-                key="youtube_coming_soon",
-                disabled=True,
-                use_container_width=True
-            )
-
     with social_col3:
 
-        st.markdown(
-            """
-            <div class="landing-social-card">
+        with st.container(border=True):
 
-                <div class="landing-social-icon">
-                    🎵
-                </div>
+            st.markdown("# 🎵")
 
-                <div class="landing-social-name">
-                    TikTok
-                </div>
+            st.subheader("TikTok")
 
-                <div class="landing-social-description">
-                    180s, checkouts and
-                    league-night moments
-                </div>
+            st.write(
+                "180s, checkouts and league-night moments."
+            )
 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.link_button(
-            "Follow on TikTok",
-            TIKTOK_URL,
-            use_container_width=True
-        )
+            st.link_button(
+                "Follow on TikTok",
+                TIKTOK_URL,
+                use_container_width=True
+            )
 
     st.divider()
 
