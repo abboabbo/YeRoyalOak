@@ -5328,11 +5328,12 @@ if page == "Fixtures":
 
                                                 if not target_fixture:
 
+                                                    edit_db.close()
+
                                                     st.error(
                                                         "Fixture could not be found."
                                                     )
 
-                                                    edit_db.close()
 
                                                 else:
 
@@ -5377,18 +5378,10 @@ if page == "Fixtures":
                                                     edit_db.commit()
                                                     edit_db.close()
 
-                                                    if (
-                                                        "league_standings"
-                                                        in st.session_state
-                                                    ):
+                                                    if "league_standings" in st.session_state:
+                                                        del st.session_state["league_standings"]
 
-                                                        del st.session_state[
-                                                            "league_standings"
-                                                        ]
-
-                                                    st.success(
-                                                        "Result updated."
-                                                    )
+                                                    st.success("Result updated.")
 
                                                     st.rerun()
 
