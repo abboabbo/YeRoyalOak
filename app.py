@@ -5247,490 +5247,773 @@ if page == "Fixtures":
 
 # LEAGUE TAB
 
+# =========================================================
+# LEAGUE TABLE — PHASE C
+# =========================================================
+
 if page == "League":
 
     st.markdown(
         """
-        <h1 style='text-align:center;'>🏆 League Table</h1>
-        <p style='text-align:center; color:#bfc5d2; font-size:17px;'>
-            Current Ye Royal Oak standings
+        <h1 style="text-align:center;">
+            🏆 League Standings
+        </h1>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            Current Ye Royal Oak league positions
         </p>
         """,
         unsafe_allow_html=True
     )
 
-    db = SessionLocal()
+    league_db = SessionLocal()
 
-    players = db.query(Player).all()
-
-    fixtures = db.query(Fixture).filter(
-        Fixture.played == 1
+    tournaments = league_db.query(
+        Tournament
+    ).order_by(
+        Tournament.id.desc()
     ).all()
 
-    table = {}
+    if not tournaments:
 
-    for player in players:
-
-        table[player.id] = {
-            "player": player,
-            "played": 0,
-            "won": 0,
-            "drawn": 0,
-            "lost": 0,
-            "legs_for": 0,
-            "legs_against": 0,
-            "points": 0,
-            "averages": []
-        }
-
-    for fixture in fixtures:
-
-        if (
-            fixture.player1_id not in table
-            or fixture.player2_id not in table
-        ):
-
-            continue
-
-        p1 = table[fixture.player1_id]
-        p2 = table[fixture.player2_id]
-
-        p1["played"] += 1
-        p2["played"] += 1
-
-        p1["legs_for"] += fixture.player1_legs
-        p1["legs_against"] += fixture.player2_legs
-
-        p2["legs_for"] += fixture.player2_legs
-        p2["legs_against"] += fixture.player1_legs
-
-        try:
-            p1["averages"].append(float(fixture.player1_average))
-        except:
-            pass
-
-        try:
-            p2["averages"].append(float(fixture.player2_average))
-        except:
-            pass
-
-        if fixture.player1_legs > fixture.player2_legs:
-
-            p1["won"] += 1
-            p1["points"] += 2
-            p2["lost"] += 1
-
-        elif fixture.player2_legs > fixture.player1_legs:
-
-            p2["won"] += 1
-            p2["points"] += 2
-            p1["lost"] += 1
-
-        else:
-
-            p1["drawn"] += 1
-            p2["drawn"] += 1
-            p1["points"] += 1
-            p2["points"] += 1
-
-    rows = []
-
-    for data in table.values():
-
-        avg = 0
-
-        if data["averages"]:
-
-            avg = round(
-                sum(data["averages"]) / len(data["averages"]),
-                2
-            )
-
-        rows.append({
-            "Player": display_player_name(data["player"]),
-            "Played": data["played"],
-            "Won": data["won"],
-            "Drawn": data["drawn"],
-            "Lost": data["lost"],
-            "Legs For": data["legs_for"],
-            "Legs Against": data["legs_against"],
-            "Difference": data["legs_for"] - data["legs_against"],
-            "3 Dart Average": avg,
-            "Points": data["points"],
-            "Player ID": data["player"].id
-        })
-
-    rows = sorted(
-        rows,
-        key=lambda x: (
-            x["Points"],
-            x["Difference"],
-            x["3 Dart Average"]
-        ),
-        reverse=True
-    )
-
-    st.session_state["league_standings"] = rows
-
-    if rows:
-
-        leader = rows[0]
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-
-            dashboard_card(
-                "🥇 Current Leader",
-                leader["Player"],
-                f'{leader["Points"]} points'
-            )
-
-        with col2:
-
-            dashboard_card(
-                "🎯 Best Average",
-                max(rows, key=lambda x: x["3 Dart Average"])["Player"],
-                f'{max(rows, key=lambda x: x["3 Dart Average"])["3 Dart Average"]} avg'
-            )
-
-        with col3:
-
-            dashboard_card(
-                "🔥 Most Wins",
-                max(rows, key=lambda x: x["Won"])["Player"],
-                f'{max(rows, key=lambda x: x["Won"])["Won"]} wins'
-            )
-
-        st.divider()
-
-        # =====================================================
-        # MODERN SPORTS STANDINGS
-        # =====================================================
-
-        st.markdown(
-            """
-            <style>
-            .standings-header {
-                background: linear-gradient(90deg, #2b220b, #111827);
-                border: 1px solid rgba(245, 197, 66, 0.55);
-                border-radius: 14px;
-                padding: 12px 10px;
-                margin-bottom: 8px;
-                color: #f5c542;
-                font-size: 12px;
-                font-weight: 900;
-                text-transform: uppercase;
-                letter-spacing: 0.7px;
-            }
-
-            .standings-row {
-                background: linear-gradient(90deg, #151d2a, #080d15);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 14px;
-                padding: 10px;
-                margin-bottom: 8px;
-                transition: 0.2s ease;
-            }
-
-            .standings-row:hover {
-                border-color: rgba(245, 197, 66, 0.55);
-                transform: translateY(-1px);
-                box-shadow: 0 7px 18px rgba(0, 0, 0, 0.3);
-            }
-
-            .standings-leader {
-                background: linear-gradient(90deg, #4a390c, #151923);
-                border-color: rgba(245, 197, 66, 0.85);
-                box-shadow: 0 0 20px rgba(245, 197, 66, 0.08);
-            }
-
-            .standings-position {
-                font-size: 21px;
-                font-weight: 900;
-                color: #f5c542;
-                text-align: center;
-                padding-top: 7px;
-            }
-
-            .standings-player {
-                color: white;
-                font-size: 17px;
-                font-weight: 900;
-                padding-top: 7px;
-            }
-
-            .standings-stat {
-                color: #e6e9ef;
-                font-size: 15px;
-                font-weight: 800;
-                text-align: center;
-                padding-top: 8px;
-            }
-
-            .standings-average {
-                color: #7dd3fc;
-            }
-
-            .standings-positive {
-                color: #45df8b;
-            }
-
-            .standings-negative {
-                color: #ff7078;
-            }
-
-            .standings-points {
-                color: #f5c542;
-                font-size: 20px;
-                font-weight: 950;
-                text-align: center;
-                padding-top: 5px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
+        st.info(
+            "Create a tournament before viewing "
+            "the league standings."
         )
 
-        header_columns = st.columns(
-            [0.6, 3.0, 0.65, 0.65, 0.65, 0.65, 0.75, 0.75, 0.75, 1.0, 0.75]
-        )
-
-        header_names = [
-            "Pos",
-            "Player",
-            "P",
-            "W",
-            "D",
-            "L",
-            "LF",
-            "LA",
-            "+/-",
-            "Avg",
-            "Pts"
-        ]
-
-        for header_column, header_name in zip(
-            header_columns,
-            header_names
-        ):
-
-            with header_column:
-
-                st.markdown(
-                    f"""
-                    <div class="standings-header">
-                        {header_name}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-        pdf_rows = []
-
-        for position, row in enumerate(rows, start=1):
-
-            if position == 1:
-                position_display = "🥇"
-
-            elif position == 2:
-                position_display = "🥈"
-
-            elif position == 3:
-                position_display = "🥉"
-
-            else:
-                position_display = str(position)
-
-            difference = row["Difference"]
-
-            if difference > 0:
-
-                difference_display = f"+{difference}"
-                difference_class = "standings-positive"
-
-            elif difference < 0:
-
-                difference_display = str(difference)
-                difference_class = "standings-negative"
-
-            else:
-
-                difference_display = "0"
-                difference_class = ""
-
-            row_columns = st.columns(
-                [0.6, 3.0, 0.65, 0.65, 0.65, 0.65, 0.75, 0.75, 0.75, 1.0, 0.75]
-            )
-
-            row_class = "standings-row"
-
-            if position == 1:
-                row_class += " standings-leader"
-
-            values = [
-                (
-                    position_display,
-                    "standings-position"
-                ),
-                (
-                    row["Player"],
-                    "standings-player"
-                ),
-                (
-                    row["Played"],
-                    "standings-stat"
-                ),
-                (
-                    row["Won"],
-                    "standings-stat"
-                ),
-                (
-                    row["Drawn"],
-                    "standings-stat"
-                ),
-                (
-                    row["Lost"],
-                    "standings-stat"
-                ),
-                (
-                    row["Legs For"],
-                    "standings-stat"
-                ),
-                (
-                    row["Legs Against"],
-                    "standings-stat"
-                ),
-                (
-                    difference_display,
-                    f"standings-stat {difference_class}"
-                ),
-                (
-                    f'{row["3 Dart Average"]:.2f}',
-                    "standings-stat standings-average"
-                ),
-                (
-                    row["Points"],
-                    "standings-points"
-                )
-            ]
-
-            for row_column, value_data in zip(
-                row_columns,
-                values
-            ):
-
-                value, value_class = value_data
-
-                with row_column:
-
-                    st.markdown(
-                        f"""
-                        <div class="{row_class}">
-                            <div class="{value_class}">
-                                {value}
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-            pdf_rows.append(
-                {
-                    "Pos": position,
-                    "Player": row["Player"],
-                    "Played": row["Played"],
-                    "Won": row["Won"],
-                    "Drawn": row["Drawn"],
-                    "Lost": row["Lost"],
-                    "Legs For": row["Legs For"],
-                    "Legs Against": row["Legs Against"],
-                    "Difference": row["Difference"],
-                    "3 Dart Average": row["3 Dart Average"],
-                    "Points": row["Points"]
-                }
-            )
-        
-
-        st.divider()
-
-        col4, col5 = st.columns(2)
-
-        with col4:
-
-            st.markdown("### 🎴 View Player Card")
-
-            player_options = {
-                row["Player"]: row["Player ID"]
-                for row in rows
-            }
-
-            selected_player_name = st.selectbox(
-                "Select Player",
-                list(player_options.keys()),
-                key="view_player_select"
-            )
-
-            if st.button(
-                "View Player Profile",
-                key="view_player_button",
-                use_container_width=True
-            ):
-
-                st.session_state.view_player_id = player_options[
-                    selected_player_name
-                ]
-
-                st.session_state.page = "View Player"
-
-                st.rerun()
-
-        with col5:
-
-            st.markdown("### 📄 Export")
-
-            pdf_rows = []
-
-        for position, row in enumerate(rows, start=1):
-
-            pdf_rows.append(
-                {
-                    "Pos": position,
-                    "Player": row["Player"],
-                    "Played": row["Played"],
-                    "Won": row["Won"],
-                    "Drawn": row["Drawn"],
-                    "Lost": row["Lost"],
-                    "Legs For": row["Legs For"],
-                    "Legs Against": row["Legs Against"],
-                    "Difference": row["Difference"],
-                    "3 Dart Average": row["3 Dart Average"],
-                    "Points": row["Points"]
-                }
-            )
-
-        league_pdf = create_league_table_pdf(
-            pdf_rows
-        )
-
-        st.download_button(
-            label="Download League Table PDF",
-            data=league_pdf,
-            file_name="league_table.pdf",
-            mime="application/pdf",
-            key="download_league_table_pdf",
-            use_container_width=True
-        )
+        league_db.close()
 
     else:
 
-        dashboard_card(
-            "No League Data",
-            "No completed matches",
-            "League table will appear once results are entered"
-        )
+        tournament_options = {
+            tournament.name: tournament.id
+            for tournament in tournaments
+            if tournament.format_type
+            != "Knockout Only"
+        }
 
-    db.close()
+        if not tournament_options:
+
+            st.info(
+                "No league-based tournaments were found."
+            )
+
+            league_db.close()
+
+        else:
+
+            selected_tournament_name = st.selectbox(
+                "Tournament",
+                list(tournament_options.keys()),
+                key="league_tournament_selector"
+            )
+
+            selected_tournament_id = tournament_options[
+                selected_tournament_name
+            ]
+
+            tournament_links = league_db.query(
+                TournamentPlayer
+            ).filter(
+                TournamentPlayer.tournament_id
+                == selected_tournament_id
+            ).all()
+
+            tournament_player_ids = {
+                link.player_id
+                for link in tournament_links
+            }
+
+            players = league_db.query(
+                Player
+            ).filter(
+                Player.id.in_(
+                    tournament_player_ids
+                )
+            ).all()
+
+            fixtures = league_db.query(
+                Fixture
+            ).filter(
+                Fixture.tournament_id
+                == selected_tournament_id,
+                Fixture.played == 1
+            ).order_by(
+                Fixture.round_number,
+                Fixture.id
+            ).all()
+
+            player_objects = {
+                player.id: player
+                for player in players
+            }
+
+            standings = {}
+
+            for player in players:
+
+                standings[player.id] = {
+                    "player": player,
+                    "played": 0,
+                    "won": 0,
+                    "drawn": 0,
+                    "lost": 0,
+                    "legs_for": 0,
+                    "legs_against": 0,
+                    "points": 0,
+                    "averages": [],
+                    "form": []
+                }
+
+            for fixture in fixtures:
+
+                if (
+                    fixture.player1_id
+                    not in standings
+                    or fixture.player2_id
+                    not in standings
+                ):
+                    continue
+
+                player1 = standings[
+                    fixture.player1_id
+                ]
+
+                player2 = standings[
+                    fixture.player2_id
+                ]
+
+                player1["played"] += 1
+                player2["played"] += 1
+
+                player1["legs_for"] += (
+                    fixture.player1_legs or 0
+                )
+
+                player1["legs_against"] += (
+                    fixture.player2_legs or 0
+                )
+
+                player2["legs_for"] += (
+                    fixture.player2_legs or 0
+                )
+
+                player2["legs_against"] += (
+                    fixture.player1_legs or 0
+                )
+
+                try:
+
+                    player1_average = float(
+                        fixture.player1_average
+                    )
+
+                    if 0 < player1_average <= 200:
+
+                        player1["averages"].append(
+                            player1_average
+                        )
+
+                except (TypeError, ValueError):
+
+                    pass
+
+                try:
+
+                    player2_average = float(
+                        fixture.player2_average
+                    )
+
+                    if 0 < player2_average <= 200:
+
+                        player2["averages"].append(
+                            player2_average
+                        )
+
+                except (TypeError, ValueError):
+
+                    pass
+
+                player1_legs = (
+                    fixture.player1_legs or 0
+                )
+
+                player2_legs = (
+                    fixture.player2_legs or 0
+                )
+
+                if player1_legs > player2_legs:
+
+                    player1["won"] += 1
+                    player1["points"] += 2
+                    player1["form"].append("W")
+
+                    player2["lost"] += 1
+                    player2["form"].append("L")
+
+                elif player2_legs > player1_legs:
+
+                    player2["won"] += 1
+                    player2["points"] += 2
+                    player2["form"].append("W")
+
+                    player1["lost"] += 1
+                    player1["form"].append("L")
+
+                else:
+
+                    player1["drawn"] += 1
+                    player2["drawn"] += 1
+
+                    player1["points"] += 1
+                    player2["points"] += 1
+
+                    player1["form"].append("D")
+                    player2["form"].append("D")
+
+            rows = []
+
+            for player_id, data in standings.items():
+
+                average = 0.0
+
+                if data["averages"]:
+
+                    average = round(
+                        sum(data["averages"])
+                        / len(data["averages"]),
+                        2
+                    )
+
+                leg_difference = (
+                    data["legs_for"]
+                    - data["legs_against"]
+                )
+
+                rows.append(
+                    {
+                        "Player": display_player_name(
+                            data["player"]
+                        ),
+                        "Real Name": (
+                            data["player"].name
+                        ),
+                        "Played": data["played"],
+                        "Won": data["won"],
+                        "Drawn": data["drawn"],
+                        "Lost": data["lost"],
+                        "Legs For": (
+                            data["legs_for"]
+                        ),
+                        "Legs Against": (
+                            data["legs_against"]
+                        ),
+                        "Difference": (
+                            leg_difference
+                        ),
+                        "3 Dart Average": average,
+                        "Points": data["points"],
+                        "Form": data["form"][-5:],
+                        "Player ID": player_id
+                    }
+                )
+
+            rows = sorted(
+                rows,
+                key=lambda row: (
+                    row["Points"],
+                    row["Difference"],
+                    row["Won"],
+                    row["3 Dart Average"]
+                ),
+                reverse=True
+            )
+
+            st.session_state[
+                "league_standings"
+            ] = rows
+
+            st.session_state[
+                "league_tournament_id"
+            ] = selected_tournament_id
+
+            if not rows:
+
+                dashboard_card(
+                    "No League Data",
+                    "No players found",
+                    (
+                        "Add players to this tournament "
+                        "to create the table."
+                    )
+                )
+
+            else:
+
+                completed_matches = len(
+                    fixtures
+                )
+
+                total_players = len(
+                    rows
+                )
+
+                leader = rows[0]
+
+                best_average = max(
+                    rows,
+                    key=lambda row: row[
+                        "3 Dart Average"
+                    ]
+                )
+
+                most_wins = max(
+                    rows,
+                    key=lambda row: (
+                        row["Won"],
+                        row["3 Dart Average"]
+                    )
+                )
+
+                summary_col1, summary_col2, summary_col3 = (
+                    st.columns(3)
+                )
+
+                with summary_col1:
+
+                    dashboard_card(
+                        "👑 League Leader",
+                        leader["Player"],
+                        (
+                            f'{leader["Points"]} points '
+                            f'from {leader["Played"]} matches'
+                        )
+                    )
+
+                with summary_col2:
+
+                    dashboard_card(
+                        "🎯 Best Average",
+                        best_average["Player"],
+                        (
+                            f'{best_average["3 Dart Average"]:.2f}'
+                            " three-dart average"
+                        )
+                    )
+
+                with summary_col3:
+
+                    dashboard_card(
+                        "🔥 Most Wins",
+                        most_wins["Player"],
+                        (
+                            f'{most_wins["Won"]} wins '
+                            f'from {most_wins["Played"]} matches'
+                        )
+                    )
+
+                overview_col1, overview_col2 = (
+                    st.columns(2)
+                )
+
+                with overview_col1:
+
+                    st.metric(
+                        "League Players",
+                        total_players
+                    )
+
+                with overview_col2:
+
+                    st.metric(
+                        "Matches Completed",
+                        completed_matches
+                    )
+
+                st.divider()
+
+                st.markdown(
+                    "## 📊 Current Standings"
+                )
+
+                st.caption(
+                    "P = Played · W = Won · "
+                    "D = Drawn · L = Lost · "
+                    "LF = Legs For · LA = Legs Against"
+                )
+
+                # ---------------------------------------------
+                # PLAYER STANDING CARDS
+                # ---------------------------------------------
+
+                for position, row in enumerate(
+                    rows,
+                    start=1
+                ):
+
+                    player = player_objects.get(
+                        row["Player ID"]
+                    )
+
+                    if position == 1:
+                        position_display = "🥇"
+                        position_title = (
+                            "League Leader"
+                        )
+
+                    elif position == 2:
+                        position_display = "🥈"
+                        position_title = (
+                            "Second Place"
+                        )
+
+                    elif position == 3:
+                        position_display = "🥉"
+                        position_title = (
+                            "Third Place"
+                        )
+
+                    else:
+                        position_display = str(
+                            position
+                        )
+
+                        position_title = (
+                            f"Position {position}"
+                        )
+
+                    form_display = []
+
+                    for form_result in row["Form"]:
+
+                        if form_result == "W":
+                            form_display.append("🟢 W")
+
+                        elif form_result == "D":
+                            form_display.append("🟡 D")
+
+                        else:
+                            form_display.append("🔴 L")
+
+                    while len(form_display) < 5:
+
+                        form_display.insert(
+                            0,
+                            "⚫ —"
+                        )
+
+                    difference = row[
+                        "Difference"
+                    ]
+
+                    if difference > 0:
+
+                        difference_display = (
+                            f"+{difference}"
+                        )
+
+                        difference_delta = (
+                            "positive"
+                        )
+
+                    elif difference < 0:
+
+                        difference_display = str(
+                            difference
+                        )
+
+                        difference_delta = (
+                            "negative"
+                        )
+
+                    else:
+
+                        difference_display = "0"
+                        difference_delta = "off"
+
+                    with st.container(
+                        border=True
+                    ):
+
+                        main_col1, main_col2, main_col3 = (
+                            st.columns(
+                                [0.7, 3.4, 1.2]
+                            )
+                        )
+
+                        with main_col1:
+
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    text-align:center;
+                                    font-size:34px;
+                                    font-weight:950;
+                                    color:#f5c542;
+                                    padding-top:8px;
+                                ">
+                                    {position_display}
+                                </div>
+
+                                <div style="
+                                    text-align:center;
+                                    color:#9ca3af;
+                                    font-size:11px;
+                                    font-weight:800;
+                                ">
+                                    {position_title}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+
+                        with main_col2:
+
+                            identity_col1, identity_col2 = (
+                                st.columns(
+                                    [0.8, 3.2]
+                                )
+                            )
+
+                            with identity_col1:
+
+                                if (
+                                    player
+                                    and player.logo_path
+                                    and os.path.exists(
+                                        player.logo_path
+                                    )
+                                ):
+
+                                    st.image(
+                                        player.logo_path,
+                                        width=72
+                                    )
+
+                                else:
+
+                                    st.markdown(
+                                        """
+                                        <div style="
+                                            width:65px;
+                                            height:65px;
+                                            border-radius:50%;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;
+                                            background:#111827;
+                                            border:2px solid #f5c542;
+                                            font-size:28px;
+                                        ">
+                                            🎯
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
+
+                            with identity_col2:
+
+                                st.markdown(
+                                    f"### {row['Player']}"
+                                )
+
+                                if (
+                                    row["Player"]
+                                    != row["Real Name"]
+                                ):
+
+                                    st.caption(
+                                        row["Real Name"]
+                                    )
+
+                                st.caption(
+                                    "Recent form: "
+                                    + "  ".join(
+                                        form_display
+                                    )
+                                )
+
+                        with main_col3:
+
+                            st.metric(
+                                "Points",
+                                row["Points"]
+                            )
+
+                        stat_col1, stat_col2, stat_col3, stat_col4 = (
+                            st.columns(4)
+                        )
+
+                        with stat_col1:
+
+                            st.metric(
+                                "Record",
+                                (
+                                    f'{row["Won"]}-'
+                                    f'{row["Drawn"]}-'
+                                    f'{row["Lost"]}'
+                                ),
+                                help="Wins-Draws-Losses"
+                            )
+
+                        with stat_col2:
+
+                            st.metric(
+                                "Played",
+                                row["Played"]
+                            )
+
+                        with stat_col3:
+
+                            st.metric(
+                                "Leg Difference",
+                                difference_display,
+                                delta=difference_display,
+                                delta_color=(
+                                    difference_delta
+                                )
+                            )
+
+                        with stat_col4:
+
+                            st.metric(
+                                "3-Dart Average",
+                                (
+                                    f'{row["3 Dart Average"]:.2f}'
+                                )
+                            )
+
+                        detail_col1, detail_col2, detail_col3 = (
+                            st.columns(3)
+                        )
+
+                        with detail_col1:
+
+                            st.caption(
+                                (
+                                    f'🎯 Legs For: '
+                                    f'{row["Legs For"]}'
+                                )
+                            )
+
+                        with detail_col2:
+
+                            st.caption(
+                                (
+                                    f'🛡 Legs Against: '
+                                    f'{row["Legs Against"]}'
+                                )
+                            )
+
+                        with detail_col3:
+
+                            if st.button(
+                                "🎴 View Player Card",
+                                key=(
+                                    f"league_view_player_"
+                                    f'{row["Player ID"]}'
+                                ),
+                                use_container_width=True
+                            ):
+
+                                st.session_state[
+                                    "view_player_id"
+                                ] = row[
+                                    "Player ID"
+                                ]
+
+                                st.session_state.page = (
+                                    "View Player"
+                                )
+
+                                st.rerun()
+
+                # ---------------------------------------------
+                # EXPORT
+                # ---------------------------------------------
+
+                st.divider()
+
+                export_col1, export_col2 = (
+                    st.columns([2, 1])
+                )
+
+                with export_col1:
+
+                    st.info(
+                        "The PDF contains the full standings "
+                        "in a printable table format."
+                    )
+
+                with export_col2:
+
+                    pdf_rows = []
+
+                    for position, row in enumerate(
+                        rows,
+                        start=1
+                    ):
+
+                        pdf_rows.append(
+                            {
+                                "Pos": position,
+                                "Player": row[
+                                    "Player"
+                                ],
+                                "Played": row[
+                                    "Played"
+                                ],
+                                "Won": row["Won"],
+                                "Drawn": row[
+                                    "Drawn"
+                                ],
+                                "Lost": row["Lost"],
+                                "Legs For": row[
+                                    "Legs For"
+                                ],
+                                "Legs Against": row[
+                                    "Legs Against"
+                                ],
+                                "Difference": row[
+                                    "Difference"
+                                ],
+                                "3 Dart Average": row[
+                                    "3 Dart Average"
+                                ],
+                                "Points": row[
+                                    "Points"
+                                ]
+                            }
+                        )
+
+                    league_pdf = (
+                        create_league_table_pdf(
+                            pdf_rows
+                        )
+                    )
+
+                    st.download_button(
+                        label=(
+                            "📄 Download League Table"
+                        ),
+                        data=league_pdf,
+                        file_name=(
+                            f"{selected_tournament_name}"
+                            "_league_table.pdf"
+                        ),
+                        mime="application/pdf",
+                        key=(
+                            "download_league_pdf_"
+                            f"{selected_tournament_id}"
+                        ),
+                        use_container_width=True
+                    )
+
+            league_db.close()
 
 # KNOCKOUT TAB
 
