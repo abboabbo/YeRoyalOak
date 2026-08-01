@@ -158,6 +158,352 @@ def generate_round_robin(player_ids):
 
     return rounds
 
+# =========================================================
+# KNOCKOUT HELPER FUNCTIONS
+# =========================================================
+
+def calculate_knockout_seeds(db, tournament_id):
+
+    tournament_links = db.query(
+        TournamentPlayer
+    ).filter(
+        TournamentPlayer.tournament_id == tournament_id
+    ).all()
+
+    player_ids = [
+        link.player_id
+        for link in tournament_links
+    ]
+
+    players = db.query(Player).filter(
+        Player.id.in_(player_ids)
+    ).all()
+
+    fixtures = db.query(Fixture).filter(
+        Fixture.tournament_id == tournament_id,
+        Fixture.played == 1
+    ).all()
+
+    standings = {}
+
+    for player in players:
+
+        standings[player.id] = {
+            "player_id": player.id,
+            "points": 0,
+            "wins": 0,
+            "difference": 0,
+            "averages": []
+        }
+
+    for fixture in fixtures:
+
+        if (
+            fixture.player1_id not in standings
+            or fixture.player2_id not in standings
+        ):
+            continue
+
+        player1 = standings[
+            fixture.player1_id
+        ]
+
+        player2 = standings[
+            fixture.player2_id
+        ]
+
+        player1_legs = int(
+            fixture.player1_legs or 0
+        )
+
+        player2_legs = int(
+            fixture.player2_legs or 0
+        )
+
+        player1["difference"] += (
+            player1_legs - player2_legs
+        )
+
+        player2["difference"] += (
+            player2_legs - player1_legs
+        )
+
+        try:
+
+            player1_average = float(
+                fixture.player1_average or 0
+            )
+
+            if 0 < player1_average <= 200:
+
+                player1["averages"].append(
+                    player1_average
+                )
+
+        except (TypeError, ValueError):
+
+            pass
+
+        try:
+
+            player2_average = float(
+                fixture.player2_average or 0
+            )
+
+            if 0 < player2_average <= 200:
+
+                player2["averages"].append(
+                    player2_average
+                )
+
+        except (TypeError, ValueError):
+
+            pass
+
+        if player1_legs > player2_legs:
+
+            player1["wins"] += 1
+            player1["points"] += 2
+
+        elif player2_legs > player1_legs:
+
+            player2["wins"] += 1
+            player2["points"] += 2
+
+        else:
+
+            player1["points"] += 1
+            player2["points"] += 1
+
+    seed_rows = []
+
+    for player_id, data in standings.items():
+
+        average = 0.0
+
+        if data["averages"]:
+
+            average = (
+                sum(data["averages"])
+                / len(data["averages"])
+            )
+
+        seed_rows.append(
+            {
+                "player_id": player_id,
+                "points": data["points"],
+                "wins": data["wins"],
+                "difference": data["difference"],
+                "average": average
+            }
+        )
+
+    seed_rows = sorted(
+        seed_rows,
+        key=lambda row: (
+            row["points"],
+            row["difference"],
+            row["wins"],
+            row["average"],
+            -row["player_id"]
+        ),
+        reverse=True
+    )
+
+    return [
+        row["player_id"]
+        for row in seed_rows
+    ]
+
+
+def create_knockout_match(
+    db,
+    tournament_id,
+    round_name,
+    player1_id,
+    player2_id
+):
+
+    is_bye = (
+        player1_id is not None
+        and player2_id is None
+    )
+
+    match = KnockoutMatch(
+        tournament_id=tournament_id,
+        round_name=round_name,
+        player1_id=player1_id,
+        player2_id=player2_id,
+        player1_score=0,
+        player2_score=0,
+        winner_id=(
+            player1_id
+            if is_bye
+            else None
+        ),
+        played=(
+            1
+            if is_bye
+            else 0
+        )
+    )
+
+    db.add(match)
+
+
+def create_preliminary_round(
+    db,
+    tournament_id,
+    round_name,
+    player_ids,
+    seed_order
+):
+
+    ordered_players = sorted(
+        player_ids,
+        key=lambda player_id: (
+            seed_order.get(
+                player_id,
+                9999
+            )
+        )
+    )
+
+    player_count = len(
+        ordered_players
+    )
+
+    if player_count <= 4:
+        return
+
+    # If there are between five and eight players,
+    # only enough matches are created to reduce the
+    # field to exactly four qualifiers.
+
+    if player_count <= 8:
+
+        number_of_matches = (
+            player_count - 4
+        )
+
+        bye_count = (
+            player_count
+            - number_of_matches * 2
+        )
+
+        bye_players = ordered_players[
+            :bye_count
+        ]
+
+        match_players = ordered_players[
+            bye_count:
+        ]
+
+        for player_id in bye_players:
+
+            create_knockout_match(
+                db=db,
+                tournament_id=tournament_id,
+                round_name=round_name,
+                player1_id=player_id,
+                player2_id=None
+            )
+
+        while len(match_players) >= 2:
+
+            highest_remaining = (
+                match_players.pop(0)
+            )
+
+            lowest_remaining = (
+                match_players.pop(-1)
+            )
+
+            create_knockout_match(
+                db=db,
+                tournament_id=tournament_id,
+                round_name=round_name,
+                player1_id=highest_remaining,
+                player2_id=lowest_remaining
+            )
+
+    else:
+
+        match_players = (
+            ordered_players.copy()
+        )
+
+        if len(match_players) % 2 != 0:
+
+            bye_player = (
+                match_players.pop(0)
+            )
+
+            create_knockout_match(
+                db=db,
+                tournament_id=tournament_id,
+                round_name=round_name,
+                player1_id=bye_player,
+                player2_id=None
+            )
+
+        while len(match_players) >= 2:
+
+            highest_remaining = (
+                match_players.pop(0)
+            )
+
+            lowest_remaining = (
+                match_players.pop(-1)
+            )
+
+            create_knockout_match(
+                db=db,
+                tournament_id=tournament_id,
+                round_name=round_name,
+                player1_id=highest_remaining,
+                player2_id=lowest_remaining
+            )
+
+
+def get_knockout_round_matches(
+    db,
+    tournament_id,
+    round_name
+):
+
+    return db.query(
+        KnockoutMatch
+    ).filter(
+        KnockoutMatch.tournament_id
+        == tournament_id,
+        KnockoutMatch.round_name
+        == round_name
+    ).order_by(
+        KnockoutMatch.id
+    ).all()
+
+
+def knockout_round_complete(matches):
+
+    if not matches:
+        return False
+
+    return all(
+        match.played == 1
+        and match.winner_id is not None
+        for match in matches
+    )
+
+
+def get_round_winners(matches):
+
+    return [
+        match.winner_id
+        for match in matches
+        if match.winner_id is not None
+    ]
+
 def display_player_name(player):
 
     if player.nickname:
@@ -6030,106 +6376,998 @@ if page == "League":
 
             league_db.close()
 
-# KNOCKOUT TAB
+# =========================================================
+# KNOCKOUT STAGE — SEEDED BRACKET
+# =========================================================
 
 if page == "Knockout":
 
-    st.header("🏆 Knockout Stage")
+    st.markdown(
+        """
+        <h1 style="text-align:center;">
+            🎯 Knockout Championship
+        </h1>
 
-    if "league_standings" not in st.session_state:
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            All players qualify. The top four league seeds
+            enter directly at the quarter-final stage.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
-        st.warning("Please visit the League Table first.")
+    knockout_db = SessionLocal()
+
+    tournaments = knockout_db.query(
+        Tournament
+    ).order_by(
+        Tournament.id.desc()
+    ).all()
+
+    knockout_tournaments = [
+        tournament
+        for tournament in tournaments
+        if tournament.format_type
+        in [
+            "League + Knockout",
+            "Knockout Only"
+        ]
+    ]
+
+    if not knockout_tournaments:
+
+        st.info(
+            "No knockout-compatible tournaments "
+            "have been created."
+        )
+
+        knockout_db.close()
 
     else:
 
-        standings = st.session_state["league_standings"]
+        tournament_options = {
+            tournament.name: tournament.id
+            for tournament in knockout_tournaments
+        }
 
-        st.subheader("Current Seeds")
+        selected_tournament_name = st.selectbox(
+            "Tournament",
+            list(tournament_options.keys()),
+            key="knockout_tournament_selector"
+        )
 
-        for seed, player in enumerate(standings, start=1):
+        selected_tournament_id = (
+            tournament_options[
+                selected_tournament_name
+            ]
+        )
 
-            st.write(f"{seed}. {player['Player']}")
+        players = knockout_db.query(
+            Player
+        ).all()
 
-        st.divider()
+        player_objects = {
+            player.id: player
+            for player in players
+        }
 
-        if is_admin:
+        player_lookup = {
+            player.id: display_player_name(
+                player
+            )
+            for player in players
+        }
 
-            if st.button("🏆 Generate Knockout Bracket"):
+        seeded_player_ids = (
+            calculate_knockout_seeds(
+                knockout_db,
+                selected_tournament_id
+            )
+        )
 
-                db = SessionLocal()
+        seed_order = {
+            player_id: seed_number
+            for seed_number, player_id in enumerate(
+                seeded_player_ids,
+                start=1
+            )
+        }
 
-                existing = db.query(KnockoutMatch).count()
-
-                if existing > 0:
-
-                    st.warning("Knockout bracket already exists.")
-
-                else:
-
-                    total_players = len(standings)
-
-                    left = 0
-                    right = total_players - 1
-
-                    while left < right:
-
-                        player1_id = standings[left]["Player ID"]
-                        player2_id = standings[right]["Player ID"]
-
-                        match = KnockoutMatch(
-                            tournament_id=1,
-                            round_name="Round 1",
-                            player1_id=player1_id,
-                            player2_id=player2_id
-                        )
-
-                        db.add(match)
-
-                        left += 1
-                        right -= 1
-
-                    db.commit()
-
-                    st.success("Knockout Bracket Generated!")
-
-                db.close()
-
-        db = SessionLocal()
-
-        matches = db.query(KnockoutMatch).order_by(
+        existing_matches = knockout_db.query(
+            KnockoutMatch
+        ).filter(
+            KnockoutMatch.tournament_id
+            == selected_tournament_id
+        ).order_by(
             KnockoutMatch.id
         ).all()
 
-        if matches:
+        # -----------------------------------------------------
+        # TOURNAMENT SUMMARY
+        # -----------------------------------------------------
 
-            st.subheader("Round 1")
+        summary_col1, summary_col2, summary_col3 = (
+            st.columns(3)
+        )
 
-            for match in matches:
+        with summary_col1:
 
-                player1 = db.get(Player, match.player1_id)
-                player2 = db.get(Player, match.player2_id)
+            dashboard_card(
+                "👥 Knockout Players",
+                len(seeded_player_ids),
+                selected_tournament_name
+            )
 
-                col1, col2 = st.columns([4, 1])
+        with summary_col2:
 
-                with col1:
+            completed_knockout_matches = len(
+                [
+                    match
+                    for match in existing_matches
+                    if match.played == 1
+                    and match.player2_id is not None
+                ]
+            )
 
-                    st.write(f"🎯 {player1.name} vs {player2.name}")
+            dashboard_card(
+                "✅ Matches Completed",
+                completed_knockout_matches,
+                "Knockout results entered"
+            )
 
-                with col2:
+        with summary_col3:
 
-                    if match.winner_id:
+            top_seed_name = "—"
 
-                        winner = db.get(Player, match.winner_id)
+            if seeded_player_ids:
 
-                        st.success(winner.name)
+                top_seed_name = (
+                    player_lookup.get(
+                        seeded_player_ids[0],
+                        "Unknown"
+                    )
+                )
+
+            dashboard_card(
+                "🥇 Number One Seed",
+                top_seed_name,
+                "League seed"
+            )
+
+        # -----------------------------------------------------
+        # SEEDING PREVIEW
+        # -----------------------------------------------------
+
+        with st.expander(
+            "📋 View Knockout Seeds",
+            expanded=False
+        ):
+
+            if not seeded_player_ids:
+
+                st.info(
+                    "No players are linked to this tournament."
+                )
+
+            else:
+
+                for seed_number, player_id in enumerate(
+                    seeded_player_ids,
+                    start=1
+                ):
+
+                    seed_name = player_lookup.get(
+                        player_id,
+                        "Unknown"
+                    )
+
+                    if seed_number <= 4:
+
+                        st.write(
+                            f"**Seed {seed_number}:** "
+                            f"{seed_name} "
+                            "— Quarter-final bye"
+                        )
+
+                    else:
+
+                        st.write(
+                            f"**Seed {seed_number}:** "
+                            f"{seed_name} "
+                            "— Preliminary rounds"
+                        )
+
+        # -----------------------------------------------------
+        # INITIALISE KNOCKOUT
+        # -----------------------------------------------------
+
+        if not existing_matches:
+
+            if not is_admin:
+
+                st.info(
+                    "The knockout bracket has not "
+                    "been created yet."
+                )
+
+            else:
+
+                st.warning(
+                    "Create the knockout only after the "
+                    "league standings are ready. The current "
+                    "league positions will be used as seeds."
+                )
+
+                confirm_start = st.checkbox(
+                    "I confirm that the knockout seeds are correct",
+                    key=(
+                        "confirm_start_knockout_"
+                        f"{selected_tournament_id}"
+                    )
+                )
+
+                if st.button(
+                    "🏆 Create Knockout Bracket",
+                    key=(
+                        "create_knockout_bracket_"
+                        f"{selected_tournament_id}"
+                    ),
+                    use_container_width=True
+                ):
+
+                    if not confirm_start:
+
+                        st.warning(
+                            "Confirm the knockout seeds first."
+                        )
+
+                    elif len(seeded_player_ids) < 8:
+
+                        st.error(
+                            "At least eight players are required "
+                            "for this seeded knockout format."
+                        )
+
+                    else:
+
+                        top_four = (
+                            seeded_player_ids[:4]
+                        )
+
+                        preliminary_players = (
+                            seeded_player_ids[4:]
+                        )
+
+                        if len(
+                            preliminary_players
+                        ) == 4:
+
+                            qualifier_ids = (
+                                preliminary_players
+                            )
+
+                            quarter_final_pairs = [
+                                (
+                                    top_four[0],
+                                    qualifier_ids[3]
+                                ),
+                                (
+                                    top_four[3],
+                                    qualifier_ids[0]
+                                ),
+                                (
+                                    top_four[1],
+                                    qualifier_ids[2]
+                                ),
+                                (
+                                    top_four[2],
+                                    qualifier_ids[1]
+                                )
+                            ]
+
+                            for player1_id, player2_id in (
+                                quarter_final_pairs
+                            ):
+
+                                create_knockout_match(
+                                    db=knockout_db,
+                                    tournament_id=(
+                                        selected_tournament_id
+                                    ),
+                                    round_name="Quarter Final",
+                                    player1_id=player1_id,
+                                    player2_id=player2_id
+                                )
+
+                        else:
+
+                            create_preliminary_round(
+                                db=knockout_db,
+                                tournament_id=(
+                                    selected_tournament_id
+                                ),
+                                round_name="Preliminary 1",
+                                player_ids=(
+                                    preliminary_players
+                                ),
+                                seed_order=seed_order
+                            )
+
+                        knockout_db.commit()
+
+                        st.success(
+                            "Knockout bracket created."
+                        )
+
+                        st.rerun()
 
         else:
 
-            st.info("No knockout bracket generated yet.")
+            # -------------------------------------------------
+            # AUTOMATIC ROUND PROGRESSION
+            # -------------------------------------------------
 
-        db.close()
+            preliminary_round_names = sorted(
+                {
+                    match.round_name
+                    for match in existing_matches
+                    if match.round_name.startswith(
+                        "Preliminary"
+                    )
+                },
+                key=lambda name: int(
+                    name.split()[-1]
+                )
+            )
 
+            latest_preliminary_name = None
 
+            if preliminary_round_names:
+
+                latest_preliminary_name = (
+                    preliminary_round_names[-1]
+                )
+
+            quarter_final_matches = (
+                get_knockout_round_matches(
+                    knockout_db,
+                    selected_tournament_id,
+                    "Quarter Final"
+                )
+            )
+
+            semi_final_matches = (
+                get_knockout_round_matches(
+                    knockout_db,
+                    selected_tournament_id,
+                    "Semi Final"
+                )
+            )
+
+            final_matches = (
+                get_knockout_round_matches(
+                    knockout_db,
+                    selected_tournament_id,
+                    "Final"
+                )
+            )
+
+            if (
+                latest_preliminary_name
+                and not quarter_final_matches
+            ):
+
+                latest_preliminary_matches = (
+                    get_knockout_round_matches(
+                        knockout_db,
+                        selected_tournament_id,
+                        latest_preliminary_name
+                    )
+                )
+
+                if knockout_round_complete(
+                    latest_preliminary_matches
+                ):
+
+                    preliminary_winners = (
+                        get_round_winners(
+                            latest_preliminary_matches
+                        )
+                    )
+
+                    if len(preliminary_winners) > 4:
+
+                        next_round_number = (
+                            int(
+                                latest_preliminary_name
+                                .split()[-1]
+                            )
+                            + 1
+                        )
+
+                        next_round_name = (
+                            f"Preliminary "
+                            f"{next_round_number}"
+                        )
+
+                        create_preliminary_round(
+                            db=knockout_db,
+                            tournament_id=(
+                                selected_tournament_id
+                            ),
+                            round_name=next_round_name,
+                            player_ids=(
+                                preliminary_winners
+                            ),
+                            seed_order=seed_order
+                        )
+
+                        knockout_db.commit()
+
+                        st.success(
+                            f"{next_round_name} created."
+                        )
+
+                        st.rerun()
+
+                    elif len(preliminary_winners) == 4:
+
+                        top_four = (
+                            seeded_player_ids[:4]
+                        )
+
+                        qualifiers = sorted(
+                            preliminary_winners,
+                            key=lambda player_id: (
+                                seed_order.get(
+                                    player_id,
+                                    9999
+                                )
+                            )
+                        )
+
+                        quarter_final_pairs = [
+                            (
+                                top_four[0],
+                                qualifiers[-1]
+                            ),
+                            (
+                                top_four[3],
+                                qualifiers[0]
+                            ),
+                            (
+                                top_four[1],
+                                qualifiers[-2]
+                            ),
+                            (
+                                top_four[2],
+                                qualifiers[1]
+                            )
+                        ]
+
+                        for player1_id, player2_id in (
+                            quarter_final_pairs
+                        ):
+
+                            create_knockout_match(
+                                db=knockout_db,
+                                tournament_id=(
+                                    selected_tournament_id
+                                ),
+                                round_name=(
+                                    "Quarter Final"
+                                ),
+                                player1_id=player1_id,
+                                player2_id=player2_id
+                            )
+
+                        knockout_db.commit()
+
+                        st.success(
+                            "Quarter-finals created."
+                        )
+
+                        st.rerun()
+
+            if (
+                quarter_final_matches
+                and knockout_round_complete(
+                    quarter_final_matches
+                )
+                and not semi_final_matches
+            ):
+
+                quarter_final_winners = (
+                    get_round_winners(
+                        quarter_final_matches
+                    )
+                )
+
+                semi_final_pairs = [
+                    (
+                        quarter_final_winners[0],
+                        quarter_final_winners[1]
+                    ),
+                    (
+                        quarter_final_winners[2],
+                        quarter_final_winners[3]
+                    )
+                ]
+
+                for player1_id, player2_id in (
+                    semi_final_pairs
+                ):
+
+                    create_knockout_match(
+                        db=knockout_db,
+                        tournament_id=(
+                            selected_tournament_id
+                        ),
+                        round_name="Semi Final",
+                        player1_id=player1_id,
+                        player2_id=player2_id
+                    )
+
+                knockout_db.commit()
+
+                st.success(
+                    "Semi-finals created."
+                )
+
+                st.rerun()
+
+            if (
+                semi_final_matches
+                and knockout_round_complete(
+                    semi_final_matches
+                )
+                and not final_matches
+            ):
+
+                semi_final_winners = (
+                    get_round_winners(
+                        semi_final_matches
+                    )
+                )
+
+                create_knockout_match(
+                    db=knockout_db,
+                    tournament_id=(
+                        selected_tournament_id
+                    ),
+                    round_name="Final",
+                    player1_id=(
+                        semi_final_winners[0]
+                    ),
+                    player2_id=(
+                        semi_final_winners[1]
+                    )
+                )
+
+                knockout_db.commit()
+
+                st.success(
+                    "The final has been created."
+                )
+
+                st.rerun()
+
+            # -------------------------------------------------
+            # DISPLAY BRACKET
+            # -------------------------------------------------
+
+            display_rounds = []
+
+            for match in knockout_db.query(
+                KnockoutMatch
+            ).filter(
+                KnockoutMatch.tournament_id
+                == selected_tournament_id
+            ).order_by(
+                KnockoutMatch.id
+            ).all():
+
+                if match.round_name not in display_rounds:
+
+                    display_rounds.append(
+                        match.round_name
+                    )
+
+            for round_name in display_rounds:
+
+                round_matches = (
+                    get_knockout_round_matches(
+                        knockout_db,
+                        selected_tournament_id,
+                        round_name
+                    )
+                )
+
+                st.divider()
+
+                st.markdown(
+                    f"## 🎯 {round_name}"
+                )
+
+                for match_number, match in enumerate(
+                    round_matches,
+                    start=1
+                ):
+
+                    player1_name = (
+                        player_lookup.get(
+                            match.player1_id,
+                            "Unknown"
+                        )
+                    )
+
+                    player2_name = (
+                        player_lookup.get(
+                            match.player2_id,
+                            "BYE"
+                        )
+                        if match.player2_id
+                        else "BYE"
+                    )
+
+                    with st.container(
+                        border=True
+                    ):
+
+                        match_col1, match_col2, match_col3 = (
+                            st.columns(
+                                [2.5, 1.2, 2.5]
+                            )
+                        )
+
+                        with match_col1:
+
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    text-align:right;
+                                    font-size:21px;
+                                    font-weight:900;
+                                    padding-top:8px;
+                                ">
+                                    {player1_name}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+
+                        with match_col2:
+
+                            if (
+                                match.player2_id is None
+                                and match.winner_id
+                            ):
+
+                                score_display = "BYE"
+
+                            elif match.played == 1:
+
+                                score_display = (
+                                    f"{match.player1_score}"
+                                    f" - "
+                                    f"{match.player2_score}"
+                                )
+
+                            else:
+
+                                score_display = "VS"
+
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    text-align:center;
+                                    color:#f5c542;
+                                    font-size:27px;
+                                    font-weight:950;
+                                ">
+                                    {score_display}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+
+                        with match_col3:
+
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    text-align:left;
+                                    font-size:21px;
+                                    font-weight:900;
+                                    padding-top:8px;
+                                ">
+                                    {player2_name}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+
+                        if (
+                            match.played == 1
+                            and match.winner_id
+                        ):
+
+                            winner_name = (
+                                player_lookup.get(
+                                    match.winner_id,
+                                    "Unknown"
+                                )
+                            )
+
+                            st.success(
+                                f"Winner: {winner_name}"
+                            )
+
+                        elif is_admin:
+
+                            with st.form(
+                                key=(
+                                    f"knockout_result_form_"
+                                    f"{match.id}"
+                                )
+                            ):
+
+                                score_col1, score_col2 = (
+                                    st.columns(2)
+                                )
+
+                                with score_col1:
+
+                                    player1_score = (
+                                        st.number_input(
+                                            (
+                                                f"{player1_name} "
+                                                "Score"
+                                            ),
+                                            min_value=0,
+                                            max_value=20,
+                                            value=0,
+                                            key=(
+                                                f"ko_p1_score_"
+                                                f"{match.id}"
+                                            )
+                                        )
+                                    )
+
+                                with score_col2:
+
+                                    player2_score = (
+                                        st.number_input(
+                                            (
+                                                f"{player2_name} "
+                                                "Score"
+                                            ),
+                                            min_value=0,
+                                            max_value=20,
+                                            value=0,
+                                            key=(
+                                                f"ko_p2_score_"
+                                                f"{match.id}"
+                                            )
+                                        )
+                                    )
+
+                                save_knockout_result = (
+                                    st.form_submit_button(
+                                        "💾 Save Knockout Result",
+                                        use_container_width=True
+                                    )
+                                )
+
+                            if save_knockout_result:
+
+                                if (
+                                    player1_score
+                                    == player2_score
+                                ):
+
+                                    st.error(
+                                        "A knockout match cannot "
+                                        "finish as a draw."
+                                    )
+
+                                else:
+
+                                    result_db = (
+                                        SessionLocal()
+                                    )
+
+                                    target_match = (
+                                        result_db.get(
+                                            KnockoutMatch,
+                                            match.id
+                                        )
+                                    )
+
+                                    if not target_match:
+
+                                        st.error(
+                                            "Knockout match "
+                                            "could not be found."
+                                        )
+
+                                    else:
+
+                                        target_match.player1_score = (
+                                            player1_score
+                                        )
+
+                                        target_match.player2_score = (
+                                            player2_score
+                                        )
+
+                                        target_match.winner_id = (
+                                            target_match.player1_id
+                                            if player1_score
+                                            > player2_score
+                                            else target_match.player2_id
+                                        )
+
+                                        target_match.played = 1
+
+                                        result_db.commit()
+
+                                        st.success(
+                                            "Knockout result saved."
+                                        )
+
+                                        result_db.close()
+
+                                        st.rerun()
+
+                                    result_db.close()
+
+            # -------------------------------------------------
+            # CHAMPION
+            # -------------------------------------------------
+
+            final_matches = (
+                get_knockout_round_matches(
+                    knockout_db,
+                    selected_tournament_id,
+                    "Final"
+                )
+            )
+
+            if (
+                final_matches
+                and knockout_round_complete(
+                    final_matches
+                )
+            ):
+
+                champion_id = (
+                    final_matches[0].winner_id
+                )
+
+                champion = player_objects.get(
+                    champion_id
+                )
+
+                st.divider()
+
+                champion_left, champion_centre, champion_right = (
+                    st.columns([1, 1.5, 1])
+                )
+
+                with champion_centre:
+
+                    with st.container(
+                        border=True
+                    ):
+
+                        st.markdown(
+                            """
+                            <h1 style="
+                                text-align:center;
+                                color:#f5c542;
+                            ">
+                                🏆 CHAMPION 🏆
+                            </h1>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                        if (
+                            champion
+                            and champion.logo_path
+                            and os.path.exists(
+                                champion.logo_path
+                            )
+                        ):
+
+                            st.image(
+                                champion.logo_path,
+                                width=180
+                            )
+
+                        st.markdown(
+                            f"""
+                            <h2 style="
+                                text-align:center;
+                            ">
+                                {
+                                    player_lookup.get(
+                                        champion_id,
+                                        "Unknown"
+                                    )
+                                }
+                            </h2>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+            # -------------------------------------------------
+            # ADMIN RESET
+            # -------------------------------------------------
+
+            if is_admin:
+
+                st.divider()
+
+                with st.expander(
+                    "⚠️ Reset Knockout Bracket",
+                    expanded=False
+                ):
+
+                    st.warning(
+                        "This deletes every knockout match "
+                        "and result for the selected tournament."
+                    )
+
+                    confirm_reset = st.checkbox(
+                        "I understand that all knockout results will be deleted",
+                        key=(
+                            "confirm_reset_knockout_"
+                            f"{selected_tournament_id}"
+                        )
+                    )
+
+                    if st.button(
+                        "🗑 Reset Knockout",
+                        key=(
+                            "reset_knockout_"
+                            f"{selected_tournament_id}"
+                        ),
+                        use_container_width=True
+                    ):
+
+                        if not confirm_reset:
+
+                            st.warning(
+                                "Confirm the reset first."
+                            )
+
+                        else:
+
+                            knockout_db.query(
+                                KnockoutMatch
+                            ).filter(
+                                KnockoutMatch.tournament_id
+                                == selected_tournament_id
+                            ).delete(
+                                synchronize_session=False
+                            )
+
+                            knockout_db.commit()
+
+                            st.success(
+                                "Knockout bracket reset."
+                            )
+
+                            st.rerun()
+
+        knockout_db.close()
+        
 # =========================================================
 # STATISTICS PAGE — UPGRADE
 # =========================================================
