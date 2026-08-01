@@ -5385,8 +5385,6 @@ if page == "Fixtures":
 
                                                     st.rerun()
 
-                                            edit_db.close()
-
                             # =================================
                             # UPCOMING FIXTURE
                             # =================================
