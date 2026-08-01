@@ -1754,87 +1754,92 @@ if not st.session_state.logged_in:
 
     feature_col1, feature_col2, feature_col3 = st.columns(3)
 
-with feature_col1:
+    with feature_col1:
 
-    with st.container(border=True):
+        with st.container(border=True):
 
-        st.markdown("### 📅 Next League Night")
+            st.markdown("### 📅 Next League Night")
 
-        st.markdown(
-            f"## {league_night_date}"
-        )
-
-        st.write(
-            "First match at 8:00 PM"
-        )
-
-        st.metric(
-            "Countdown",
-            league_countdown
-        )
-
-
-with feature_col2:
-
-    with st.container(border=True):
-
-        st.markdown("### 👑 Current League Leader")
-
-        st.markdown(
-            f"## {public_leader_name}"
-        )
-
-        st.metric(
-            "League Points",
-            public_leader_points
-        )
-
-        st.markdown(
-            "<div style='text-align:center; font-size:38px;'>🥇</div>",
-            unsafe_allow_html=True
-        )
-
-
-with feature_col3:
-
-    with st.container(border=True):
-
-        st.markdown("### 🎯 Next Fixture")
-
-        if public_next_fixture:
-
-            next_player1 = public_player_lookup.get(
-                public_next_fixture.player1_id,
-                "Unknown"
+            st.markdown(
+                f"## {league_night_date}"
             )
 
-            next_player2 = public_player_lookup.get(
-                public_next_fixture.player2_id,
-                "Unknown"
+            st.write(
+                "First match at 8:00 PM"
+            )
+
+            st.metric(
+                "Countdown",
+                league_countdown
+            )
+
+    with feature_col2:
+
+        with st.container(border=True):
+
+            st.markdown("### 👑 Current League Leader")
+
+            st.markdown(
+                f"## {public_leader_name}"
+            )
+
+            st.metric(
+                "League Points",
+                public_leader_points
             )
 
             st.markdown(
-                f"## {next_player1}"
-            )
-
-            st.markdown(
-                "<h3 style='text-align:center; color:#f5c542;'>VS</h3>",
+                "<div style='text-align:center; font-size:38px;'>🥇</div>",
                 unsafe_allow_html=True
             )
 
-            st.markdown(
-                f"## {next_player2}"
-            )
+    with feature_col3:
 
-            st.caption(
-                f"Round {public_next_fixture.round_number}"
-            )
+        with st.container(border=True):
 
-        else:
+            st.markdown("### 🎯 Next Fixture")
 
-            st.info(
-                "No fixture is currently scheduled."
-            )
+            if public_next_fixture:
+
+                next_player1 = public_player_lookup.get(
+                    public_next_fixture.player1_id,
+                    "Unknown"
+                )
+
+                next_player2 = public_player_lookup.get(
+                    public_next_fixture.player2_id,
+                    "Unknown"
+                )
+
+                st.markdown(
+                    f"## {next_player1}"
+                )
+
+                st.markdown(
+                    """
+                    <h3 style="
+                        text-align:center;
+                        color:#f5c542;
+                    ">
+                        VS
+                    </h3>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                st.markdown(
+                    f"## {next_player2}"
+                )
+
+                st.caption(
+                    f"Round {public_next_fixture.round_number}"
+                )
+
+            else:
+
+                st.info(
+                    "No fixture is currently scheduled."
+                )
     # ---------------------------------------------------------
     # LEAGUE ACTIVITY
     # ---------------------------------------------------------
@@ -2493,147 +2498,6 @@ Next night: **{league_night_date}**
             )
 
             st.rerun()    
-
-    # ---------------------------------------------------------
-    # SOCIAL MEDIA PAGE
-    # ---------------------------------------------------------
-
-    elif st.session_state.public_page == "Socials":
-
-        st.markdown(
-            """
-            <h2 style='text-align:center;'>
-                📱 Follow Ye Royal Oak Darts
-            </h2>
-
-            <p style='text-align:center; color:#bfc5d2;'>
-                Keep up to date with fixtures, highlights, league news and events.
-            </p>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.divider()
-
-        fb_col1, fb_col2 = st.columns([1,4])
-
-        with fb_col1:
-            st.markdown("# 📘")
-
-        with fb_col2:
-
-            st.subheader("Facebook Community")
-
-            st.write(
-                "League announcements, fixtures, results, photos and player discussion."
-            )
-
-            st.link_button(
-                "Visit Facebook",
-                "https://www.facebook.com/groups/1063585262569763/",
-                use_container_width=True
-            )
-
-        st.divider()
-
-        yt_col1, yt_col2 = st.columns([1,4])
-
-        with yt_col1:
-            st.markdown("# ▶️")
-
-        with yt_col2:
-
-            st.subheader("YouTube")
-
-            st.write(
-                "Watch match highlights, tournament finals, player interviews and league content."
-            )
-
-            st.link_button(
-                "Watch on YouTube",
-                "https://www.youtube.com/@YeRoyalOakDarts",
-                use_container_width=True
-            )
-
-        st.divider()
-
-        tt_col1, tt_col2 = st.columns([1,4])
-
-        with tt_col1:
-            st.markdown("# 🎵")
-
-        with tt_col2:
-
-            st.subheader("TikTok")
-
-            st.write(
-                "180s, big checkouts, funny moments and behind-the-scenes clips."
-            )
-
-            st.link_button(
-                "Follow on TikTok",
-                "https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc",
-                use_container_width=True
-            )
-
-        st.divider()
-
-        st.markdown(
-            """
-            <h3 style='text-align:center; color:#f5c542;'>
-                🎯 League Night
-            </h3>
-            """,
-            unsafe_allow_html=True
-        )
-
-        info1, info2 = st.columns(2)
-
-        with info1:
-
-            st.info(
-                """
-    **Venue**
-
-    Ye Royal Oak
-
-    The Shambles
-
-    Chesterfield
-
-    Derbyshire
-    """
-            )
-
-        with info2:
-
-            st.success(
-                """
-    **League Nights**
-
-    Every Thursday
-
-    Start Time: 7:30 PM
-
-    First Match: 7.45 PM
-    """
-        )
-
-        st.divider()
-
-        st.markdown(
-            """
-            <div style="
-                text-align:center;
-                color:#999;
-                font-size:14px;
-                padding-top:10px;
-            ">
-            © Ye Royal Oak Darts League
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
 
     st.stop()   
 
