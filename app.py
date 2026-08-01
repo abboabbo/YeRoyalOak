@@ -1399,13 +1399,27 @@ if not st.session_state.logged_in:
         Announcement.id.desc()
     ).first()
 
+    public_feed_posts = (
+        public_db.query(LeaguePost)
+        .filter(
+            LeaguePost.is_published == 1
+        )
+        .order_by(
+            LeaguePost.is_pinned.desc(),
+            LeaguePost.id.desc()
+        )
+        .limit(8)
+        .all()
+    )
+
     public_players_count = len(public_players)
 
     public_matches_played = public_db.query(Fixture).filter(
         Fixture.played == 1
     ).count()
 
-        # ---------------------------------------------------------
+
+    # ---------------------------------------------------------
     # NEXT LEAGUE NIGHT
     # Thursday at 8:00 PM
     # ---------------------------------------------------------
@@ -1465,7 +1479,7 @@ if not st.session_state.logged_in:
         f"{countdown_minutes}m"
     )
 
-        # ---------------------------------------------------------
+    # ---------------------------------------------------------
     # CURRENT LEAGUE LEADER
     # Uses the newest league-compatible tournament
     # ---------------------------------------------------------
@@ -1641,7 +1655,7 @@ if not st.session_state.logged_in:
     ).strip(),
     unsafe_allow_html=True
 )
-        # ---------------------------------------------------------
+    # ---------------------------------------------------------
     # HERO
     # ---------------------------------------------------------
 
