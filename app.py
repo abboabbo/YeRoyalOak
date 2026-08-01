@@ -2341,16 +2341,11 @@ if not st.session_state.logged_in:
                     "finals and player interviews."
                 )
 
-                if (
-                    YOUTUBE_URL
-                    != "https://www.youtube.com/@YeRoyalOakDarts"
-                ):
-
-                    st.link_button(
-                        "Watch on YouTube",
-                        YOUTUBE_URL,
-                        use_container_width=True
-                    )
+                st.link_button(
+                    "Watch on YouTube",
+                    YOUTUBE_URL,
+                    use_container_width=True
+                )
 
         with social_col3:
 
