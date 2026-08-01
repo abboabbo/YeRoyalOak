@@ -5628,120 +5628,41 @@ if page == "Fixtures":
                                             )
 
 
-                                            if save_result:
+                                        if save_result:
 
-                                                score_is_valid, score_error = (
-                                                    validate_match_score(
-                                                        player1_legs,
-                                                        player2_legs,
-                                                        selected_tournament_object.legs_format
-                                                    )
+                                            score_is_valid, score_error = validate_match_score(
+                                                player1_legs,
+                                                player2_legs,
+                                                selected_tournament_object.legs_format
+                                            )
+
+                                            if not score_is_valid:
+
+                                                st.error(score_error)
+
+                                            elif player1_average > 200:
+
+                                                st.error(
+                                                    f"{player1_name}'s average cannot exceed 200."
                                                 )
 
-                                                if not score_is_valid:
+                                            elif player2_average > 200:
 
-                                                    st.error(
-                                                        score_error
-                                                    )
+                                                st.error(
+                                                    f"{player2_name}'s average cannot exceed 200."
+                                                )
 
-                                                elif player1_average > 200:
+                                            elif player1_checkout > 170:
 
-                                                    st.error(
-                                                        f"{player1_name}'s average cannot exceed 200."
-                                                    )
+                                                st.error(
+                                                    f"{player1_name}'s highest checkout cannot exceed 170."
+                                                )
 
-                                                elif player2_average > 200:
+                                            elif player2_checkout > 170:
 
-                                                    st.error(
-                                                        f"{player2_name}'s average cannot exceed 200."
-                                                    )
-
-                                                elif player1_checkout > 170:
-
-                                                    st.error(
-                                                        f"{player1_name}'s highest checkout cannot exceed 170."
-                                                    )
-
-                                                elif player2_checkout > 170:
-
-                                                    st.error(
-                                                        f"{player2_name}'s highest checkout cannot exceed 170."
-                                                    )
-
-                                                else:
-
-                                                    save_db = SessionLocal()
-
-                                                    target_fixture = save_db.get(
-                                                        Fixture,
-                                                        fixture.id
-                                                    )
-
-                                                    if not target_fixture:
-
-                                                        st.error(
-                                                            "Fixture could not be found."
-                                                        )
-
-                                                        save_db.close()
-
-                                                    else:
-
-                                                        target_fixture.player1_legs = (
-                                                            player1_legs
-                                                        )
-
-                                                        target_fixture.player2_legs = (
-                                                            player2_legs
-                                                        )
-
-                                                        target_fixture.player1_average = (
-                                                            player1_average
-                                                        )
-
-                                                        target_fixture.player2_average = (
-                                                            player2_average
-                                                        )
-
-                                                        target_fixture.player1_180s = (
-                                                            player1_180s
-                                                        )
-
-                                                        target_fixture.player2_180s = (
-                                                            player2_180s
-                                                        )
-
-                                                        target_fixture.player1_high_checkout = (
-                                                            player1_checkout
-                                                        )
-
-                                                        target_fixture.player2_high_checkout = (
-                                                            player2_checkout
-                                                        )
-
-                                                        target_fixture.date_played = (
-                                                            match_date
-                                                        )
-
-                                                        target_fixture.played = 1
-
-                                                        save_db.commit()
-                                                        save_db.close()
-
-                                                        if (
-                                                            "league_standings"
-                                                            in st.session_state
-                                                        ):
-
-                                                            del st.session_state[
-                                                                "league_standings"
-                                                            ]
-
-                                                        st.success(
-                                                            "Result saved."
-                                                        )
-
-                                                        st.rerun()
+                                                st.error(
+                                                    f"{player2_name}'s highest checkout cannot exceed 170."
+                                                )
 
                                             else:
 
@@ -5754,36 +5675,22 @@ if page == "Fixtures":
 
                                                 if not target_fixture:
 
+                                                    save_db.close()
+
                                                     st.error(
-                                                        "Fixture could "
-                                                        "not be found."
+                                                        "Fixture could not be found."
                                                     )
 
                                                 else:
 
-                                                    target_fixture.player1_legs = (
-                                                        player1_legs
-                                                    )
+                                                    target_fixture.player1_legs = player1_legs
+                                                    target_fixture.player2_legs = player2_legs
 
-                                                    target_fixture.player2_legs = (
-                                                        player2_legs
-                                                    )
+                                                    target_fixture.player1_average = player1_average
+                                                    target_fixture.player2_average = player2_average
 
-                                                    target_fixture.player1_average = (
-                                                        player1_average
-                                                    )
-
-                                                    target_fixture.player2_average = (
-                                                        player2_average
-                                                    )
-
-                                                    target_fixture.player1_180s = (
-                                                        player1_180s
-                                                    )
-
-                                                    target_fixture.player2_180s = (
-                                                        player2_180s
-                                                    )
+                                                    target_fixture.player1_180s = player1_180s
+                                                    target_fixture.player2_180s = player2_180s
 
                                                     target_fixture.player1_high_checkout = (
                                                         player1_checkout
@@ -5793,33 +5700,17 @@ if page == "Fixtures":
                                                         player2_checkout
                                                     )
 
-                                                    target_fixture.date_played = (
-                                                        match_date
-                                                    )
-
+                                                    target_fixture.date_played = match_date
                                                     target_fixture.played = 1
 
                                                     save_db.commit()
-
-                                                    if (
-                                                        "league_standings"
-                                                        in st.session_state
-                                                    ):
-                                                        del st.session_state[
-                                                            "league_standings"
-                                                        ]
-
-                                                    st.success(
-                                                        "Result saved."
-                                                    )
-
                                                     save_db.close()
 
+                                                    if "league_standings" in st.session_state:
+                                                        del st.session_state["league_standings"]
+
+                                                    st.success("Result saved.")
                                                     st.rerun()
-
-                                                save_db.close()
-
-                            st.divider()
 
         db.close()
 
