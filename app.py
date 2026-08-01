@@ -5259,8 +5259,7 @@ if page == "Fixtures":
                                                 validate_match_score(
                                                     edit_p1_legs,
                                                     edit_p2_legs,
-                                                    selected_tournament_object.legs_format
-                                                )
+                                                                                         )
                                             )
 
                                             if not score_is_valid:
