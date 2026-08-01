@@ -1407,7 +1407,7 @@ if "logged_in" not in st.session_state:
 if not st.session_state.logged_in:
 
     if "public_page" not in st.session_state:
-        st.session_state.public_page = "Login"
+        st.session_state.public_page = "Home"
 
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
@@ -1663,452 +1663,141 @@ if not st.session_state.logged_in:
 
     public_db.close()
 
-    # ---------------------------------------------------------
-    # PREMIUM PUBLIC LANDING PAGE
-    # ---------------------------------------------------------
 
-    st.markdown(
-    dedent(
-        """
-        <style>
-
-        .landing-hero {
-            background:
-                radial-gradient(
-                    circle at top,
-                    rgba(245,197,66,0.18),
-                    transparent 42%
-                ),
-                linear-gradient(
-                    145deg,
-                    #172033,
-                    #05080f 70%
-                );
-            border:
-                1px solid
-                rgba(245,197,66,0.55);
-            border-radius: 28px;
-            padding: 28px 22px;
-            margin-bottom: 22px;
-            text-align: center;
-        }
-
-        /* Keep the rest of your landing CSS here */
-
-        </style>
-        """
-    ).strip(),
-    unsafe_allow_html=True
-)
-    # ---------------------------------------------------------
-    # HERO
+        # ---------------------------------------------------------
+    # SIMPLE PUBLIC LANDING PAGE
     # ---------------------------------------------------------
 
-    hero_left, hero_centre, hero_right = st.columns(
-        [1.5, 2, 1.5]
+    logo_left, logo_centre, logo_right = st.columns(
+        [1.7, 1, 1.7]
     )
 
-    with hero_centre:
+    with logo_centre:
 
         st.image(
             "assets/royal_oak_logo.png",
             use_container_width=True
         )
 
-    with st.container(border=True):
-
-        st.markdown(
-            """
-            <p style="
-                text-align:center;
-                color:#f5c542;
-                font-size:14px;
-                font-weight:900;
-                letter-spacing:2px;
-                text-transform:uppercase;
-                margin-bottom:8px;
-            ">
-                Official League Portal
-            </p>
-
-            <h1 style="
-                text-align:center;
-                color:white;
-                font-size:48px;
-                font-weight:950;
-                line-height:1.1;
-                margin-top:0;
-                margin-bottom:12px;
-            ">
-                Ye Royal Oak Darts League
-            </h1>
-
-            <p style="
-                text-align:center;
-                color:#bfc5d2;
-                font-size:18px;
-                margin-bottom:4px;
-            ">
-                Fixtures · Results · Standings ·
-                Awards · Player Profiles
-            </p>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # ---------------------------------------------------------
-    # PRIMARY NAVIGATION
-    # ---------------------------------------------------------
-
-    nav_col1, nav_col2, nav_col3 = (
-        st.columns(3)
-    )
-
-    with nav_col1:
-
-        if st.button(
-            "🔐 Login / Create Account",
-            key="premium_landing_login",
-            use_container_width=True
-        ):
-
-            st.session_state.public_page = (
-                "Login"
-            )
-
-            st.rerun()
-
-    with nav_col2:
-
-        if st.button(
-            "🏆 View League Table",
-            key="premium_landing_league",
-            use_container_width=True
-        ):
-
-            st.session_state.public_page = (
-                "League Table"
-            )
-
-            st.rerun()
-
-    with nav_col3:
-
-        if st.button(
-            "📱 Follow the League",
-            key="premium_landing_socials",
-            use_container_width=True
-        ):
-
-            st.session_state.public_page = (
-                "Socials"
-            )
-
-            st.rerun()
-
-    st.divider()
-
-    # ---------------------------------------------------------
-    # FEATURE CARDS
-    # ---------------------------------------------------------
-
-    feature_col1, feature_col2, feature_col3 = st.columns(3)
-
-    with feature_col1:
-
-        with st.container(border=True):
-
-            st.markdown("### 📅 Next League Night")
-
-            st.markdown(
-                f"## {league_night_date}"
-            )
-
-            st.write(
-                "First match at 8:00 PM"
-            )
-
-            st.metric(
-                "Countdown",
-                league_countdown
-            )
-
-    with feature_col2:
-
-        with st.container(border=True):
-
-            st.markdown("### 👑 Current League Leader")
-
-            st.markdown(
-                f"## {public_leader_name}"
-            )
-
-            st.metric(
-                "League Points",
-                public_leader_points
-            )
-
-            st.markdown(
-                "<div style='text-align:center; font-size:38px;'>🥇</div>",
-                unsafe_allow_html=True
-            )
-
-    with feature_col3:
-
-        with st.container(border=True):
-
-            st.markdown("### 🎯 Next Fixture")
-
-            if public_next_fixture:
-
-                next_player1 = public_player_lookup.get(
-                    public_next_fixture.player1_id,
-                    "Unknown"
-                )
-
-                next_player2 = public_player_lookup.get(
-                    public_next_fixture.player2_id,
-                    "Unknown"
-                )
-
-                st.markdown(
-                    f"## {next_player1}"
-                )
-
-                st.markdown(
-                    """
-                    <h3 style="
-                        text-align:center;
-                        color:#f5c542;
-                    ">
-                        VS
-                    </h3>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-                st.markdown(
-                    f"## {next_player2}"
-                )
-
-                st.caption(
-                    f"Round {public_next_fixture.round_number}"
-                )
-
-            else:
-
-                st.info(
-                    "No fixture is currently scheduled."
-                )
-    # ---------------------------------------------------------
-    # LEAGUE ACTIVITY
-    # ---------------------------------------------------------
-
-    activity_col1, activity_col2 = (
-        st.columns(2)
-    )
-
-    with activity_col1:
-
-        dashboard_card(
-            "👥 Registered Players",
-            public_players_count,
-            "Current league members"
-        )
-
-    with activity_col2:
-
-        dashboard_card(
-            "🎯 Matches Completed",
-            public_matches_played,
-            "League results recorded"
-        )
-
-    if public_latest_result:
-
-        latest_player1 = (
-            public_player_lookup.get(
-                public_latest_result.player1_id,
-                "Unknown"
-            )
-        )
-
-        latest_player2 = (
-            public_player_lookup.get(
-                public_latest_result.player2_id,
-                "Unknown"
-            )
-        )
-
-        match_card(
-            "🔥 Latest Result",
-            latest_player1,
-            (
-                f"{public_latest_result.player1_legs}"
-                f" - "
-                f"{public_latest_result.player2_legs}"
-            ),
-            latest_player2
-        )
-
-    # ---------------------------------------------------------
-    # ANNOUNCEMENT
-    # ---------------------------------------------------------
-
-    if public_latest_announcement:
-
-        with st.container(border=True):
-
-            st.markdown(
-                "### 📢 Latest Announcement"
-            )
-
-            st.markdown(
-                f"## {public_latest_announcement.title}"
-            )
-
-            st.write(
-                public_latest_announcement.message
-            )
-
-            if public_latest_announcement.created_at:
-
-                st.caption(
-                    public_latest_announcement.created_at
-                )
-
-    # ---------------------------------------------------------
-    # OFFICIAL LEAGUE FEED
-    # ---------------------------------------------------------
-
-    st.divider()
-
     st.markdown(
         """
-        <h2 style="text-align:center;">
-            📰 Official League Feed
-        </h2>
+        <h1 style="
+            text-align:center;
+            color:#f5c542;
+            margin-bottom:4px;
+        ">
+            Ye Royal Oak Darts League
+        </h1>
 
         <p style="
             text-align:center;
-            color:#aeb6c5;
+            color:#bfc5d2;
+            font-size:17px;
+            margin-top:0;
         ">
-            The latest news, videos, announcements
-            and league highlights
+            Official League Portal
         </p>
         """,
         unsafe_allow_html=True
     )
 
-    if not public_feed_posts:
+    # ---------------------------------------------------------
+    # NEXT MATCH COUNTDOWN
+    # ---------------------------------------------------------
 
-        st.info(
-            "No league-feed posts have been published yet."
-        )
+    countdown_left, countdown_centre, countdown_right = (
+        st.columns([1, 2.4, 1])
+    )
 
-    else:
+    with countdown_centre:
 
-        for post in public_feed_posts:
+        with st.container(border=True):
 
-            post_icon = get_feed_icon(
-                post.category,
-                post.platform
+            st.markdown(
+                """
+                <h3 style="text-align:center;">
+                    🎯 Next League Match
+                </h3>
+                """,
+                unsafe_allow_html=True
             )
 
-            with st.container(border=True):
+            st.markdown(
+                f"""
+                <h2 style="
+                    text-align:center;
+                    color:white;
+                    margin-bottom:5px;
+                ">
+                    {league_night_date}
+                </h2>
+                """,
+                unsafe_allow_html=True
+            )
 
-                header_col1, header_col2 = st.columns(
-                    [4, 1]
-                )
+            st.metric(
+                "Time Remaining",
+                league_countdown
+            )
 
-                with header_col1:
+            st.caption(
+                "First match begins at 8:00 PM"
+            )
 
-                    category_text = (
-                        f"{post_icon} "
-                        f"{post.category or 'League News'}"
-                    )
+    st.divider()
 
-                    if post.is_pinned == 1:
+    # ---------------------------------------------------------
+    # THREE PUBLIC BUTTONS
+    # ---------------------------------------------------------
 
-                        category_text = (
-                            f"📌 {category_text}"
-                        )
+    public_col1, public_col2, public_col3 = st.columns(3)
 
-                    st.caption(
-                        category_text.upper()
-                    )
+    with public_col1:
 
-                    st.markdown(
-                        f"## {post.title}"
-                    )
+        if st.button(
+            "📱 Social Links",
+            key="simple_public_socials",
+            use_container_width=True
+        ):
 
-                with header_col2:
+            st.session_state.public_page = "Socials"
+            st.rerun()
 
-                    if post.platform:
+    with public_col2:
 
-                        st.caption(
-                            f"Platform: {post.platform}"
-                        )
+        if st.button(
+            "🔐 Login / Create Account",
+            key="simple_public_login",
+            use_container_width=True
+        ):
 
-                st.write(
-                    post.message
-                )
+            st.session_state.public_page = "Login"
+            st.rerun()
 
-                if post.image_url:
+    with public_col3:
 
-                    try:
+        if st.button(
+            "📰 Social Feed",
+            key="simple_public_feed",
+            use_container_width=True
+        ):
 
-                        st.image(
-                            post.image_url,
-                            use_container_width=True
-                        )
+            st.session_state.public_page = "Feed"
+            st.rerun()
 
-                    except Exception:
+    if st.session_state.public_page != "Home":
 
-                        st.warning(
-                            "The post image could not be displayed."
-                        )
+        if st.button(
+            "⬅ Back to Main Page",
+            key="simple_public_home",
+            use_container_width=True
+        ):
 
-                footer_col1, footer_col2 = st.columns(
-                    [3, 1]
-                )
+            st.session_state.public_page = "Home"
+            st.rerun()
 
-                with footer_col1:
-
-                    post_details = []
-
-                    if post.created_by:
-
-                        post_details.append(
-                            f"Posted by {post.created_by}"
-                        )
-
-                    if post.created_at:
-
-                        post_details.append(
-                            post.created_at
-                        )
-
-                    if post_details:
-
-                        st.caption(
-                            " · ".join(post_details)
-                        )
-
-                with footer_col2:
-
-                    if post.external_url:
-
-                        st.link_button(
-                            get_feed_link_label(
-                                post.platform
-                            ),
-                            post.external_url,
-                            key=f"public_feed_link_{post.id}",
-                            use_container_width=True
-                        )
-      
-
+    st.divider()
+   
     # ---------------------------------------------------------
     # LOGIN / CREATE ACCOUNT PAGE
     # ---------------------------------------------------------
@@ -2315,6 +2004,134 @@ if not st.session_state.logged_in:
                             st.rerun()
 
                 create_db.close()
+
+    elif st.session_state.public_page == "Feed":
+
+        st.markdown(
+            """
+            <h1 style="text-align:center;">
+                📰 Official League Feed
+            </h1>
+
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:16px;
+            ">
+                League news, videos, announcements
+                and highlights
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if not public_feed_posts:
+
+            st.info(
+                "No league-feed posts have been published yet."
+            )
+
+        else:
+
+            for post in public_feed_posts:
+
+                post_icon = get_feed_icon(
+                    post.category,
+                    post.platform
+                )
+
+                with st.container(border=True):
+
+                    heading_col, platform_col = st.columns(
+                        [4, 1]
+                    )
+
+                    with heading_col:
+
+                        category_text = (
+                            f"{post_icon} "
+                            f"{post.category or 'League News'}"
+                        )
+
+                        if post.is_pinned == 1:
+
+                            category_text = (
+                                f"📌 {category_text}"
+                            )
+
+                        st.caption(
+                            category_text.upper()
+                        )
+
+                        st.markdown(
+                            f"## {post.title}"
+                        )
+
+                    with platform_col:
+
+                        if post.platform:
+
+                            st.caption(
+                                post.platform
+                            )
+
+                    st.write(
+                        post.message
+                    )
+
+                    if post.image_url:
+
+                        try:
+
+                            st.image(
+                                post.image_url,
+                                use_container_width=True
+                            )
+
+                        except Exception:
+
+                            st.warning(
+                                "The post image could not be displayed."
+                            )
+
+                    footer_col1, footer_col2 = st.columns(
+                        [3, 1]
+                    )
+
+                    with footer_col1:
+
+                        details = []
+
+                        if post.created_by:
+
+                            details.append(
+                                f"Posted by {post.created_by}"
+                            )
+
+                        if post.created_at:
+
+                            details.append(
+                                post.created_at
+                            )
+
+                        if details:
+
+                            st.caption(
+                                " · ".join(details)
+                            )
+
+                    with footer_col2:
+
+                        if post.external_url:
+
+                            st.link_button(
+                                get_feed_link_label(
+                                    post.platform
+                                ),
+                                post.external_url,
+                                key=f"feed_page_link_{post.id}",
+                                use_container_width=True
+                            )
 
     # ---------------------------------------------------------
     # PUBLIC LEAGUE TABLE
