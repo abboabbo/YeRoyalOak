@@ -2388,7 +2388,10 @@ if not st.session_state.logged_in:
 
             with st.container(border=True):
 
-                st.markdown("# 📘")
+                st.image(
+                    "assets/social/facebook.png",
+                    width=70
+                )
                 st.subheader("Facebook")
 
                 st.write(
@@ -2406,7 +2409,10 @@ if not st.session_state.logged_in:
 
             with st.container(border=True):
 
-                st.markdown("# ▶️")
+                st.image(
+                    "assets/social/youtube.png",
+                    width=70
+                )
                 st.subheader("YouTube")
 
                 st.write(
@@ -2435,7 +2441,10 @@ if not st.session_state.logged_in:
 
             with st.container(border=True):
 
-                st.markdown("# 🎵")
+                st.image(
+                    "assets/social/tiktok.png",
+                    width=70
+                )
                 st.subheader("TikTok")
 
                 st.write(
