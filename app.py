@@ -4605,6 +4605,32 @@ if page == "Fixtures":
             selected_tournament
         ]
 
+        selected_tournament_object = db.get(
+            Tournament,
+            selected_tournament_id
+        )
+
+        winning_legs = get_winning_legs(
+            selected_tournament_object.legs_format
+    )
+
+    if winning_legs:
+
+        st.info(
+            f"🎯 Match format: "
+            f"{selected_tournament_object.legs_format}. "
+            f"The first player to {winning_legs} legs wins."
+        )
+
+        if not selected_tournament_object:
+
+            st.error(
+                "The selected tournament could not be found."
+            )
+
+            db.close()
+            st.stop()
+
         fixtures = db.query(Fixture).filter(
             Fixture.tournament_id
             == selected_tournament_id
@@ -5255,11 +5281,10 @@ if page == "Fixtures":
 
                                         if update_result:
 
-                                            score_is_valid, score_error = (
-                                                validate_match_score(
-                                                    edit_p1_legs,
-                                                    edit_p2_legs,
-                                                                                         )
+                                            score_is_valid, score_error = validate_match_score(
+                                                edit_p1_legs,
+                                                edit_p2_legs,
+                                                selected_tournament_object.legs_format
                                             )
 
                                             if not score_is_valid:
@@ -5602,7 +5627,6 @@ if page == "Fixtures":
                                                 )
                                             )
 
-                                        if save_result:
 
                                             if save_result:
 
