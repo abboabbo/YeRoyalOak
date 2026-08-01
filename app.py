@@ -6130,124 +6130,906 @@ if page == "Knockout":
         db.close()
 
 
-# STATISTICS TAB
+# =========================================================
+# STATISTICS PAGE — UPGRADE
+# =========================================================
 
 if page == "Statistics":
 
-    st.header("📊 Player Statistics")
+    st.markdown(
+        """
+        <h1 style="text-align:center;">
+            📊 League Statistics
+        </h1>
 
-    db = SessionLocal()
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            Player performance, scoring records and current form
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
-    players = db.query(Player).all()
+    stats_db = SessionLocal()
 
-    fixtures = db.query(Fixture).filter(
-        Fixture.played == 1
+    tournaments = stats_db.query(
+        Tournament
+    ).order_by(
+        Tournament.id.desc()
     ).all()
 
-    stats = {}
+    if not tournaments:
 
-    for player in players:
-
-        stats[player.id] = {
-            "player": player,
-            "played": 0,
-            "wins": 0,
-            "draws": 0,
-            "losses": 0,
-            "averages": []
-        }
-
-    for fixture in fixtures:
-
-        p1 = stats[fixture.player1_id]
-        p2 = stats[fixture.player2_id]
-
-        p1["played"] += 1
-        p2["played"] += 1
-
-        try:
-            p1["averages"].append(float(fixture.player1_average))
-        except:
-            pass
-
-        try:
-            p2["averages"].append(float(fixture.player2_average))
-        except:
-            pass
-
-        if fixture.player1_legs > fixture.player2_legs:
-
-            p1["wins"] += 1
-            p2["losses"] += 1
-
-        elif fixture.player2_legs > fixture.player1_legs:
-
-            p2["wins"] += 1
-            p1["losses"] += 1
-
-        else:
-
-            p1["draws"] += 1
-            p2["draws"] += 1
-
-    rows = []
-
-    for item in stats.values():
-
-        avg = 0
-
-        if item["averages"]:
-
-            avg = round(
-                sum(item["averages"]) / len(item["averages"]),
-                2
-            )
-
-        win_pct = 0
-
-        if item["played"] > 0:
-
-            win_pct = round(
-                (item["wins"] / item["played"]) * 100,
-                1
-            )
-
-        rows.append({
-            "Player": item["player"].name,
-            "Win %": win_pct,
-            "3 Dart Average": avg
-        })
-
-    df = pd.DataFrame(rows)
-
-    if not df.empty:
-
-        df = df.sort_values(
-            by=["Win %", "3 Dart Average"],
-            ascending=False
+        st.info(
+            "Create a tournament before viewing statistics."
         )
 
-        styled_stats = (
-            df.style.set_properties(
-                **{
-                "text-align": "center",
-                "font-weight": "bold",
-                "font-size": "15px"
-                }
-            )
-        )
-
-        st.dataframe(
-            styled_stats,
-            hide_index=True,
-            use_container_width=True
-        )
+        stats_db.close()
 
     else:
 
-        st.info("No statistics available yet.")
+        tournament_options = {
+            tournament.name: tournament.id
+            for tournament in tournaments
+        }
 
-    db.close()
+        selected_tournament_name = st.selectbox(
+            "Tournament",
+            list(tournament_options.keys()),
+            key="statistics_tournament_selector"
+        )
+
+        selected_tournament_id = tournament_options[
+            selected_tournament_name
+        ]
+
+        tournament_links = stats_db.query(
+            TournamentPlayer
+        ).filter(
+            TournamentPlayer.tournament_id
+            == selected_tournament_id
+        ).all()
+
+        tournament_player_ids = {
+            link.player_id
+            for link in tournament_links
+        }
+
+        players = stats_db.query(
+            Player
+        ).filter(
+            Player.id.in_(
+                tournament_player_ids
+            )
+        ).all()
+
+        fixtures = stats_db.query(
+            Fixture
+        ).filter(
+            Fixture.tournament_id
+            == selected_tournament_id,
+            Fixture.played == 1
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
+        ).all()
+
+        player_lookup = {
+            player.id: player
+            for player in players
+        }
+
+        def safe_int(value):
+
+            try:
+                return int(value or 0)
+
+            except (TypeError, ValueError):
+                return 0
+
+
+        def safe_average(value):
+
+            try:
+                average_value = float(value or 0)
+
+            except (TypeError, ValueError):
+                return None
+
+            if 0 < average_value <= 200:
+                return average_value
+
+            return None
+
+
+        statistics = {}
+
+        for player in players:
+
+            statistics[player.id] = {
+                "player": player,
+                "played": 0,
+                "wins": 0,
+                "draws": 0,
+                "losses": 0,
+                "legs_for": 0,
+                "legs_against": 0,
+                "averages": [],
+                "180s": 0,
+                "highest_checkout": 0,
+                "form": []
+            }
+
+        for fixture in fixtures:
+
+            if (
+                fixture.player1_id not in statistics
+                or fixture.player2_id not in statistics
+            ):
+                continue
+
+            player1_stats = statistics[
+                fixture.player1_id
+            ]
+
+            player2_stats = statistics[
+                fixture.player2_id
+            ]
+
+            player1_legs = safe_int(
+                fixture.player1_legs
+            )
+
+            player2_legs = safe_int(
+                fixture.player2_legs
+            )
+
+            player1_stats["played"] += 1
+            player2_stats["played"] += 1
+
+            player1_stats["legs_for"] += (
+                player1_legs
+            )
+
+            player1_stats["legs_against"] += (
+                player2_legs
+            )
+
+            player2_stats["legs_for"] += (
+                player2_legs
+            )
+
+            player2_stats["legs_against"] += (
+                player1_legs
+            )
+
+            player1_average = safe_average(
+                fixture.player1_average
+            )
+
+            player2_average = safe_average(
+                fixture.player2_average
+            )
+
+            if player1_average is not None:
+
+                player1_stats["averages"].append(
+                    player1_average
+                )
+
+            if player2_average is not None:
+
+                player2_stats["averages"].append(
+                    player2_average
+                )
+
+            player1_stats["180s"] += safe_int(
+                getattr(
+                    fixture,
+                    "player1_180s",
+                    0
+                )
+            )
+
+            player2_stats["180s"] += safe_int(
+                getattr(
+                    fixture,
+                    "player2_180s",
+                    0
+                )
+            )
+
+            player1_stats[
+                "highest_checkout"
+            ] = max(
+                player1_stats[
+                    "highest_checkout"
+                ],
+                safe_int(
+                    getattr(
+                        fixture,
+                        "player1_high_checkout",
+                        0
+                    )
+                )
+            )
+
+            player2_stats[
+                "highest_checkout"
+            ] = max(
+                player2_stats[
+                    "highest_checkout"
+                ],
+                safe_int(
+                    getattr(
+                        fixture,
+                        "player2_high_checkout",
+                        0
+                    )
+                )
+            )
+
+            if player1_legs > player2_legs:
+
+                player1_stats["wins"] += 1
+                player2_stats["losses"] += 1
+
+                player1_stats["form"].append(
+                    "W"
+                )
+
+                player2_stats["form"].append(
+                    "L"
+                )
+
+            elif player2_legs > player1_legs:
+
+                player2_stats["wins"] += 1
+                player1_stats["losses"] += 1
+
+                player2_stats["form"].append(
+                    "W"
+                )
+
+                player1_stats["form"].append(
+                    "L"
+                )
+
+            else:
+
+                player1_stats["draws"] += 1
+                player2_stats["draws"] += 1
+
+                player1_stats["form"].append(
+                    "D"
+                )
+
+                player2_stats["form"].append(
+                    "D"
+                )
+
+        statistic_rows = []
+
+        for player_id, data in statistics.items():
+
+            average = 0.0
+
+            if data["averages"]:
+
+                average = round(
+                    sum(data["averages"])
+                    / len(data["averages"]),
+                    2
+                )
+
+            win_percentage = 0.0
+
+            if data["played"] > 0:
+
+                win_percentage = round(
+                    (
+                        data["wins"]
+                        / data["played"]
+                    )
+                    * 100,
+                    1
+                )
+
+            one_eighties_per_match = 0.0
+
+            if data["played"] > 0:
+
+                one_eighties_per_match = round(
+                    data["180s"]
+                    / data["played"],
+                    2
+                )
+
+            leg_difference = (
+                data["legs_for"]
+                - data["legs_against"]
+            )
+
+            longest_winning_streak = 0
+            current_winning_streak = 0
+            running_winning_streak = 0
+
+            for result in data["form"]:
+
+                if result == "W":
+
+                    running_winning_streak += 1
+
+                    longest_winning_streak = max(
+                        longest_winning_streak,
+                        running_winning_streak
+                    )
+
+                else:
+
+                    running_winning_streak = 0
+
+            for result in reversed(
+                data["form"]
+            ):
+
+                if result == "W":
+
+                    current_winning_streak += 1
+
+                else:
+
+                    break
+
+            statistic_rows.append(
+                {
+                    "Player ID": player_id,
+                    "Player": display_player_name(
+                        data["player"]
+                    ),
+                    "Real Name": (
+                        data["player"].name
+                    ),
+                    "Played": data["played"],
+                    "Wins": data["wins"],
+                    "Draws": data["draws"],
+                    "Losses": data["losses"],
+                    "Win Percentage": (
+                        win_percentage
+                    ),
+                    "Average": average,
+                    "180s": data["180s"],
+                    "180s Per Match": (
+                        one_eighties_per_match
+                    ),
+                    "Highest Checkout": (
+                        data["highest_checkout"]
+                    ),
+                    "Legs For": (
+                        data["legs_for"]
+                    ),
+                    "Legs Against": (
+                        data["legs_against"]
+                    ),
+                    "Leg Difference": (
+                        leg_difference
+                    ),
+                    "Form": data["form"][-5:],
+                    "Current Streak": (
+                        current_winning_streak
+                    ),
+                    "Longest Streak": (
+                        longest_winning_streak
+                    )
+                }
+            )
+
+        statistic_rows = sorted(
+            statistic_rows,
+            key=lambda row: (
+                row["Win Percentage"],
+                row["Wins"],
+                row["Average"]
+            ),
+            reverse=True
+        )
+
+        if not statistic_rows:
+
+            st.info(
+                "No players are linked to this tournament."
+            )
+
+        elif not fixtures:
+
+            st.info(
+                "Statistics will appear after results "
+                "have been entered."
+            )
+
+        else:
+
+            # -------------------------------------------------
+            # LEAGUE LEADERS
+            # -------------------------------------------------
+
+            most_wins = max(
+                statistic_rows,
+                key=lambda row: (
+                    row["Wins"],
+                    row["Win Percentage"],
+                    row["Average"]
+                )
+            )
+
+            best_average = max(
+                statistic_rows,
+                key=lambda row: (
+                    row["Average"],
+                    row["Wins"]
+                )
+            )
+
+            most_180s = max(
+                statistic_rows,
+                key=lambda row: (
+                    row["180s"],
+                    row["Average"]
+                )
+            )
+
+            highest_checkout = max(
+                statistic_rows,
+                key=lambda row: (
+                    row["Highest Checkout"],
+                    row["Average"]
+                )
+            )
+
+            leader_col1, leader_col2 = (
+                st.columns(2)
+            )
+
+            with leader_col1:
+
+                dashboard_card(
+                    "👑 Most Wins",
+                    most_wins["Player"],
+                    (
+                        f'{most_wins["Wins"]} wins '
+                        f'from {most_wins["Played"]} matches'
+                    )
+                )
+
+            with leader_col2:
+
+                dashboard_card(
+                    "🎯 Best Average",
+                    best_average["Player"],
+                    (
+                        f'{best_average["Average"]:.2f}'
+                        " three-dart average"
+                    )
+                )
+
+            leader_col3, leader_col4 = (
+                st.columns(2)
+            )
+
+            with leader_col3:
+
+                dashboard_card(
+                    "💯 Most 180s",
+                    most_180s["Player"],
+                    (
+                        f'{most_180s["180s"]}'
+                        " maximums"
+                    )
+                )
+
+            with leader_col4:
+
+                dashboard_card(
+                    "🏹 Highest Checkout",
+                    highest_checkout["Player"],
+                    (
+                        f'{highest_checkout["Highest Checkout"]}'
+                        " checkout"
+                    )
+                )
+
+            st.divider()
+
+            # -------------------------------------------------
+            # SORTING
+            # -------------------------------------------------
+
+            sort_options = {
+                "Win Percentage": (
+                    "Win Percentage"
+                ),
+                "Three-Dart Average": (
+                    "Average"
+                ),
+                "Most Wins": "Wins",
+                "Most 180s": "180s",
+                "Highest Checkout": (
+                    "Highest Checkout"
+                ),
+                "Leg Difference": (
+                    "Leg Difference"
+                ),
+                "Longest Winning Streak": (
+                    "Longest Streak"
+                )
+            }
+
+            sort_selection = st.selectbox(
+                "Rank players by",
+                list(sort_options.keys()),
+                key="statistics_sort_option"
+            )
+
+            sort_column = sort_options[
+                sort_selection
+            ]
+
+            displayed_rows = sorted(
+                statistic_rows,
+                key=lambda row: (
+                    row[sort_column],
+                    row["Average"],
+                    row["Wins"]
+                ),
+                reverse=True
+            )
+
+            st.markdown(
+                f"## 📈 {sort_selection}"
+            )
+
+            # -------------------------------------------------
+            # PLAYER STATISTIC CARDS
+            # -------------------------------------------------
+
+            for position, row in enumerate(
+                displayed_rows,
+                start=1
+            ):
+
+                player = player_lookup.get(
+                    row["Player ID"]
+                )
+
+                if position == 1:
+                    position_display = "🥇"
+
+                elif position == 2:
+                    position_display = "🥈"
+
+                elif position == 3:
+                    position_display = "🥉"
+
+                else:
+                    position_display = str(
+                        position
+                    )
+
+                form_display = []
+
+                for result in row["Form"]:
+
+                    if result == "W":
+
+                        form_display.append(
+                            "🟢 W"
+                        )
+
+                    elif result == "D":
+
+                        form_display.append(
+                            "🟡 D"
+                        )
+
+                    else:
+
+                        form_display.append(
+                            "🔴 L"
+                        )
+
+                while len(form_display) < 5:
+
+                    form_display.insert(
+                        0,
+                        "⚫ —"
+                    )
+
+                with st.container(
+                    border=True
+                ):
+
+                    header_col1, header_col2, header_col3 = (
+                        st.columns(
+                            [0.7, 3.4, 1.2]
+                        )
+                    )
+
+                    with header_col1:
+
+                        st.markdown(
+                            f"""
+                            <div style="
+                                text-align:center;
+                                font-size:34px;
+                                font-weight:950;
+                                color:#f5c542;
+                                padding-top:8px;
+                            ">
+                                {position_display}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                    with header_col2:
+
+                        identity_col1, identity_col2 = (
+                            st.columns(
+                                [0.8, 3.2]
+                            )
+                        )
+
+                        with identity_col1:
+
+                            if (
+                                player
+                                and player.logo_path
+                                and os.path.exists(
+                                    player.logo_path
+                                )
+                            ):
+
+                                st.image(
+                                    player.logo_path,
+                                    width=70
+                                )
+
+                            else:
+
+                                st.markdown(
+                                    """
+                                    <div style="
+                                        width:64px;
+                                        height:64px;
+                                        border-radius:50%;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        background:#111827;
+                                        border:2px solid #f5c542;
+                                        font-size:27px;
+                                    ">
+                                        🎯
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+
+                        with identity_col2:
+
+                            st.markdown(
+                                f"### {row['Player']}"
+                            )
+
+                            if (
+                                row["Player"]
+                                != row["Real Name"]
+                            ):
+
+                                st.caption(
+                                    row["Real Name"]
+                                )
+
+                            st.caption(
+                                "Recent form: "
+                                + "  ".join(
+                                    form_display
+                                )
+                            )
+
+                    with header_col3:
+
+                        if sort_column == "Average":
+
+                            main_value = (
+                                f'{row["Average"]:.2f}'
+                            )
+
+                            main_label = "AVG"
+
+                        elif sort_column == (
+                            "Win Percentage"
+                        ):
+
+                            main_value = (
+                                f'{row["Win Percentage"]:.1f}%'
+                            )
+
+                            main_label = "WIN RATE"
+
+                        elif sort_column == "180s":
+
+                            main_value = row["180s"]
+                            main_label = "180s"
+
+                        elif sort_column == (
+                            "Highest Checkout"
+                        ):
+
+                            main_value = row[
+                                "Highest Checkout"
+                            ]
+
+                            main_label = "CHECKOUT"
+
+                        elif sort_column == (
+                            "Leg Difference"
+                        ):
+
+                            main_value = row[
+                                "Leg Difference"
+                            ]
+
+                            main_label = "LEG DIFF"
+
+                        elif sort_column == (
+                            "Longest Streak"
+                        ):
+
+                            main_value = row[
+                                "Longest Streak"
+                            ]
+
+                            main_label = "BEST STREAK"
+
+                        else:
+
+                            main_value = row["Wins"]
+                            main_label = "WINS"
+
+                        st.metric(
+                            main_label,
+                            main_value
+                        )
+
+                    result_col1, result_col2, result_col3, result_col4 = (
+                        st.columns(4)
+                    )
+
+                    with result_col1:
+
+                        st.metric(
+                            "Record",
+                            (
+                                f'{row["Wins"]}-'
+                                f'{row["Draws"]}-'
+                                f'{row["Losses"]}'
+                            ),
+                            help="Wins-Draws-Losses"
+                        )
+
+                    with result_col2:
+
+                        st.metric(
+                            "Win Percentage",
+                            (
+                                f'{row["Win Percentage"]:.1f}%'
+                            )
+                        )
+
+                    with result_col3:
+
+                        st.metric(
+                            "3-Dart Average",
+                            (
+                                f'{row["Average"]:.2f}'
+                            )
+                        )
+
+                    with result_col4:
+
+                        st.metric(
+                            "Highest Checkout",
+                            row["Highest Checkout"]
+                        )
+
+                    scoring_col1, scoring_col2, scoring_col3, scoring_col4 = (
+                        st.columns(4)
+                    )
+
+                    with scoring_col1:
+
+                        st.metric(
+                            "Total 180s",
+                            row["180s"]
+                        )
+
+                    with scoring_col2:
+
+                        st.metric(
+                            "180s Per Match",
+                            (
+                                f'{row["180s Per Match"]:.2f}'
+                            )
+                        )
+
+                    with scoring_col3:
+
+                        st.metric(
+                            "Leg Difference",
+                            row["Leg Difference"]
+                        )
+
+                    with scoring_col4:
+
+                        st.metric(
+                            "Current Win Streak",
+                            row["Current Streak"]
+                        )
+
+                    detail_col1, detail_col2, detail_col3 = (
+                        st.columns(3)
+                    )
+
+                    with detail_col1:
+
+                        st.caption(
+                            f'🎯 Legs For: {row["Legs For"]}'
+                        )
+
+                    with detail_col2:
+
+                        st.caption(
+                            (
+                                f'🛡 Legs Against: '
+                                f'{row["Legs Against"]}'
+                            )
+                        )
+
+                    with detail_col3:
+
+                        st.caption(
+                            (
+                                f'🔥 Longest winning streak: '
+                                f'{row["Longest Streak"]}'
+                            )
+                        )
+
+                    if st.button(
+                        "🎴 View Player Card",
+                        key=(
+                            f"statistics_view_player_"
+                            f'{row["Player ID"]}'
+                        ),
+                        use_container_width=True
+                    ):
+
+                        st.session_state[
+                            "view_player_id"
+                        ] = row[
+                            "Player ID"
+                        ]
+
+                        st.session_state.page = (
+                            "View Player"
+                        )
+
+                        st.rerun()
+
+        stats_db.close()
 
 if page == "View Player":
 
