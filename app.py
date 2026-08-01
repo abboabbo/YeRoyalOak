@@ -1932,7 +1932,181 @@ if not st.session_state.logged_in:
                     public_latest_announcement.created_at
                 )
 
+    # ---------------------------------------------------------
+    # OFFICIAL LEAGUE FEED
+    # ---------------------------------------------------------
 
+    st.divider()
+
+    st.markdown(
+        """
+        <h2 style="text-align:center;">
+            📰 Official League Feed
+        </h2>
+
+        <p style="
+            text-align:center;
+            color:#aeb6c5;
+        ">
+            The latest news, videos, announcements
+            and league highlights
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if not public_feed_posts:
+
+        st.info(
+            "No league-feed posts have been published yet."
+        )
+
+    else:
+
+        for post in public_feed_posts:
+
+            post_icon = get_feed_icon(
+                post.category,
+                post.platform
+            )
+
+            with st.container(border=True):
+
+                header_col1, header_col2 = st.columns(
+                    [4, 1]
+                )
+
+                with header_col1:
+
+                    category_text = (
+                        f"{post_icon} "
+                        f"{post.category or 'League News'}"
+                    )
+
+                    if post.is_pinned == 1:
+
+                        category_text = (
+                            f"📌 {category_text}"
+                        )
+
+                    st.caption(
+                        category_text.upper()
+                    )
+
+                    st.markdown(
+                        f"## {post.title}"
+                    )
+
+                with header_col2:
+
+                    if post.platform:
+
+                        st.caption(
+                            f"Platform: {post.platform}"
+                        )
+
+                st.write(
+                    post.message
+                )
+
+                if post.image_url:
+
+                    try:
+
+                        st.image(
+                            post.image_url,
+                            use_container_width=True
+                        )
+
+                    except Exception:
+
+                        st.warning(
+                            "The post image could not be displayed."
+                        )
+
+                footer_col1, footer_col2 = st.columns(
+                    [3, 1]
+                )
+
+                with footer_col1:
+
+                    post_details = []
+
+                    if post.created_by:
+
+                        post_details.append(
+                            f"Posted by {post.created_by}"
+                        )
+
+                    if post.created_at:
+
+                        post_details.append(
+                            post.created_at
+                        )
+
+                    if post_details:
+
+                        st.caption(
+                            " · ".join(post_details)
+                        )
+
+                with footer_col2:
+
+                    if post.external_url:
+
+                        st.link_button(
+                            get_feed_link_label(
+                                post.platform
+                            ),
+                            post.external_url,
+                            key=f"public_feed_link_{post.id}",
+                            use_container_width=True
+                        )
+
+            def get_feed_icon(category, platform):
+
+                category_icons = {
+                    "Announcement": "📢",
+                    "League News": "📰",
+                    "Match Result": "🎯",
+                    "Player of the Week": "⭐",
+                    "Checkout of the Week": "🏹",
+                    "Tournament": "🏆",
+                    "Photo": "📷",
+                    "YouTube Video": "▶️",
+                    "Facebook Post": "📘",
+                    "General": "🎯"
+                }
+
+                platform_icons = {
+                    "YouTube": "▶️",
+                    "Facebook": "📘",
+                    "TikTok": "🎵",
+                    "League": "🎯"
+                }
+
+                return category_icons.get(
+                    category,
+                    platform_icons.get(
+                        platform,
+                        "🎯"
+                    )
+                )
+
+
+            def get_feed_link_label(platform):
+
+                link_labels = {
+                    "YouTube": "▶️ Watch on YouTube",
+                    "Facebook": "📘 View on Facebook",
+                    "TikTok": "🎵 Watch on TikTok",
+                    "League": "🔗 Open Link"
+                }
+
+                return link_labels.get(
+                    platform,
+                    "🔗 Open Link"
+                )            
 
     # ---------------------------------------------------------
     # LOGIN / CREATE ACCOUNT PAGE
