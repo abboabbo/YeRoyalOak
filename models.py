@@ -3,6 +3,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import ForeignKey
 from sqlalchemy import Date
+from sqlalchemy import Text
 
 from sqlalchemy.orm import declarative_base
 
@@ -275,4 +276,64 @@ class Announcement(Base):
 
     created_at = Column(
         String
+    )
+
+class LeaguePost(Base):
+
+    __tablename__ = "league_posts"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    category = Column(
+        String,
+        nullable=False,
+        default="General"
+    )
+
+    title = Column(
+        String,
+        nullable=False
+    )
+
+    message = Column(
+        Text,
+        nullable=False
+    )
+
+    platform = Column(
+        String,
+        default="League"
+    )
+
+    image_url = Column(
+        String,
+        nullable=True
+    )
+
+    external_url = Column(
+        String,
+        nullable=True
+    )
+
+    is_pinned = Column(
+        Integer,
+        default=0
+    )
+
+    is_published = Column(
+        Integer,
+        default=1
+    )
+
+    created_by = Column(
+        String,
+        nullable=True
+    )
+
+    created_at = Column(
+        String,
+        nullable=False
     )
