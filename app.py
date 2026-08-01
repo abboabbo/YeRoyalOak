@@ -4462,7 +4462,7 @@ if page == "Fixtures":
                                                             "3-Dart Average"
                                                         ),
                                                         min_value=0.0,
-                                                        max_value=200.0,
+                                                        max_value=1000.0,
                                                         value=float(
                                                             fixture.player1_average
                                                             or 0
@@ -4485,7 +4485,7 @@ if page == "Fixtures":
                                                             "3-Dart Average"
                                                         ),
                                                         min_value=0.0,
-                                                        max_value=200.0,
+                                                        max_value=1000.0,
                                                         value=float(
                                                             fixture.player2_average
                                                             or 0
