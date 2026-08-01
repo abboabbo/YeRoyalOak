@@ -5260,87 +5260,118 @@ if page == "Fixtures":
 
                                         if update_result:
 
-                                            edit_db = SessionLocal()
-
-                                            target_fixture = edit_db.get(
-                                                Fixture,
-                                                fixture.id
+                                            score_is_valid, score_error = (
+                                                validate_match_score(
+                                                    edit_p1_legs,
+                                                    edit_p2_legs,
+                                                    selected_tournament_object.legs_format
+                                                )
                                             )
 
-                                            if not target_fixture:
+                                            if not score_is_valid:
 
                                                 st.error(
-                                                    "Fixture could not "
-                                                    "be found."
+                                                    score_error
                                                 )
 
-                                            elif (
-                                                edit_p1_legs
-                                                == edit_p2_legs
-                                            ):
+                                            elif edit_p1_avg > 200:
 
                                                 st.error(
-                                                    "A darts match cannot "
-                                                    "finish as a draw."
+                                                    f"{player1_name}'s average cannot exceed 200."
+                                                )
+
+                                            elif edit_p2_avg > 200:
+
+                                                st.error(
+                                                    f"{player2_name}'s average cannot exceed 200."
+                                                )
+
+                                            elif edit_p1_checkout > 170:
+
+                                                st.error(
+                                                    f"{player1_name}'s highest checkout cannot exceed 170."
+                                                )
+
+                                            elif edit_p2_checkout > 170:
+
+                                                st.error(
+                                                    f"{player2_name}'s highest checkout cannot exceed 170."
                                                 )
 
                                             else:
 
-                                                target_fixture.player1_legs = (
-                                                    edit_p1_legs
+                                                edit_db = SessionLocal()
+
+                                                target_fixture = edit_db.get(
+                                                    Fixture,
+                                                    fixture.id
                                                 )
 
-                                                target_fixture.player2_legs = (
-                                                    edit_p2_legs
-                                                )
+                                                if not target_fixture:
 
-                                                target_fixture.player1_average = (
-                                                    edit_p1_avg
-                                                )
+                                                    st.error(
+                                                        "Fixture could not be found."
+                                                    )
 
-                                                target_fixture.player2_average = (
-                                                    edit_p2_avg
-                                                )
+                                                    edit_db.close()
 
-                                                target_fixture.player1_180s = (
-                                                    edit_p1_180s
-                                                )
+                                                else:
 
-                                                target_fixture.player2_180s = (
-                                                    edit_p2_180s
-                                                )
+                                                    target_fixture.player1_legs = (
+                                                        edit_p1_legs
+                                                    )
 
-                                                target_fixture.player1_high_checkout = (
-                                                    edit_p1_checkout
-                                                )
+                                                    target_fixture.player2_legs = (
+                                                        edit_p2_legs
+                                                    )
 
-                                                target_fixture.player2_high_checkout = (
-                                                    edit_p2_checkout
-                                                )
+                                                    target_fixture.player1_average = (
+                                                        edit_p1_avg
+                                                    )
 
-                                                target_fixture.date_played = (
-                                                    edit_date
-                                                )
+                                                    target_fixture.player2_average = (
+                                                        edit_p2_avg
+                                                    )
 
-                                                target_fixture.played = 1
+                                                    target_fixture.player1_180s = (
+                                                        edit_p1_180s
+                                                    )
 
-                                                edit_db.commit()
+                                                    target_fixture.player2_180s = (
+                                                        edit_p2_180s
+                                                    )
 
-                                                if (
-                                                    "league_standings"
-                                                    in st.session_state
-                                                ):
-                                                    del st.session_state[
+                                                    target_fixture.player1_high_checkout = (
+                                                        edit_p1_checkout
+                                                    )
+
+                                                    target_fixture.player2_high_checkout = (
+                                                        edit_p2_checkout
+                                                    )
+
+                                                    target_fixture.date_played = (
+                                                        edit_date
+                                                    )
+
+                                                    target_fixture.played = 1
+
+                                                    edit_db.commit()
+                                                    edit_db.close()
+
+                                                    if (
                                                         "league_standings"
-                                                    ]
+                                                        in st.session_state
+                                                    ):
 
-                                                st.success(
-                                                    "Result updated."
-                                                )
+                                                        del st.session_state[
+                                                            "league_standings"
+                                                        ]
 
-                                                edit_db.close()
+                                                    st.success(
+                                                        "Result updated."
+                                                    )
 
-                                                st.rerun()
+                                                    st.rerun()
 
                                             edit_db.close()
 
@@ -5693,7 +5724,7 @@ if page == "Fixtures":
                                                         )
 
                                                         st.rerun()
-                                                        
+
                                             else:
 
                                                 save_db = SessionLocal()
