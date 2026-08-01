@@ -1640,46 +1640,62 @@ if not st.session_state.logged_in:
     ).strip(),
     unsafe_allow_html=True
 )
-
-    # ---------------------------------------------------------
+        # ---------------------------------------------------------
     # HERO
     # ---------------------------------------------------------
 
-    hero_left, hero_logo, hero_right = (
-        st.columns([2, 1, 2])
+    hero_left, hero_centre, hero_right = st.columns(
+        [1.5, 2, 1.5]
     )
 
-    with hero_logo:
+    with hero_centre:
 
         st.image(
             "assets/royal_oak_logo.png",
             use_container_width=True
         )
 
-    st.markdown(
-        dedent(
+    with st.container(border=True):
+
+        st.markdown(
             """
-            <div class="landing-hero">
+            <p style="
+                text-align:center;
+                color:#f5c542;
+                font-size:14px;
+                font-weight:900;
+                letter-spacing:2px;
+                text-transform:uppercase;
+                margin-bottom:8px;
+            ">
+                Official League Portal
+            </p>
 
-                <div class="landing-eyebrow">
-                    Official League Portal
-                </div>
+            <h1 style="
+                text-align:center;
+                color:white;
+                font-size:48px;
+                font-weight:950;
+                line-height:1.1;
+                margin-top:0;
+                margin-bottom:12px;
+            ">
+                Ye Royal Oak<br>
+                Darts League
+            </h1>
 
-                <div class="landing-title">
-                    Ye Royal Oak<br>
-                    Darts League
-                </div>
-
-                <div class="landing-subtitle">
-                    Fixtures · Results · Standings ·
-                    Awards · Player Profiles
-            </div>
-
-            </div>
-            """
-        ).strip(),
-        unsafe_allow_html=True
-)
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:18px;
+                margin-bottom:4px;
+            ">
+                Fixtures · Results · Standings ·
+                Awards · Player Profiles
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
 
     # ---------------------------------------------------------
     # PRIMARY NAVIGATION
