@@ -5869,13 +5869,28 @@ if page == "League":
 
                         with stat_col3:
 
+                            difference = row["Difference"]
+
+                            if difference > 0:
+                                difference_display = f"+{difference}"
+                                difference_caption = "Positive leg difference"
+                                difference_colour = "normal"
+
+                            elif difference < 0:
+                                difference_display = str(difference)
+                                difference_caption = "Negative leg difference"
+                                difference_colour = "inverse"
+
+                            else:
+                                difference_display = "0"
+                                difference_caption = "Level"
+                                difference_colour = "off"
+
                             st.metric(
-                                "Leg Difference",
-                                difference_display,
-                                delta=difference_display,
-                                delta_color=(
-                                    difference_delta
-                                )
+                                label="Leg Difference",
+                                value=difference_display,
+                                delta=difference_caption,
+                                delta_color=difference_colour
                             )
 
                         with stat_col4:
