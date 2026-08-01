@@ -1664,12 +1664,107 @@ if not st.session_state.logged_in:
     public_db.close()
 
 
-        # ---------------------------------------------------------
-    # SIMPLE PUBLIC LANDING PAGE
+       # =========================================================
+    # PREMIUM PUBLIC LANDING PAGE
+    # =========================================================
+
+    st.markdown(
+        """
+        <style>
+        /* Reduce Streamlit's default space above the page */
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+            max-width: 1250px;
+        }
+
+        /* Main league title */
+        .public-league-title {
+            text-align: center;
+            color: #f5b82e;
+            font-size: clamp(34px, 5vw, 58px);
+            font-weight: 950;
+            line-height: 1.1;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 24px rgba(245, 184, 46, 0.12);
+        }
+
+        .public-league-subtitle {
+            text-align: center;
+            color: #aeb6c5;
+            font-size: 19px;
+            margin-top: 0;
+            margin-bottom: 28px;
+        }
+
+        /* Style Streamlit navigation buttons */
+        div[data-testid="stButton"] > button {
+            min-height: 78px;
+            border-radius: 15px;
+            border: 1px solid rgba(150, 165, 190, 0.38);
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(15, 23, 38, 0.98),
+                    rgba(5, 10, 19, 0.98)
+                );
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            transition:
+                transform 0.18s ease,
+                border-color 0.18s ease,
+                box-shadow 0.18s ease;
+        }
+
+        div[data-testid="stButton"] > button:hover {
+            transform: translateY(-3px);
+            border-color: rgba(245, 184, 46, 0.8);
+            color: #f5b82e;
+            box-shadow:
+                0 10px 28px rgba(0, 0, 0, 0.34),
+                0 0 20px rgba(245, 184, 46, 0.09);
+        }
+
+        div[data-testid="stButton"] > button:focus {
+            color: #f5b82e;
+            border-color: #f5b82e;
+        }
+
+        /* Back button should be smaller */
+        .landing-back-caption {
+            text-align: center;
+            color: #8993a4;
+            font-size: 15px;
+            margin-top: 18px;
+        }
+
+        @media (max-width: 800px) {
+            .block-container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .public-league-title {
+                font-size: 36px;
+            }
+
+            .public-league-subtitle {
+                font-size: 16px;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # ---------------------------------------------------------
+    # CENTRED LOGO
     # ---------------------------------------------------------
 
     logo_left, logo_centre, logo_right = st.columns(
-        [1.7, 1, 1.7]
+        [1.8, 1, 1.8]
     )
 
     with logo_centre:
@@ -1679,122 +1774,515 @@ if not st.session_state.logged_in:
             use_container_width=True
         )
 
+    # ---------------------------------------------------------
+    # TITLE
+    # ---------------------------------------------------------
+
     st.markdown(
         """
-        <h1 style="
-            text-align:center;
-            color:#f5c542;
-            margin-bottom:4px;
-        ">
+        <div class="public-league-title">
             Ye Royal Oak Darts League
-        </h1>
+        </div>
 
-        <p style="
-            text-align:center;
-            color:#bfc5d2;
-            font-size:17px;
-            margin-top:0;
-        ">
+        <div class="public-league-subtitle">
             Official League Portal
-        </p>
+        </div>
         """,
         unsafe_allow_html=True
     )
 
     # ---------------------------------------------------------
-    # NEXT MATCH COUNTDOWN
+    # LIVE COUNTDOWN CARD
     # ---------------------------------------------------------
 
-    countdown_left, countdown_centre, countdown_right = (
-        st.columns([1, 2.4, 1])
+    countdown_target = next_league_night.isoformat()
+
+    countdown_date_text = next_league_night.strftime(
+        "%A %d %B"
     )
 
-    with countdown_centre:
+    countdown_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
 
-        with st.container(border=True):
+        <style>
+            * {{
+                box-sizing: border-box;
+            }}
 
-            st.markdown(
-                """
-                <h3 style="text-align:center;">
-                    🎯 Next League Match
-                </h3>
-                """,
-                unsafe_allow_html=True
-            )
+            html,
+            body {{
+                margin: 0;
+                padding: 0;
+                background: transparent;
+                font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+                color: white;
+            }}
 
-            st.markdown(
-                f"""
-                <h2 style="
-                    text-align:center;
-                    color:white;
-                    margin-bottom:5px;
-                ">
-                    {league_night_date}
-                </h2>
-                """,
-                unsafe_allow_html=True
-            )
+            .countdown-card {{
+                width: 100%;
+                max-width: 940px;
+                margin: 0 auto;
+                padding: 32px 24px 27px 24px;
 
-            st.metric(
-                "Time Remaining",
-                league_countdown
-            )
+                background:
+                    radial-gradient(
+                        circle at top,
+                        rgba(245, 184, 46, 0.06),
+                        transparent 38%
+                    ),
+                    linear-gradient(
+                        145deg,
+                        rgba(13, 22, 37, 0.99),
+                        rgba(4, 9, 17, 0.99)
+                    );
 
-            st.caption(
-                "First match begins at 8:00 PM"
-            )
+                border:
+                    1px solid
+                    rgba(139, 155, 181, 0.48);
 
-    st.divider()
+                border-radius: 15px;
+
+                box-shadow:
+                    0 16px 45px rgba(0, 0, 0, 0.32),
+                    0 0 25px rgba(245, 184, 46, 0.035);
+
+                text-align: center;
+            }}
+
+            .countdown-heading {{
+                font-size: 31px;
+                font-weight: 900;
+                margin-bottom: 24px;
+            }}
+
+            .countdown-date {{
+                color: #f5b82e;
+                font-size: 31px;
+                font-weight: 900;
+                margin-bottom: 20px;
+            }}
+
+            .gold-divider {{
+                width: 64px;
+                height: 2px;
+                margin: 0 auto 20px auto;
+                background:
+                    linear-gradient(
+                        90deg,
+                        transparent,
+                        #f5b82e,
+                        transparent
+                    );
+            }}
+
+            .countdown-grid {{
+                display: grid;
+                grid-template-columns:
+                    repeat(4, minmax(100px, 1fr));
+                max-width: 760px;
+                margin: 0 auto;
+            }}
+
+            .countdown-item {{
+                position: relative;
+                padding: 4px 18px;
+            }}
+
+            .countdown-item:not(:last-child)::after {{
+                content: "";
+                position: absolute;
+                right: 0;
+                top: 8px;
+                height: 95px;
+                width: 1px;
+                background:
+                    rgba(164, 177, 198, 0.38);
+            }}
+
+            .countdown-value {{
+                color: #f5b82e;
+                font-size: 65px;
+                line-height: 1;
+                font-weight: 950;
+                letter-spacing: 1px;
+            }}
+
+            .countdown-label {{
+                color: #c1c7d1;
+                font-size: 17px;
+                font-weight: 800;
+                margin-top: 12px;
+            }}
+
+            .match-time {{
+                margin-top: 28px;
+                color: #c1c7d1;
+                font-size: 20px;
+            }}
+
+            .match-time-icon {{
+                color: #f5b82e;
+                margin-right: 8px;
+            }}
+
+            @media (max-width: 650px) {{
+                .countdown-card {{
+                    padding: 24px 12px;
+                }}
+
+                .countdown-heading {{
+                    font-size: 24px;
+                }}
+
+                .countdown-date {{
+                    font-size: 24px;
+                }}
+
+                .countdown-grid {{
+                    grid-template-columns:
+                        repeat(2, minmax(90px, 1fr));
+                    gap: 22px 0;
+                }}
+
+                .countdown-item:nth-child(2)::after {{
+                    display: none;
+                }}
+
+                .countdown-value {{
+                    font-size: 48px;
+                }}
+
+                .countdown-label {{
+                    font-size: 14px;
+                }}
+
+                .match-time {{
+                    font-size: 16px;
+                }}
+            }}
+        </style>
+    </head>
+
+    <body>
+
+        <div class="countdown-card">
+
+            <div class="countdown-heading">
+                🎯 Next League Match
+            </div>
+
+            <div class="countdown-date">
+                {countdown_date_text}
+            </div>
+
+            <div class="gold-divider"></div>
+
+            <div class="countdown-grid">
+
+                <div class="countdown-item">
+                    <div
+                        id="countdown-days"
+                        class="countdown-value"
+                    >
+                        00
+                    </div>
+
+                    <div class="countdown-label">
+                        DAYS
+                    </div>
+                </div>
+
+                <div class="countdown-item">
+                    <div
+                        id="countdown-hours"
+                        class="countdown-value"
+                    >
+                        00
+                    </div>
+
+                    <div class="countdown-label">
+                        HOURS
+                    </div>
+                </div>
+
+                <div class="countdown-item">
+                    <div
+                        id="countdown-minutes"
+                        class="countdown-value"
+                    >
+                        00
+                    </div>
+
+                    <div class="countdown-label">
+                        MINUTES
+                    </div>
+                </div>
+
+                <div class="countdown-item">
+                    <div
+                        id="countdown-seconds"
+                        class="countdown-value"
+                    >
+                        00
+                    </div>
+
+                    <div class="countdown-label">
+                        SECONDS
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="match-time">
+                <span class="match-time-icon">
+                    ▣
+                </span>
+
+                First match begins at 8:00 PM
+            </div>
+
+        </div>
+
+        <script>
+            const targetDate = new Date(
+                "{countdown_target}"
+            ).getTime();
+
+            function twoDigits(value) {{
+                return String(value).padStart(2, "0");
+            }}
+
+            function updateCountdown() {{
+
+                const now = new Date().getTime();
+
+                let remaining = targetDate - now;
+
+                if (remaining < 0) {{
+                    remaining = 0;
+                }}
+
+                const days = Math.floor(
+                    remaining / (1000 * 60 * 60 * 24)
+                );
+
+                const hours = Math.floor(
+                    (
+                        remaining
+                        % (1000 * 60 * 60 * 24)
+                    )
+                    / (1000 * 60 * 60)
+                );
+
+                const minutes = Math.floor(
+                    (
+                        remaining
+                        % (1000 * 60 * 60)
+                    )
+                    / (1000 * 60)
+                );
+
+                const seconds = Math.floor(
+                    (
+                        remaining
+                        % (1000 * 60)
+                    )
+                    / 1000
+                );
+
+                document.getElementById(
+                    "countdown-days"
+                ).textContent = twoDigits(days);
+
+                document.getElementById(
+                    "countdown-hours"
+                ).textContent = twoDigits(hours);
+
+                document.getElementById(
+                    "countdown-minutes"
+                ).textContent = twoDigits(minutes);
+
+                document.getElementById(
+                    "countdown-seconds"
+                ).textContent = twoDigits(seconds);
+            }}
+
+            updateCountdown();
+
+            setInterval(
+                updateCountdown,
+                1000
+            );
+        </script>
+
+    </body>
+    </html>
+    """
+
+    components.html(
+        countdown_html,
+        height=410,
+        scrolling=False
+    )
 
     # ---------------------------------------------------------
-    # THREE PUBLIC BUTTONS
+    # THREE NAVIGATION CARDS
     # ---------------------------------------------------------
 
-    public_col1, public_col2, public_col3 = st.columns(3)
+    nav_col1, nav_col2, nav_col3 = st.columns(
+        3,
+        gap="medium"
+    )
 
-    with public_col1:
+    with nav_col1:
+
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#f5b82e;
+                font-size:42px;
+                margin-bottom:-5px;
+            ">
+                ▯
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         if st.button(
-            "📱 Social Links",
-            key="simple_public_socials",
+            "Social Links",
+            key="premium_public_socials",
             use_container_width=True
         ):
 
             st.session_state.public_page = "Socials"
             st.rerun()
 
-    with public_col2:
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#8f99a9;
+                font-size:13px;
+                margin-top:-5px;
+            ">
+                Follow us on our social channels
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with nav_col2:
+
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#f5b82e;
+                font-size:42px;
+                margin-bottom:-5px;
+            ">
+                🔒
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         if st.button(
-            "🔐 Login / Create Account",
-            key="simple_public_login",
+            "Login / Create Account",
+            key="premium_public_login",
             use_container_width=True
         ):
 
             st.session_state.public_page = "Login"
             st.rerun()
 
-    with public_col3:
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#8f99a9;
+                font-size:13px;
+                margin-top:-5px;
+            ">
+                Access your league account
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with nav_col3:
+
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#f5b82e;
+                font-size:42px;
+                margin-bottom:-5px;
+            ">
+                ▤
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         if st.button(
-            "📰 Social Feed",
-            key="simple_public_feed",
+            "Social Feed",
+            key="premium_public_feed",
             use_container_width=True
         ):
 
             st.session_state.public_page = "Feed"
             st.rerun()
 
+        st.markdown(
+            """
+            <div style="
+                text-align:center;
+                color:#8f99a9;
+                font-size:13px;
+                margin-top:-5px;
+            ">
+                Latest news, videos and updates
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # Only show Back when another public page is open
     if st.session_state.public_page != "Home":
 
-        if st.button(
-            "⬅ Back to Main Page",
-            key="simple_public_home",
-            use_container_width=True
-        ):
+        st.markdown(
+            """
+            <div class="landing-back-caption">
+                Return to the main landing page
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            st.session_state.public_page = "Home"
-            st.rerun()
+        back_left, back_centre, back_right = st.columns(
+            [1.8, 1, 1.8]
+        )
+
+        with back_centre:
+
+            if st.button(
+                "← Back to Main Page",
+                key="premium_public_back",
+                use_container_width=True
+            ):
+
+                st.session_state.public_page = "Home"
+                st.rerun()
 
     st.divider()
    
