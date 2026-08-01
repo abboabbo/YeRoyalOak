@@ -2584,48 +2584,79 @@ with st.sidebar:
 
     st.markdown("### Follow Us")
 
-    col1, col2 = st.columns(2)
+social_col1, social_col2, social_col3 = st.columns(3)
 
-    with col1:
+with social_col1:
 
-        st.image(
-            "assets/social/facebook.png",
-            width=65
-        )
+    st.image(
+        "assets/social/facebook.png",
+        width=55
+    )
 
-        st.markdown(
-            """
-            <div style="text-align:center;">
-                <a href="https://www.facebook.com/groups/1063585262569763/"
-                    target="_blank"
-                    style="font-size:13px; font-weight:bold; text-decoration:none;">
-                    Open
-                </a>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        """
+        <div style="text-align:center;">
+            <a href="https://www.facebook.com/groups/1063585262569763/"
+               target="_blank"
+               style="
+                   font-size:12px;
+                   font-weight:bold;
+                   text-decoration:none;
+               ">
+                Open
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    with col2:
+with social_col2:
 
-        st.image(
-            "assets/social/tiktok.png",
-            width=65
-        )
+    st.image(
+        "assets/social/youtube.png",
+        width=55
+    )
 
-        st.markdown(
-            """
-            <div style="text-align:center;">
-                <a href="https://www.tiktok.com/@yeroyaloakdarts?is_from_webapp=1&sender_device=pc"
-                    target="_blank"
-                    style="font-size:13px; font-weight:bold; text-decoration:none;">
-                    Open
-                </a>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        """
+        <div style="text-align:center;">
+            <a href="https://www.youtube.com/@YeRoyalOakDarts"
+               target="_blank"
+               style="
+                   font-size:12px;
+                   font-weight:bold;
+                   text-decoration:none;
+               ">
+                Open
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
+with social_col3:
+
+    st.image(
+        "assets/social/tiktok.png",
+        width=55
+    )
+
+    st.markdown(
+        """
+        <div style="text-align:center;">
+            <a href="https://www.tiktok.com/@yeroyaloakdarts"
+               target="_blank"
+               style="
+                   font-size:12px;
+                   font-weight:bold;
+                   text-decoration:none;
+               ">
+                Open
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 # =========================================================
 # ADMIN: PLAYERS
 # =========================================================
