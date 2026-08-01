@@ -2813,11 +2813,11 @@ if page == "Awards":
 
     st.markdown(
         """
-        <h1 style="text-align:center;">
+            <h1 style="text-align:center;">
             🏅 League Awards
-        </h1>
+            </h1>
 
-        <p style="
+            <p style="
             text-align:center;
             color:#bfc5d2;
             font-size:17px;
@@ -3910,324 +3910,1130 @@ if page == "My Profile":
 
 # FIXTURES TAB
 
+# =========================================================
+# FIXTURES & RESULTS
+# =========================================================
+
 if page == "Fixtures":
 
-    st.header("📅 Fixtures & Results")
+    st.markdown(
+        """
+        <h1 style="text-align:center;">
+            📅 Fixtures & Results
+        </h1>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            View upcoming matches and enter league results
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
     db = SessionLocal()
 
-    tournaments = db.query(Tournament).all()
+    tournaments = db.query(
+        Tournament
+    ).order_by(
+        Tournament.id.desc()
+    ).all()
 
     if not tournaments:
 
-        st.info("Create a tournament first.")
+        st.info(
+            "No tournaments have been created yet."
+        )
+
+        db.close()
 
     else:
 
         tournament_lookup = {
-            t.name: t.id
-            for t in tournaments
+            tournament.name: tournament.id
+            for tournament in tournaments
         }
 
         selected_tournament = st.selectbox(
             "Tournament",
             list(tournament_lookup.keys()),
-            key="fixtures_tournament"
+            key="fixtures_tournament_v2"
         )
 
-        selected_tournament_id = tournament_lookup[selected_tournament]
-
-        st.divider()
-
-        if is_admin:
-
-            if st.button("🎯 Generate Fixtures"):
-
-                existing = db.query(Fixture).filter(
-                    Fixture.tournament_id == selected_tournament_id
-                ).count()
-
-                if existing > 0:
-
-                    st.warning("Fixtures already generated.")
-
-                else:
-
-                    links = db.query(TournamentPlayer).filter(
-                        TournamentPlayer.tournament_id == selected_tournament_id
-                    ).all()
-
-                    player_ids = [
-                        link.player_id
-                        for link in links
-                    ]
-
-                    if len(player_ids) < 2:
-
-                        st.error("This tournament needs at least two players.")
-
-                    else:
-
-                        generated_fixtures = generate_round_robin(player_ids)
-
-                        for round_number, player1_id, player2_id in generated_fixtures:
-
-                            fixture = Fixture(
-                                tournament_id=selected_tournament_id,
-                                round_number=round_number,
-                                player1_id=player1_id,
-                                player2_id=player2_id
-                            )
-
-                            db.add(fixture)
-
-                        db.commit()
-
-                        st.success("Fixtures Generated!")
-                        st.rerun()
-
-            st.divider()
+        selected_tournament_id = tournament_lookup[
+            selected_tournament
+        ]
 
         fixtures = db.query(Fixture).filter(
-            Fixture.tournament_id == selected_tournament_id
+            Fixture.tournament_id
+            == selected_tournament_id
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
         ).all()
-
-        fixtures = sorted(
-            fixtures,
-            key=lambda x: (
-                x.round_number,
-                x.id
-            )
-        )
 
         players = db.query(Player).all()
 
         player_lookup = {
-            p.id: display_player_name(p)
-            for p in players
+            player.id: display_player_name(player)
+            for player in players
         }
 
-        if not fixtures:
+        # -----------------------------------------------------
+        # FIXTURE SUMMARY
+        # -----------------------------------------------------
 
-            st.info("No fixtures generated.")
+        total_fixtures = len(fixtures)
 
-        else:
+        played_fixtures = len(
+            [
+                fixture
+                for fixture in fixtures
+                if fixture.played == 1
+            ]
+        )
 
-            st.subheader("Fixtures")
+        remaining_fixtures = (
+            total_fixtures - played_fixtures
+        )
 
-            fixture_rows = []
+        summary_col1, summary_col2, summary_col3 = (
+            st.columns(3)
+        )
 
-            for item in fixtures:
+        with summary_col1:
 
-                p1_name = player_lookup.get(
-                    item.player1_id,
-                    "Unknown"
-                )
-
-                p2_name = player_lookup.get(
-                    item.player2_id,
-                    "Unknown"
-                )
-
-                result = ""
-
-                if item.played == 1:
-
-                    result = (
-                        f"{item.player1_legs}"
-                        f" - "
-                        f"{item.player2_legs}"
-                    )
-
-                fixture_rows.append({
-
-                    "Round": item.round_number,
-
-                    "Date Played": item.date_played,
-
-                    "Player 1": p1_name,
-
-                    "Result": result,
-
-                    "Player 2": p2_name,
-
-                    "Played?":
-                    "✅"
-                    if item.played == 1
-                    else "❌"
-
-                })
-
-            fixtures_df = pd.DataFrame(
-                fixture_rows
-            )
-
-            round_numbers = sorted(
-                fixtures_df["Round"].unique()
-            )
-
-            for round_number in round_numbers:
-
-                st.subheader(
-                    f"Round {round_number}"
-                )
-
-                round_df = fixtures_df[
-                    fixtures_df["Round"] == round_number
-                ].drop(
-                    columns=["Round"]
-                )
-
-                styled_round_df = (
-                    round_df.style
-                    .set_properties(
-                        **{
-                            "font-weight": "bold",
-                            "font-size": "17px",
-                            "text-align": "center"
-                        }
-                    )
-                )
-
-                st.dataframe(
-                    styled_round_df,
-                    hide_index=True,
-                    use_container_width=True
-                )
-
-                st.markdown("---")
-
-            csv = fixtures_df.to_csv(
-                index=False
-            )
-
-            st.download_button(
-                "📥 Download Fixtures CSV",
-                csv,
-                "fixtures.csv",
-                "text/csv"
-            )
-
-            pdf_file = create_fixtures_pdf(
-                fixture_rows,
+            dashboard_card(
+                "📋 Total Fixtures",
+                total_fixtures,
                 selected_tournament
             )
 
-            st.download_button(
-                "📄 Download Fixtures PDF",
-                pdf_file,
-                "fixtures.pdf",
-                "application/pdf"
+        with summary_col2:
+
+            dashboard_card(
+                "✅ Completed",
+                played_fixtures,
+                "Results entered"
             )
 
-            st.divider()
+        with summary_col3:
 
-            current_round = None
+            dashboard_card(
+                "⏳ Remaining",
+                remaining_fixtures,
+                "Matches still to play"
+            )
 
-            for fixture in fixtures:
+        # -----------------------------------------------------
+        # ADMIN: GENERATE FIXTURES
+        # -----------------------------------------------------
 
-                if fixture.round_number != current_round:
+        if is_admin:
 
-                    current_round = fixture.round_number
+            with st.expander(
+                "⚙️ Fixture Administration",
+                expanded=False
+            ):
 
-                    st.subheader(
-                        f"Round {current_round}"
-                    )
-
-                player1 = player_lookup.get(
-                    fixture.player1_id,
-                    "Unknown"
+                st.write(
+                    "Generate the round-robin fixtures for "
+                    "this tournament."
                 )
 
-                player2 = player_lookup.get(
-                    fixture.player2_id,
-                    "Unknown"
-                )
+                if st.button(
+                    "🎯 Generate Fixtures",
+                    key=(
+                        f"generate_fixtures_"
+                        f"{selected_tournament_id}"
+                    ),
+                    use_container_width=True
+                ):
 
-                if fixture.played == 1:
+                    existing_count = db.query(
+                        Fixture
+                    ).filter(
+                        Fixture.tournament_id
+                        == selected_tournament_id
+                    ).count()
 
-                    col1, col2, col3, col4, col5 = st.columns(
-                        [3, 1, 1, 1, 3]
+                    if existing_count > 0:
+
+                        st.warning(
+                            "Fixtures have already been "
+                            "generated for this tournament."
+                        )
+
+                    else:
+
+                        tournament_links = db.query(
+                            TournamentPlayer
+                        ).filter(
+                            TournamentPlayer.tournament_id
+                            == selected_tournament_id
+                        ).all()
+
+                        player_ids = [
+                            link.player_id
+                            for link in tournament_links
+                        ]
+
+                        if len(player_ids) < 2:
+
+                            st.error(
+                                "At least two players are "
+                                "required."
+                            )
+
+                        else:
+
+                            generated_fixtures = (
+                                generate_round_robin(
+                                    player_ids
+                                )
+                            )
+
+                            for (
+                                round_number,
+                                player1_id,
+                                player2_id
+                            ) in generated_fixtures:
+
+                                new_fixture = Fixture(
+                                    tournament_id=(
+                                        selected_tournament_id
+                                    ),
+                                    round_number=round_number,
+                                    player1_id=player1_id,
+                                    player2_id=player2_id,
+                                    played=0
+                                )
+
+                                db.add(new_fixture)
+
+                            db.commit()
+
+                            st.success(
+                                "Fixtures generated successfully."
+                            )
+
+                            st.rerun()
+
+        st.divider()
+
+        if not fixtures:
+
+            st.info(
+                "No fixtures have been generated for "
+                "this tournament."
+            )
+
+        else:
+
+            # -------------------------------------------------
+            # DISPLAY FILTER
+            # -------------------------------------------------
+
+            view_mode = st.radio(
+                "Display",
+                [
+                    "Upcoming",
+                    "Results",
+                    "All Fixtures"
+                ],
+                horizontal=True,
+                key="fixture_view_mode"
+            )
+
+            if view_mode == "Upcoming":
+
+                displayed_fixtures = [
+                    fixture
+                    for fixture in fixtures
+                    if fixture.played != 1
+                ]
+
+            elif view_mode == "Results":
+
+                displayed_fixtures = [
+                    fixture
+                    for fixture in fixtures
+                    if fixture.played == 1
+                ]
+
+            else:
+
+                displayed_fixtures = fixtures
+
+            if not displayed_fixtures:
+
+                if view_mode == "Upcoming":
+
+                    st.success(
+                        "All fixtures have been completed."
                     )
 
-                    with col1:
-                        st.markdown(f"### {player1}")
+                elif view_mode == "Results":
 
-                    with col2:
-                        st.markdown(f"### {fixture.player1_legs}")
-
-                    with col3:
-                        st.markdown("### -")
-
-                    with col4:
-                        st.markdown(f"### {fixture.player2_legs}")
-
-                    with col5:
-                        st.markdown(f"### {player2}")
-
-                    st.caption(
-                        f"📅 Played: {fixture.date_played}  |  "
-                        f"🎯 Averages: {fixture.player1_average} / {fixture.player2_average}"
+                    st.info(
+                        "No results have been entered yet."
                     )
 
                 else:
 
-                    st.markdown(f"### {player1} vs {player2}")
+                    st.info("No fixtures are available.")
 
-                    st.warning("Not Played")
+            else:
 
-                    if is_admin:
+                round_numbers = sorted(
+                    {
+                        fixture.round_number
+                        for fixture in displayed_fixtures
+                    }
+                )
 
-                        match_date = st.date_input(
-                            "Date Played",
-                            value=date.today(),
-                            key=f"date_{fixture.id}_fixture"
+                # ---------------------------------------------
+                # DISPLAY EACH ROUND
+                # ---------------------------------------------
+
+                for round_number in round_numbers:
+
+                    round_fixtures = [
+                        fixture
+                        for fixture in displayed_fixtures
+                        if fixture.round_number
+                        == round_number
+                    ]
+
+                    round_played = len(
+                        [
+                            fixture
+                            for fixture in round_fixtures
+                            if fixture.played == 1
+                        ]
+                    )
+
+                    round_total = len(round_fixtures)
+
+                    with st.expander(
+                        (
+                            f"🎯 Round {round_number} "
+                            f"— {round_played}/{round_total} "
+                            f"completed"
+                        ),
+                        expanded=(
+                            round_number
+                            == round_numbers[0]
                         )
+                    ):
 
-                        p1_legs = st.number_input(
-                            f"{player1} Legs",
-                            min_value=0,
-                            max_value=20,
-                            key=f"p1legs_{fixture.id}_fixture"
-                        )
+                        for fixture in round_fixtures:
 
-                        p2_legs = st.number_input(
-                            f"{player2} Legs",
-                            min_value=0,
-                            max_value=20,
-                            key=f"p2legs_{fixture.id}_fixture"
-                        )
+                            player1_name = (
+                                player_lookup.get(
+                                    fixture.player1_id,
+                                    "Unknown"
+                                )
+                            )
 
-                        p1_avg = st.text_input(
-                            f"{player1} Average",
-                            key=f"p1avg_{fixture.id}_fixture"
-                        )
+                            player2_name = (
+                                player_lookup.get(
+                                    fixture.player2_id,
+                                    "Unknown"
+                                )
+                            )
 
-                        p2_avg = st.text_input(
-                            f"{player2} Average",
-                            key=f"p2avg_{fixture.id}_fixture"
-                        )
+                            # =================================
+                            # COMPLETED FIXTURE
+                            # =================================
 
-                        if st.button(
-                            "Save Result",
-                            key=f"save_{fixture.id}_fixture"
-                        ):
+                            if fixture.played == 1:
 
-                            fixture.player1_legs = p1_legs
-                            fixture.player2_legs = p2_legs
-                            fixture.player1_average = p1_avg
-                            fixture.player2_average = p2_avg
-                            fixture.date_played = match_date
-                            fixture.played = 1
+                                result_col1, result_col2, result_col3 = (
+                                    st.columns(
+                                        [2.5, 1.2, 2.5]
+                                    )
+                                )
 
-                            db.commit()
+                                with result_col1:
 
-                            st.success("Result Saved!")
-                            st.rerun()
+                                    st.markdown(
+                                        f"""
+                                        <div style="
+                                            text-align:right;
+                                            font-size:21px;
+                                            font-weight:900;
+                                            padding-top:8px;
+                                        ">
+                                            {player1_name}
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
 
-                st.divider()
+                                with result_col2:
 
-    db.close()
+                                    st.markdown(
+                                        f"""
+                                        <div style="
+                                            text-align:center;
+                                            color:#f5c542;
+                                            font-size:28px;
+                                            font-weight:950;
+                                        ">
+                                            {fixture.player1_legs}
+                                            -
+                                            {fixture.player2_legs}
+                                        </div>
+
+                                        <div style="
+                                            text-align:center;
+                                            color:#45df8b;
+                                            font-size:12px;
+                                            font-weight:800;
+                                        ">
+                                            COMPLETED
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
+
+                                with result_col3:
+
+                                    st.markdown(
+                                        f"""
+                                        <div style="
+                                            text-align:left;
+                                            font-size:21px;
+                                            font-weight:900;
+                                            padding-top:8px;
+                                        ">
+                                            {player2_name}
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
+
+                                stat_col1, stat_col2, stat_col3 = (
+                                    st.columns(3)
+                                )
+
+                                with stat_col1:
+
+                                    st.caption(
+                                        (
+                                            "📅 Date: "
+                                            f"{fixture.date_played or '—'}"
+                                        )
+                                    )
+
+                                with stat_col2:
+
+                                    st.caption(
+                                        (
+                                            "🎯 Averages: "
+                                            f"{fixture.player1_average or 0}"
+                                            " / "
+                                            f"{fixture.player2_average or 0}"
+                                        )
+                                    )
+
+                                with stat_col3:
+
+                                    st.caption(
+                                        (
+                                            "💯 180s: "
+                                            f"{getattr(fixture, 'player1_180s', 0) or 0}"
+                                            " / "
+                                            f"{getattr(fixture, 'player2_180s', 0) or 0}"
+                                        )
+                                    )
+
+                                checkout_col1, checkout_col2 = (
+                                    st.columns(2)
+                                )
+
+                                with checkout_col1:
+
+                                    st.caption(
+                                        (
+                                            f"🏹 {player1_name} "
+                                            "highest checkout: "
+                                            f"{getattr(fixture, 'player1_high_checkout', 0) or 0}"
+                                        )
+                                    )
+
+                                with checkout_col2:
+
+                                    st.caption(
+                                        (
+                                            f"🏹 {player2_name} "
+                                            "highest checkout: "
+                                            f"{getattr(fixture, 'player2_high_checkout', 0) or 0}"
+                                        )
+                                    )
+
+                                # Admin can correct an existing result.
+                                if is_admin:
+
+                                    with st.expander(
+                                        "✏️ Edit Result",
+                                        expanded=False
+                                    ):
+
+                                        with st.form(
+                                            key=(
+                                                f"edit_result_form_"
+                                                f"{fixture.id}"
+                                            )
+                                        ):
+
+                                            edit_date = st.date_input(
+                                                "Date Played",
+                                                value=(
+                                                    fixture.date_played
+                                                    if fixture.date_played
+                                                    else date.today()
+                                                ),
+                                                key=(
+                                                    f"edit_date_"
+                                                    f"{fixture.id}"
+                                                )
+                                            )
+
+                                            edit_score_col1, edit_score_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with edit_score_col1:
+
+                                                edit_p1_legs = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "Legs"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=20,
+                                                        value=(
+                                                            fixture.player1_legs
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p1_legs_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with edit_score_col2:
+
+                                                edit_p2_legs = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "Legs"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=20,
+                                                        value=(
+                                                            fixture.player2_legs
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p2_legs_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            edit_avg_col1, edit_avg_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with edit_avg_col1:
+
+                                                edit_p1_avg = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "3-Dart Average"
+                                                        ),
+                                                        min_value=0.0,
+                                                        max_value=200.0,
+                                                        value=float(
+                                                            fixture.player1_average
+                                                            or 0
+                                                        ),
+                                                        step=0.01,
+                                                        format="%.2f",
+                                                        key=(
+                                                            f"edit_p1_avg_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with edit_avg_col2:
+
+                                                edit_p2_avg = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "3-Dart Average"
+                                                        ),
+                                                        min_value=0.0,
+                                                        max_value=200.0,
+                                                        value=float(
+                                                            fixture.player2_average
+                                                            or 0
+                                                        ),
+                                                        step=0.01,
+                                                        format="%.2f",
+                                                        key=(
+                                                            f"edit_p2_avg_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            edit_180_col1, edit_180_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with edit_180_col1:
+
+                                                edit_p1_180s = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "180s"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=50,
+                                                        value=int(
+                                                            getattr(
+                                                                fixture,
+                                                                "player1_180s",
+                                                                0
+                                                            )
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p1_180s_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with edit_180_col2:
+
+                                                edit_p2_180s = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "180s"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=50,
+                                                        value=int(
+                                                            getattr(
+                                                                fixture,
+                                                                "player2_180s",
+                                                                0
+                                                            )
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p2_180s_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            edit_checkout_col1, edit_checkout_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with edit_checkout_col1:
+
+                                                edit_p1_checkout = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "Highest Checkout"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=170,
+                                                        value=int(
+                                                            getattr(
+                                                                fixture,
+                                                                "player1_high_checkout",
+                                                                0
+                                                            )
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p1_checkout_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with edit_checkout_col2:
+
+                                                edit_p2_checkout = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "Highest Checkout"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=170,
+                                                        value=int(
+                                                            getattr(
+                                                                fixture,
+                                                                "player2_high_checkout",
+                                                                0
+                                                            )
+                                                            or 0
+                                                        ),
+                                                        key=(
+                                                            f"edit_p2_checkout_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            update_result = (
+                                                st.form_submit_button(
+                                                    "💾 Update Result",
+                                                    use_container_width=True
+                                                )
+                                            )
+
+                                        if update_result:
+
+                                            edit_db = SessionLocal()
+
+                                            target_fixture = edit_db.get(
+                                                Fixture,
+                                                fixture.id
+                                            )
+
+                                            if not target_fixture:
+
+                                                st.error(
+                                                    "Fixture could not "
+                                                    "be found."
+                                                )
+
+                                            elif (
+                                                edit_p1_legs
+                                                == edit_p2_legs
+                                            ):
+
+                                                st.error(
+                                                    "A darts match cannot "
+                                                    "finish as a draw."
+                                                )
+
+                                            else:
+
+                                                target_fixture.player1_legs = (
+                                                    edit_p1_legs
+                                                )
+
+                                                target_fixture.player2_legs = (
+                                                    edit_p2_legs
+                                                )
+
+                                                target_fixture.player1_average = (
+                                                    edit_p1_avg
+                                                )
+
+                                                target_fixture.player2_average = (
+                                                    edit_p2_avg
+                                                )
+
+                                                target_fixture.player1_180s = (
+                                                    edit_p1_180s
+                                                )
+
+                                                target_fixture.player2_180s = (
+                                                    edit_p2_180s
+                                                )
+
+                                                target_fixture.player1_high_checkout = (
+                                                    edit_p1_checkout
+                                                )
+
+                                                target_fixture.player2_high_checkout = (
+                                                    edit_p2_checkout
+                                                )
+
+                                                target_fixture.date_played = (
+                                                    edit_date
+                                                )
+
+                                                target_fixture.played = 1
+
+                                                edit_db.commit()
+
+                                                if (
+                                                    "league_standings"
+                                                    in st.session_state
+                                                ):
+                                                    del st.session_state[
+                                                        "league_standings"
+                                                    ]
+
+                                                st.success(
+                                                    "Result updated."
+                                                )
+
+                                                edit_db.close()
+
+                                                st.rerun()
+
+                                            edit_db.close()
+
+                            # =================================
+                            # UPCOMING FIXTURE
+                            # =================================
+
+                            else:
+
+                                fixture_title = (
+                                    f"⏳ {player1_name} "
+                                    f"vs {player2_name}"
+                                )
+
+                                with st.expander(
+                                    fixture_title,
+                                    expanded=False
+                                ):
+
+                                    st.markdown(
+                                        f"""
+                                        <div style="
+                                            text-align:center;
+                                            font-size:25px;
+                                            font-weight:900;
+                                            margin-bottom:12px;
+                                        ">
+                                            {player1_name}
+                                            <span style="
+                                                color:#f5c542;
+                                                padding:0 14px;
+                                            ">
+                                                VS
+                                            </span>
+                                            {player2_name}
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
+
+                                    if not is_admin:
+
+                                        st.info(
+                                            "This fixture has not "
+                                            "been played yet."
+                                        )
+
+                                    else:
+
+                                        with st.form(
+                                            key=(
+                                                f"result_form_"
+                                                f"{fixture.id}"
+                                            )
+                                        ):
+
+                                            match_date = st.date_input(
+                                                "Date Played",
+                                                value=date.today(),
+                                                key=(
+                                                    f"result_date_"
+                                                    f"{fixture.id}"
+                                                )
+                                            )
+
+                                            score_col1, score_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with score_col1:
+
+                                                player1_legs = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "Legs"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=20,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p1_legs_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with score_col2:
+
+                                                player2_legs = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "Legs"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=20,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p2_legs_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            average_col1, average_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with average_col1:
+
+                                                player1_average = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "3-Dart Average"
+                                                        ),
+                                                        min_value=0.0,
+                                                        max_value=200.0,
+                                                        value=0.0,
+                                                        step=0.01,
+                                                        format="%.2f",
+                                                        key=(
+                                                            f"result_p1_avg_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with average_col2:
+
+                                                player2_average = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "3-Dart Average"
+                                                        ),
+                                                        min_value=0.0,
+                                                        max_value=200.0,
+                                                        value=0.0,
+                                                        step=0.01,
+                                                        format="%.2f",
+                                                        key=(
+                                                            f"result_p2_avg_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            one_eighty_col1, one_eighty_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with one_eighty_col1:
+
+                                                player1_180s = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "180s"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=50,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p1_180s_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with one_eighty_col2:
+
+                                                player2_180s = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "180s"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=50,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p2_180s_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            checkout_col1, checkout_col2 = (
+                                                st.columns(2)
+                                            )
+
+                                            with checkout_col1:
+
+                                                player1_checkout = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player1_name} "
+                                                            "Highest Checkout"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=170,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p1_checkout_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            with checkout_col2:
+
+                                                player2_checkout = (
+                                                    st.number_input(
+                                                        (
+                                                            f"{player2_name} "
+                                                            "Highest Checkout"
+                                                        ),
+                                                        min_value=0,
+                                                        max_value=170,
+                                                        value=0,
+                                                        key=(
+                                                            f"result_p2_checkout_"
+                                                            f"{fixture.id}"
+                                                        )
+                                                    )
+                                                )
+
+                                            save_result = (
+                                                st.form_submit_button(
+                                                    "💾 Save Result",
+                                                    use_container_width=True
+                                                )
+                                            )
+
+                                        if save_result:
+
+                                            if (
+                                                player1_legs
+                                                == player2_legs
+                                            ):
+
+                                                st.error(
+                                                    "A darts match cannot "
+                                                    "finish as a draw."
+                                                )
+
+                                            elif (
+                                                player1_legs == 0
+                                                and player2_legs == 0
+                                            ):
+
+                                                st.error(
+                                                    "Please enter the "
+                                                    "match score."
+                                                )
+
+                                            else:
+
+                                                save_db = SessionLocal()
+
+                                                target_fixture = save_db.get(
+                                                    Fixture,
+                                                    fixture.id
+                                                )
+
+                                                if not target_fixture:
+
+                                                    st.error(
+                                                        "Fixture could "
+                                                        "not be found."
+                                                    )
+
+                                                else:
+
+                                                    target_fixture.player1_legs = (
+                                                        player1_legs
+                                                    )
+
+                                                    target_fixture.player2_legs = (
+                                                        player2_legs
+                                                    )
+
+                                                    target_fixture.player1_average = (
+                                                        player1_average
+                                                    )
+
+                                                    target_fixture.player2_average = (
+                                                        player2_average
+                                                    )
+
+                                                    target_fixture.player1_180s = (
+                                                        player1_180s
+                                                    )
+
+                                                    target_fixture.player2_180s = (
+                                                        player2_180s
+                                                    )
+
+                                                    target_fixture.player1_high_checkout = (
+                                                        player1_checkout
+                                                    )
+
+                                                    target_fixture.player2_high_checkout = (
+                                                        player2_checkout
+                                                    )
+
+                                                    target_fixture.date_played = (
+                                                        match_date
+                                                    )
+
+                                                    target_fixture.played = 1
+
+                                                    save_db.commit()
+
+                                                    if (
+                                                        "league_standings"
+                                                        in st.session_state
+                                                    ):
+                                                        del st.session_state[
+                                                            "league_standings"
+                                                        ]
+
+                                                    st.success(
+                                                        "Result saved."
+                                                    )
+
+                                                    save_db.close()
+
+                                                    st.rerun()
+
+                                                save_db.close()
+
+                            st.divider()
+
+        db.close()
 
 
 # LEAGUE TAB
