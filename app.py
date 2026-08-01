@@ -2352,12 +2352,6 @@ if not st.session_state.logged_in:
                         use_container_width=True
                     )
 
-                else:
-
-                    st.info(
-                        "YouTube channel coming soon."
-                    )
-
         with social_col3:
 
             with st.container(border=True):
