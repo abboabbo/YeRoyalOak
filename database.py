@@ -7,8 +7,10 @@ DATABASE_URL = st.secrets["DATABASE_URL"]
 
 engine = create_engine(
     DATABASE_URL,
-    echo=False
+    echo=False,
+    pool_pre_ping=True
 )
+
 
 SessionLocal = sessionmaker(
     autocommit=False,
