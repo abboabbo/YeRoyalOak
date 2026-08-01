@@ -1353,6 +1353,51 @@ def get_sidebar_dashboard():
         "latest_result": latest_result_text
 
     }
+
+def get_feed_icon(category, platform):
+
+    category_icons = {
+        "Announcement": "📢",
+        "League News": "📰",
+        "Match Result": "🎯",
+        "Player of the Week": "⭐",
+        "Checkout of the Week": "🏹",
+        "Tournament": "🏆",
+        "Photo": "📷",
+        "YouTube Video": "▶️",
+        "Facebook Post": "📘",
+        "General": "🎯"
+    }
+
+    platform_icons = {
+        "YouTube": "▶️",
+        "Facebook": "📘",
+        "TikTok": "🎵",
+        "League": "🎯"
+    }
+
+    return category_icons.get(
+        category,
+        platform_icons.get(
+            platform,
+            "🎯"
+        )
+    )
+
+
+def get_feed_link_label(platform):
+
+    link_labels = {
+        "YouTube": "▶️ Watch on YouTube",
+        "Facebook": "📘 View on Facebook",
+        "TikTok": "🎵 Watch on TikTok",
+        "League": "🔗 Open Link"
+    }
+
+    return link_labels.get(
+        platform,
+        "🔗 Open Link"
+    )
     
 # LOGIN
 
@@ -2062,51 +2107,7 @@ if not st.session_state.logged_in:
                             key=f"public_feed_link_{post.id}",
                             use_container_width=True
                         )
-
-            def get_feed_icon(category, platform):
-
-                category_icons = {
-                    "Announcement": "📢",
-                    "League News": "📰",
-                    "Match Result": "🎯",
-                    "Player of the Week": "⭐",
-                    "Checkout of the Week": "🏹",
-                    "Tournament": "🏆",
-                    "Photo": "📷",
-                    "YouTube Video": "▶️",
-                    "Facebook Post": "📘",
-                    "General": "🎯"
-                }
-
-                platform_icons = {
-                    "YouTube": "▶️",
-                    "Facebook": "📘",
-                    "TikTok": "🎵",
-                    "League": "🎯"
-                }
-
-                return category_icons.get(
-                    category,
-                    platform_icons.get(
-                        platform,
-                        "🎯"
-                    )
-                )
-
-
-            def get_feed_link_label(platform):
-
-                link_labels = {
-                    "YouTube": "▶️ Watch on YouTube",
-                    "Facebook": "📘 View on Facebook",
-                    "TikTok": "🎵 Watch on TikTok",
-                    "League": "🔗 Open Link"
-                }
-
-                return link_labels.get(
-                    platform,
-                    "🔗 Open Link"
-                )            
+      
 
     # ---------------------------------------------------------
     # LOGIN / CREATE ACCOUNT PAGE
