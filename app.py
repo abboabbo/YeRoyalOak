@@ -1608,157 +1608,158 @@ if not st.session_state.logged_in:
     # ---------------------------------------------------------
 
     st.markdown(
-        """
-        <style>
-        .landing-hero {
-            background:
-                radial-gradient(
-                    circle at top,
-                    rgba(245,197,66,0.18),
-                    transparent 42%
-                ),
-                linear-gradient(
-                    145deg,
-                    #172033,
-                    #05080f 70%
+        dedent
+            """
+            <style>
+            .landing-hero {
+                background:
+                    radial-gradient(
+                        circle at top,
+                        rgba(245,197,66,0.18),
+                        transparent 42%
+                    ),
+                    linear-gradient(
+                        145deg,
+                        #172033,
+                        #05080f 70%
+                    );
+                border:
+                    1px solid
+                    rgba(245,197,66,0.55);
+                border-radius: 28px;
+                padding: 28px 22px;
+                margin-bottom: 22px;
+                text-align: center;
+                box-shadow:
+                    0 16px 45px rgba(0,0,0,0.38),
+                    0 0 30px rgba(245,197,66,0.08);
+            }
+
+            .landing-eyebrow {
+                color: #f5c542;
+                font-size: 13px;
+                font-weight: 900;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+
+            .landing-title {
+                color: white;
+                font-size: clamp(
+                    34px,
+                    6vw,
+                    62px
                 );
-            border:
-                1px solid
-                rgba(245,197,66,0.55);
-            border-radius: 28px;
-            padding: 28px 22px;
-            margin-bottom: 22px;
-            text-align: center;
-            box-shadow:
-                0 16px 45px rgba(0,0,0,0.38),
-                0 0 30px rgba(245,197,66,0.08);
-        }
+                font-weight: 950;
+                line-height: 1.05;
+                margin-top: 12px;
+            }
 
-        .landing-eyebrow {
-            color: #f5c542;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+            .landing-subtitle {
+                color: #bfc5d2;
+                font-size: 18px;
+                margin-top: 12px;
+            }
 
-        .landing-title {
-            color: white;
-            font-size: clamp(
-                34px,
-                6vw,
-                62px
-            );
-            font-weight: 950;
-            line-height: 1.05;
-            margin-top: 12px;
-        }
+            .landing-panel {
+                min-height: 210px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        #111827,
+                        #05080f
+                    );
+                border:
+                    1px solid
+                    rgba(245,197,66,0.38);
+                border-radius: 20px;
+                padding: 22px;
+                margin-bottom: 16px;
+                text-align: center;
+                box-shadow:
+                    0 10px 25px
+                    rgba(0,0,0,0.25);
+            }
 
-        .landing-subtitle {
-            color: #bfc5d2;
-            font-size: 18px;
-            margin-top: 12px;
-        }
+            .landing-panel-title {
+                color: #f5c542;
+                font-size: 14px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
 
-        .landing-panel {
-            min-height: 210px;
-            background:
-                linear-gradient(
-                    145deg,
-                    #111827,
-                    #05080f
-                );
-            border:
-                1px solid
-                rgba(245,197,66,0.38);
-            border-radius: 20px;
-            padding: 22px;
-            margin-bottom: 16px;
-            text-align: center;
-            box-shadow:
-                0 10px 25px
-                rgba(0,0,0,0.25);
-        }
+            .landing-panel-value {
+                color: white;
+                font-size: 28px;
+                font-weight: 950;
+                margin-top: 14px;
+            }
 
-        .landing-panel-title {
-            color: #f5c542;
-            font-size: 14px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+            .landing-panel-detail {
+                color: #aeb6c5;
+                font-size: 14px;
+                margin-top: 9px;
+            }
 
-        .landing-panel-value {
-            color: white;
-            font-size: 28px;
-            font-weight: 950;
-            margin-top: 14px;
-        }
+            .landing-vs {
+                color: #f5c542;
+                font-size: 19px;
+                font-weight: 950;
+                margin: 8px 0;
+            }
 
-        .landing-panel-detail {
-            color: #aeb6c5;
-            font-size: 14px;
-            margin-top: 9px;
-        }
+            .landing-announcement {
+                background:
+                    linear-gradient(
+                        90deg,
+                        rgba(245,197,66,0.13),
+                        rgba(17,24,39,0.94)
+                    );
+                border-left:
+                    5px solid #f5c542;
+                border-radius: 16px;
+                padding: 20px;
+                margin: 8px 0 20px 0;
+            }
 
-        .landing-vs {
-            color: #f5c542;
-            font-size: 19px;
-            font-weight: 950;
-            margin: 8px 0;
-        }
+            .landing-social-card {
+                min-height: 160px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        #111827,
+                        #05080f
+                    );
+                border:
+                    1px solid
+                    rgba(255,255,255,0.08);
+                border-radius: 18px;
+                padding: 18px;
+                text-align: center;
+                margin-bottom: 12px;
+            }
 
-        .landing-announcement {
-            background:
-                linear-gradient(
-                    90deg,
-                    rgba(245,197,66,0.13),
-                    rgba(17,24,39,0.94)
-                );
-            border-left:
-                5px solid #f5c542;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 8px 0 20px 0;
-        }
+            .landing-social-icon {
+                font-size: 38px;
+            }
 
-        .landing-social-card {
-            min-height: 160px;
-            background:
-                linear-gradient(
-                    145deg,
-                    #111827,
-                    #05080f
-                );
-            border:
-                1px solid
-                rgba(255,255,255,0.08);
-            border-radius: 18px;
-            padding: 18px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
+            .landing-social-name {
+                color: white;
+                font-size: 20px;
+                font-weight: 900;
+                margin-top: 8px;
+            }
 
-        .landing-social-icon {
-            font-size: 38px;
-        }
-
-        .landing-social-name {
-            color: white;
-            font-size: 20px;
-            font-weight: 900;
-            margin-top: 8px;
-        }
-
-        .landing-social-description {
-            color: #9da5b3;
-            font-size: 13px;
-            margin-top: 6px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+            .landing-social-description {
+                color: #9da5b3;
+                font-size: 13px;
+                margin-top: 6px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
     # ---------------------------------------------------------
     # HERO
@@ -1776,27 +1777,29 @@ if not st.session_state.logged_in:
         )
 
     st.markdown(
-        """
-        <div class="landing-hero">
+        dedent(
+            """
+            <div class="landing-hero">
 
-            <div class="landing-eyebrow">
-                Official League Portal
+                <div class="landing-eyebrow">
+                    Official League Portal
+                </div>
+
+                <div class="landing-title">
+                    Ye Royal Oak<br>
+                    Darts League
+                </div>
+
+                <div class="landing-subtitle">
+                    Fixtures · Results · Standings ·
+                    Awards · Player Profiles
             </div>
 
-            <div class="landing-title">
-                Ye Royal Oak<br>
-                Darts League
             </div>
-
-            <div class="landing-subtitle">
-                Fixtures · Results · Standings ·
-                Awards · Player Profiles
-            </div>
-
-        </div>
-        """,
+            """
+        ).strip(),
         unsafe_allow_html=True
-    )
+)
 
     # ---------------------------------------------------------
     # PRIMARY NAVIGATION
@@ -1861,62 +1864,66 @@ if not st.session_state.logged_in:
     with feature_col1:
 
         st.markdown(
-            f"""
-            <div class="landing-panel">
+            dedent(
+                f"""
+                <div class="landing-panel">
 
-                <div class="landing-panel-title">
-                    📅 Next League Night
+                    <div class="landing-panel-title">
+                        📅 Next League Night
+                    </div>
+
+                    <div class="landing-panel-value">
+                        {league_night_date}
+                    </div>
+
+                    <div class="landing-panel-detail">
+                        First match at 8:00 PM
+                    </div>
+
+                    <div style="
+                        color:#f5c542;
+                        font-size:20px;
+                        font-weight:900;
+                        margin-top:14px;
+                    ">
+                        {league_countdown}
+                    </div>
+
                 </div>
-
-                <div class="landing-panel-value">
-                    {league_night_date}
-                </div>
-
-                <div class="landing-panel-detail">
-                    First match at 8:00 PM
-                </div>
-
-                <div style="
-                    color:#f5c542;
-                    font-size:20px;
-                    font-weight:900;
-                    margin-top:14px;
-                ">
-                    {league_countdown}
-                </div>
-
-            </div>
-            """,
+                """
+            ).strip(),
             unsafe_allow_html=True
         )
 
     with feature_col2:
 
         st.markdown(
-            f"""
-            <div class="landing-panel">
+            dedent(
+                f"""
+                <div class="landing-panel">
 
-                <div class="landing-panel-title">
-                    👑 Current League Leader
+                    <div class="landing-panel-title">
+                        👑 Current League Leader
+                    </div>
+
+                    <div class="landing-panel-value">
+                        {public_leader_name}
+                    </div>
+
+                    <div class="landing-panel-detail">
+                        {public_leader_points} league points
+                    </div>
+
+                    <div style="
+                        font-size:34px;
+                        margin-top:13px;
+                    ">
+                        🥇
+                    </div>
+
                 </div>
-
-                <div class="landing-panel-value">
-                    {public_leader_name}
-                </div>
-
-                <div class="landing-panel-detail">
-                    {public_leader_points} league points
-                </div>
-
-                <div style="
-                    font-size:34px;
-                    margin-top:13px;
-                ">
-                    🥇
-                </div>
-
-            </div>
-            """,
+                """
+            ).strip(),
             unsafe_allow_html=True
         )
 
@@ -1924,75 +1931,48 @@ if not st.session_state.logged_in:
 
         if public_next_fixture:
 
-            next_player1 = (
-                public_player_lookup.get(
-                    public_next_fixture.player1_id,
-                    "Unknown"
-                )
+            next_player1 = public_player_lookup.get(
+                public_next_fixture.player1_id,
+                "Unknown"
             )
 
-            next_player2 = (
-                public_player_lookup.get(
-                    public_next_fixture.player2_id,
-                    "Unknown"
-                )
+            next_player2 = public_player_lookup.get(
+                public_next_fixture.player2_id,
+                "Unknown"
             )
 
             st.markdown(
-                f"""
-                <div class="landing-panel">
+                dedent(
+                    f"""
+                    <div class="landing-panel">
 
-                    <div class="landing-panel-title">
-                        🎯 Next Fixture
+                        <div class="landing-panel-title">
+                            🎯 Next Fixture
+                        </div>
+
+                        <div class="landing-panel-value">
+                            {next_player1}
+                        </div>
+
+                        <div class="landing-vs">
+                            VS
+                        </div>
+
+                        <div style="
+                            color:white;
+                            font-size:24px;
+                            font-weight:900;
+                        ">
+                            {next_player2}
+                        </div>
+
+                        <div class="landing-panel-detail">
+                            Round {public_next_fixture.round_number}
+                        </div>
+
                     </div>
-
-                    <div class="landing-panel-value">
-                        {next_player1}
-                    </div>
-
-                    <div class="landing-vs">
-                        VS
-                    </div>
-
-                    <div style="
-                        color:white;
-                        font-size:24px;
-                        font-weight:900;
-                    ">
-                        {next_player2}
-                    </div>
-
-                    <div class="landing-panel-detail">
-                        Round {
-                            public_next_fixture.round_number
-                        }
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        else:
-
-            st.markdown(
-                """
-                <div class="landing-panel">
-
-                    <div class="landing-panel-title">
-                        🎯 Next Fixture
-                    </div>
-
-                    <div class="landing-panel-value">
-                        No fixture scheduled
-                    </div>
-
-                    <div class="landing-panel-detail">
-                        Check back soon
-                    </div>
-
-                </div>
-                """,
+                    """
+                ).strip(),
                 unsafe_allow_html=True
             )
 
