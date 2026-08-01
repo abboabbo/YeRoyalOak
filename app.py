@@ -3281,11 +3281,6 @@ if page == "Awards":
             selected_tournament_name
         ]
 
-        selected_tournament_object = db.get(
-            Tournament,
-            selected_tournament_id
-        )
-
         players = awards_db.query(
             Player
         ).all()
