@@ -15,7 +15,7 @@ from textwrap import dedent
 
 from PIL import Image
 from itertools import combinations
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from database import SessionLocal
 from models import (
@@ -26,6 +26,18 @@ from models import (
     Fixture,
     KnockoutMatch,
     Announcement
+)
+
+FACEBOOK_URL = (
+    "https://www.facebook.com/groups/1063585262569763/"
+)
+
+TIKTOK_URL = (
+    "https://www.tiktok.com/@yeroyaloakdarts"
+)
+
+YOUTUBE_URL = (
+    "https://www.youtube.com/@YeRoyalOakDarts"
 )
 
 
@@ -1392,22 +1404,372 @@ if not st.session_state.logged_in:
         Fixture.played == 1
     ).count()
 
+        # ---------------------------------------------------------
+    # NEXT LEAGUE NIGHT
+    # Thursday at 8:00 PM
+    # ---------------------------------------------------------
+
+    now = datetime.now()
+
+    target_weekday = 3
+    days_until_thursday = (
+        target_weekday - now.weekday()
+    ) % 7
+
+    next_league_night = (
+        now
+        + timedelta(days=days_until_thursday)
+    ).replace(
+        hour=20,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if next_league_night <= now:
+
+        next_league_night += timedelta(
+            days=7
+        )
+
+    time_until_league = (
+        next_league_night - now
+    )
+
+    countdown_days = (
+        time_until_league.days
+    )
+
+    countdown_hours = (
+        time_until_league.seconds // 3600
+    )
+
+    countdown_minutes = (
+        (
+            time_until_league.seconds
+            % 3600
+        )
+        // 60
+    )
+
+    league_night_date = (
+        next_league_night.strftime(
+            "%A %d %B"
+        )
+    )
+
+    league_countdown = (
+        f"{countdown_days}d "
+        f"{countdown_hours}h "
+        f"{countdown_minutes}m"
+    )
+
+        # ---------------------------------------------------------
+    # CURRENT LEAGUE LEADER
+    # Uses the newest league-compatible tournament
+    # ---------------------------------------------------------
+
+    public_leader_name = "No standings yet"
+    public_leader_points = 0
+
+    public_league_tournament = (
+        public_db.query(Tournament)
+        .filter(
+            Tournament.format_type.in_(
+                [
+                    "League + Knockout",
+                    "League Only"
+                ]
+            )
+        )
+        .order_by(
+            Tournament.id.desc()
+        )
+        .first()
+    )
+
+    if public_league_tournament:
+
+        public_tournament_links = (
+            public_db.query(
+                TournamentPlayer
+            )
+            .filter(
+                TournamentPlayer.tournament_id
+                == public_league_tournament.id
+            )
+            .all()
+        )
+
+        public_tournament_player_ids = {
+            link.player_id
+            for link
+            in public_tournament_links
+        }
+
+        public_league_fixtures = (
+            public_db.query(Fixture)
+            .filter(
+                Fixture.tournament_id
+                == public_league_tournament.id,
+                Fixture.played == 1
+            )
+            .all()
+        )
+
+        public_standings = {
+            player_id: {
+                "points": 0,
+                "wins": 0,
+                "difference": 0
+            }
+            for player_id
+            in public_tournament_player_ids
+        }
+
+        for fixture in public_league_fixtures:
+
+            if (
+                fixture.player1_id
+                not in public_standings
+                or fixture.player2_id
+                not in public_standings
+            ):
+
+                continue
+
+            player1_legs = int(
+                fixture.player1_legs or 0
+            )
+
+            player2_legs = int(
+                fixture.player2_legs or 0
+            )
+
+            player1_data = public_standings[
+                fixture.player1_id
+            ]
+
+            player2_data = public_standings[
+                fixture.player2_id
+            ]
+
+            player1_data["difference"] += (
+                player1_legs
+                - player2_legs
+            )
+
+            player2_data["difference"] += (
+                player2_legs
+                - player1_legs
+            )
+
+            if player1_legs > player2_legs:
+
+                player1_data["wins"] += 1
+                player1_data["points"] += 2
+
+            elif player2_legs > player1_legs:
+
+                player2_data["wins"] += 1
+                player2_data["points"] += 2
+
+            else:
+
+                player1_data["points"] += 1
+                player2_data["points"] += 1
+
+        if public_standings:
+
+            leader_id, leader_data = max(
+                public_standings.items(),
+                key=lambda item: (
+                    item[1]["points"],
+                    item[1]["difference"],
+                    item[1]["wins"]
+                )
+            )
+
+            public_leader_name = (
+                public_player_lookup.get(
+                    leader_id,
+                    "Unknown"
+                )
+            )
+
+            public_leader_points = (
+                leader_data["points"]
+            )
+
     public_db.close()
 
     # ---------------------------------------------------------
-    # LANDING PAGE HEADER
+    # PREMIUM PUBLIC LANDING PAGE
     # ---------------------------------------------------------
 
     st.markdown(
         """
-        <div style="text-align:center;">
+        <style>
+        .landing-hero {
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(245,197,66,0.18),
+                    transparent 42%
+                ),
+                linear-gradient(
+                    145deg,
+                    #172033,
+                    #05080f 70%
+                );
+            border:
+                1px solid
+                rgba(245,197,66,0.55);
+            border-radius: 28px;
+            padding: 28px 22px;
+            margin-bottom: 22px;
+            text-align: center;
+            box-shadow:
+                0 16px 45px rgba(0,0,0,0.38),
+                0 0 30px rgba(245,197,66,0.08);
+        }
+
+        .landing-eyebrow {
+            color: #f5c542;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .landing-title {
+            color: white;
+            font-size: clamp(
+                34px,
+                6vw,
+                62px
+            );
+            font-weight: 950;
+            line-height: 1.05;
+            margin-top: 12px;
+        }
+
+        .landing-subtitle {
+            color: #bfc5d2;
+            font-size: 18px;
+            margin-top: 12px;
+        }
+
+        .landing-panel {
+            min-height: 210px;
+            background:
+                linear-gradient(
+                    145deg,
+                    #111827,
+                    #05080f
+                );
+            border:
+                1px solid
+                rgba(245,197,66,0.38);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow:
+                0 10px 25px
+                rgba(0,0,0,0.25);
+        }
+
+        .landing-panel-title {
+            color: #f5c542;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .landing-panel-value {
+            color: white;
+            font-size: 28px;
+            font-weight: 950;
+            margin-top: 14px;
+        }
+
+        .landing-panel-detail {
+            color: #aeb6c5;
+            font-size: 14px;
+            margin-top: 9px;
+        }
+
+        .landing-vs {
+            color: #f5c542;
+            font-size: 19px;
+            font-weight: 950;
+            margin: 8px 0;
+        }
+
+        .landing-announcement {
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(245,197,66,0.13),
+                    rgba(17,24,39,0.94)
+                );
+            border-left:
+                5px solid #f5c542;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 8px 0 20px 0;
+        }
+
+        .landing-social-card {
+            min-height: 160px;
+            background:
+                linear-gradient(
+                    145deg,
+                    #111827,
+                    #05080f
+                );
+            border:
+                1px solid
+                rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .landing-social-icon {
+            font-size: 38px;
+        }
+
+        .landing-social-name {
+            color: white;
+            font-size: 20px;
+            font-weight: 900;
+            margin-top: 8px;
+        }
+
+        .landing-social-description {
+            color: #9da5b3;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        </style>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
-    logo_left, logo_centre, logo_right = st.columns([2, 1, 2])
+    # ---------------------------------------------------------
+    # HERO
+    # ---------------------------------------------------------
 
-    with logo_centre:
+    hero_left, hero_logo, hero_right = (
+        st.columns([2, 1, 2])
+    )
+
+    with hero_logo:
+
         st.image(
             "assets/royal_oak_logo.png",
             use_container_width=True
@@ -1415,70 +1777,234 @@ if not st.session_state.logged_in:
 
     st.markdown(
         """
-        <h1 style="text-align:center; margin-bottom:0;">
-            Ye Royal Oak Darts League
-        </h1>
+        <div class="landing-hero">
 
-        <p style="
-            text-align:center;
-            color:#bfc5d2;
-            font-size:18px;
-            margin-top:8px;
-        ">
-            Official League Portal
-        </p>
+            <div class="landing-eyebrow">
+                Official League Portal
+            </div>
+
+            <div class="landing-title">
+                Ye Royal Oak<br>
+                Darts League
+            </div>
+
+            <div class="landing-subtitle">
+                Fixtures · Results · Standings ·
+                Awards · Player Profiles
+            </div>
+
+        </div>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
     # ---------------------------------------------------------
-    # PUBLIC NAVIGATION
+    # PRIMARY NAVIGATION
     # ---------------------------------------------------------
 
-    nav_col1, nav_col2, nav_col3 = st.columns(3)
+    nav_col1, nav_col2, nav_col3 = (
+        st.columns(3)
+    )
 
     with nav_col1:
 
         if st.button(
-            "🔐 Login",
-            key="landing_login_page",
+            "🔐 Login / Create Account",
+            key="premium_landing_login",
             use_container_width=True
         ):
 
-            st.session_state.public_page = "Login"
+            st.session_state.public_page = (
+                "Login"
+            )
+
             st.rerun()
 
     with nav_col2:
 
         if st.button(
-            "🏆 League Table",
-            key="landing_league_page",
+            "🏆 View League Table",
+            key="premium_landing_league",
             use_container_width=True
         ):
 
-            st.session_state.public_page = "League Table"
+            st.session_state.public_page = (
+                "League Table"
+            )
+
             st.rerun()
 
     with nav_col3:
 
         if st.button(
-            "📱 Social Media",
-            key="landing_socials_page",
+            "📱 Follow the League",
+            key="premium_landing_socials",
             use_container_width=True
         ):
 
-            st.session_state.public_page = "Socials"
+            st.session_state.public_page = (
+                "Socials"
+            )
+
             st.rerun()
 
     st.divider()
 
     # ---------------------------------------------------------
-    # PUBLIC DASHBOARD CARDS
+    # FEATURE CARDS
     # ---------------------------------------------------------
 
-    stat_col1, stat_col2 = st.columns(2)
+    feature_col1, feature_col2, feature_col3 = (
+        st.columns(3)
+    )
 
-    with stat_col1:
+    with feature_col1:
+
+        st.markdown(
+            f"""
+            <div class="landing-panel">
+
+                <div class="landing-panel-title">
+                    📅 Next League Night
+                </div>
+
+                <div class="landing-panel-value">
+                    {league_night_date}
+                </div>
+
+                <div class="landing-panel-detail">
+                    First match at 8:00 PM
+                </div>
+
+                <div style="
+                    color:#f5c542;
+                    font-size:20px;
+                    font-weight:900;
+                    margin-top:14px;
+                ">
+                    {league_countdown}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with feature_col2:
+
+        st.markdown(
+            f"""
+            <div class="landing-panel">
+
+                <div class="landing-panel-title">
+                    👑 Current League Leader
+                </div>
+
+                <div class="landing-panel-value">
+                    {public_leader_name}
+                </div>
+
+                <div class="landing-panel-detail">
+                    {public_leader_points} league points
+                </div>
+
+                <div style="
+                    font-size:34px;
+                    margin-top:13px;
+                ">
+                    🥇
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with feature_col3:
+
+        if public_next_fixture:
+
+            next_player1 = (
+                public_player_lookup.get(
+                    public_next_fixture.player1_id,
+                    "Unknown"
+                )
+            )
+
+            next_player2 = (
+                public_player_lookup.get(
+                    public_next_fixture.player2_id,
+                    "Unknown"
+                )
+            )
+
+            st.markdown(
+                f"""
+                <div class="landing-panel">
+
+                    <div class="landing-panel-title">
+                        🎯 Next Fixture
+                    </div>
+
+                    <div class="landing-panel-value">
+                        {next_player1}
+                    </div>
+
+                    <div class="landing-vs">
+                        VS
+                    </div>
+
+                    <div style="
+                        color:white;
+                        font-size:24px;
+                        font-weight:900;
+                    ">
+                        {next_player2}
+                    </div>
+
+                    <div class="landing-panel-detail">
+                        Round {
+                            public_next_fixture.round_number
+                        }
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        else:
+
+            st.markdown(
+                """
+                <div class="landing-panel">
+
+                    <div class="landing-panel-title">
+                        🎯 Next Fixture
+                    </div>
+
+                    <div class="landing-panel-value">
+                        No fixture scheduled
+                    </div>
+
+                    <div class="landing-panel-detail">
+                        Check back soon
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # ---------------------------------------------------------
+    # LEAGUE ACTIVITY
+    # ---------------------------------------------------------
+
+    activity_col1, activity_col2 = (
+        st.columns(2)
+    )
+
+    with activity_col1:
 
         dashboard_card(
             "👥 Registered Players",
@@ -1486,84 +2012,210 @@ if not st.session_state.logged_in:
             "Current league members"
         )
 
-    with stat_col2:
+    with activity_col2:
 
         dashboard_card(
-            "🎯 Matches Played",
+            "🎯 Matches Completed",
             public_matches_played,
-            "Completed league matches"
+            "League results recorded"
         )
 
-    fixture_col, result_col = st.columns(2)
+    if public_latest_result:
 
-    with fixture_col:
-
-        if public_next_fixture:
-
-            next_p1 = public_player_lookup.get(
-                public_next_fixture.player1_id,
-                "Unknown"
-            )
-
-            next_p2 = public_player_lookup.get(
-                public_next_fixture.player2_id,
-                "Unknown"
-            )
-
-            match_card(
-                "📅 Next Fixture",
-                next_p1,
-                f"Round {public_next_fixture.round_number}",
-                next_p2
-            )
-
-        else:
-
-            dashboard_card(
-                "📅 Next Fixture",
-                "None",
-                "No upcoming fixtures"
-            )
-
-    with result_col:
-
-        if public_latest_result:
-
-            result_p1 = public_player_lookup.get(
+        latest_player1 = (
+            public_player_lookup.get(
                 public_latest_result.player1_id,
                 "Unknown"
             )
+        )
 
-            result_p2 = public_player_lookup.get(
+        latest_player2 = (
+            public_player_lookup.get(
                 public_latest_result.player2_id,
                 "Unknown"
             )
+        )
 
-            match_card(
-                "🔥 Latest Result",
-                result_p1,
-                (
-                    f"{public_latest_result.player1_legs}"
-                    f" - "
-                    f"{public_latest_result.player2_legs}"
-                ),
-                result_p2
+        match_card(
+            "🔥 Latest Result",
+            latest_player1,
+            (
+                f"{public_latest_result.player1_legs}"
+                f" - "
+                f"{public_latest_result.player2_legs}"
+            ),
+            latest_player2
+        )
+
+    # ---------------------------------------------------------
+    # ANNOUNCEMENT
+    # ---------------------------------------------------------
+
+    if public_latest_announcement:
+
+        st.markdown(
+            f"""
+            <div class="landing-announcement">
+
+                <div style="
+                    color:#f5c542;
+                    font-size:14px;
+                    font-weight:900;
+                    text-transform:uppercase;
+                    letter-spacing:1px;
+                ">
+                    📢 Latest Announcement
+                </div>
+
+                <div style="
+                    color:white;
+                    font-size:24px;
+                    font-weight:900;
+                    margin-top:9px;
+                ">
+                    {public_latest_announcement.title}
+                </div>
+
+                <div style="
+                    color:#c6ccd6;
+                    font-size:16px;
+                    margin-top:8px;
+                ">
+                    {public_latest_announcement.message}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ---------------------------------------------------------
+    # SOCIAL MEDIA PREVIEW
+    # ---------------------------------------------------------
+
+    st.markdown(
+        """
+        <h2 style="text-align:center;">
+            📱 Follow the League
+        </h2>
+
+        <p style="
+            text-align:center;
+            color:#aeb6c5;
+        ">
+            Highlights, results, announcements
+            and behind-the-scenes content
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    social_col1, social_col2, social_col3 = (
+        st.columns(3)
+    )
+
+    with social_col1:
+
+        st.markdown(
+            """
+            <div class="landing-social-card">
+
+                <div class="landing-social-icon">
+                    📘
+                </div>
+
+                <div class="landing-social-name">
+                    Facebook
+                </div>
+
+                <div class="landing-social-description">
+                    Community news, fixtures
+                    and league discussion
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.link_button(
+            "Visit Facebook",
+            FACEBOOK_URL,
+            use_container_width=True
+        )
+
+    with social_col2:
+
+        st.markdown(
+            """
+            <div class="landing-social-card">
+
+                <div class="landing-social-icon">
+                    ▶️
+                </div>
+
+                <div class="landing-social-name">
+                    YouTube
+                </div>
+
+                <div class="landing-social-description">
+                    Match highlights, finals
+                    and player features
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if (
+            YOUTUBE_URL
+            != "PASTE_YOUR_YOUTUBE_CHANNEL_LINK_HERE"
+        ):
+
+            st.link_button(
+                "Watch on YouTube",
+                YOUTUBE_URL,
+                use_container_width=True
             )
 
         else:
 
-            dashboard_card(
-                "🔥 Latest Result",
-                "None",
-                "No completed results yet"
+            st.button(
+                "YouTube Coming Soon",
+                key="youtube_coming_soon",
+                disabled=True,
+                use_container_width=True
             )
 
-    if public_latest_announcement:
+    with social_col3:
 
-        dashboard_card(
-            "📢 Latest Announcement",
-            public_latest_announcement.title,
-            public_latest_announcement.message
+        st.markdown(
+            """
+            <div class="landing-social-card">
+
+                <div class="landing-social-icon">
+                    🎵
+                </div>
+
+                <div class="landing-social-name">
+                    TikTok
+                </div>
+
+                <div class="landing-social-description">
+                    180s, checkouts and
+                    league-night moments
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.link_button(
+            "Follow on TikTok",
+            TIKTOK_URL,
+            use_container_width=True
         )
 
     st.divider()
@@ -1929,6 +2581,145 @@ if not st.session_state.logged_in:
             )
 
         league_db.close()
+
+    elif st.session_state.public_page == "Socials":
+
+        st.markdown(
+            """
+            <h1 style="text-align:center;">
+                📱 Follow Ye Royal Oak Darts
+            </h1>
+
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:17px;
+            ">
+                League news, results, highlights
+                and behind-the-scenes content
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        social_col1, social_col2, social_col3 = (
+            st.columns(3)
+        )
+
+        with social_col1:
+
+            with st.container(border=True):
+
+                st.markdown("# 📘")
+                st.subheader("Facebook")
+
+                st.write(
+                    "Fixtures, announcements, photos "
+                    "and league discussion."
+                )
+
+                st.link_button(
+                    "Visit Facebook",
+                    FACEBOOK_URL,
+                    use_container_width=True
+                )
+
+        with social_col2:
+
+            with st.container(border=True):
+
+                st.markdown("# ▶️")
+                st.subheader("YouTube")
+
+                st.write(
+                    "Match highlights, tournament "
+                    "finals and player interviews."
+                )
+
+                if (
+                    YOUTUBE_URL
+                    != "https://www.youtube.com/@YeRoyalOakDarts"
+                ):
+
+                    st.link_button(
+                        "Watch on YouTube",
+                        YOUTUBE_URL,
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info(
+                        "YouTube channel coming soon."
+                    )
+
+        with social_col3:
+
+            with st.container(border=True):
+
+                st.markdown("# 🎵")
+                st.subheader("TikTok")
+
+                st.write(
+                    "180s, big checkouts, funny "
+                    "moments and short highlights."
+                )
+
+                st.link_button(
+                    "Follow on TikTok",
+                    TIKTOK_URL,
+                    use_container_width=True
+                )
+
+        st.divider()
+
+        venue_col1, venue_col2 = (
+            st.columns(2)
+        )
+
+        with venue_col1:
+
+            with st.container(border=True):
+
+                st.subheader("📍 Venue")
+
+                st.write(
+                    """
+**Ye Royal Oak**
+
+The Shambles
+Chesterfield
+Derbyshire
+"""
+                )
+
+        with venue_col2:
+
+            with st.container(border=True):
+
+                st.subheader("🎯 League Night")
+
+                st.write(
+                    f"""
+**Every Thursday**
+
+First match: **7.45 PM**
+
+Next night: **{league_night_date}**
+"""
+                )
+
+        if st.button(
+            "⬅ Back to Login",
+            key="socials_back_to_login",
+            use_container_width=True
+        ):
+
+            st.session_state.public_page = (
+                "Login"
+            )
+
+            st.rerun()    
 
     # ---------------------------------------------------------
     # SOCIAL MEDIA PAGE
