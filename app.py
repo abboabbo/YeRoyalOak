@@ -2579,6 +2579,13 @@ with st.sidebar:
         if st.button("🏆 Tournaments", use_container_width=True):
             st.session_state.page = "Tournaments"
 
+        if st.button(
+            "📰 Feed Manager", 
+            key="sidebar_feed_manager",
+            use_container_width=True
+        ):
+            st.session_state.page = "Feed Manager"
+
     page = st.session_state.page
 
     st.markdown("---")
@@ -3575,6 +3582,484 @@ if page == "Tournaments":
                             st.rerun()
 
         db.close()
+
+# =========================================================
+# ADMIN: LEAGUE FEED MANAGER
+# =========================================================
+
+if page == "Feed Manager":
+
+    if not is_admin:
+
+        st.error(
+            "Administrator access is required."
+        )
+
+    else:
+
+        st.markdown(
+            """
+            <h1 style="text-align:center;">
+                📰 League Feed Manager
+            </h1>
+
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:16px;
+            ">
+                Create and manage posts shown in the official league feed.
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        feed_db = SessionLocal()
+
+        # -----------------------------------------------------
+        # CREATE NEW POST
+        # -----------------------------------------------------
+
+        with st.expander(
+            "➕ Create New Feed Post",
+            expanded=True
+        ):
+
+            category_options = [
+                "Announcement",
+                "League News",
+                "Match Result",
+                "Player of the Week",
+                "Checkout of the Week",
+                "Tournament",
+                "Photo",
+                "YouTube Video",
+                "Facebook Post",
+                "General"
+            ]
+
+            new_category = st.selectbox(
+                "Category",
+                category_options,
+                key="feed_new_category"
+            )
+
+            new_platform = st.selectbox(
+                "Platform",
+                [
+                    "League",
+                    "YouTube",
+                    "Facebook",
+                    "TikTok"
+                ],
+                key="feed_new_platform"
+            )
+
+            new_title = st.text_input(
+                "Post Title",
+                key="feed_new_title"
+            )
+
+            new_message = st.text_area(
+                "Post Message",
+                height=160,
+                key="feed_new_message"
+            )
+
+            new_image_url = st.text_input(
+                "Image URL — optional",
+                help=(
+                    "Paste a direct public image URL. "
+                    "Image uploads will be added later."
+                ),
+                key="feed_new_image_url"
+            )
+
+            new_external_url = st.text_input(
+                "External Link — optional",
+                help=(
+                    "For example, a YouTube video, "
+                    "Facebook post or TikTok link."
+                ),
+                key="feed_new_external_url"
+            )
+
+            option_col1, option_col2 = st.columns(2)
+
+            with option_col1:
+
+                new_is_pinned = st.checkbox(
+                    "📌 Pin this post",
+                    key="feed_new_pinned"
+                )
+
+            with option_col2:
+
+                new_is_published = st.checkbox(
+                    "Publish immediately",
+                    value=True,
+                    key="feed_new_published"
+                )
+
+            if st.button(
+                "🚀 Publish Feed Post",
+                key="feed_publish_post",
+                use_container_width=True
+            ):
+
+                clean_title = new_title.strip()
+                clean_message = new_message.strip()
+                clean_image_url = new_image_url.strip()
+                clean_external_url = new_external_url.strip()
+
+                if not clean_title:
+
+                    st.error(
+                        "Please enter a post title."
+                    )
+
+                elif not clean_message:
+
+                    st.error(
+                        "Please enter a post message."
+                    )
+
+                else:
+
+                    created_time = datetime.now().strftime(
+                        "%d/%m/%Y %H:%M"
+                    )
+
+                    new_post = LeaguePost(
+                        category=new_category,
+                        title=clean_title,
+                        message=clean_message,
+                        platform=new_platform,
+                        image_url=(
+                            clean_image_url
+                            if clean_image_url
+                            else None
+                        ),
+                        external_url=(
+                            clean_external_url
+                            if clean_external_url
+                            else None
+                        ),
+                        is_pinned=(
+                            1
+                            if new_is_pinned
+                            else 0
+                        ),
+                        is_published=(
+                            1
+                            if new_is_published
+                            else 0
+                        ),
+                        created_by=st.session_state.get(
+                            "username",
+                            "Admin"
+                        ),
+                        created_at=created_time
+                    )
+
+                    feed_db.add(new_post)
+                    feed_db.commit()
+
+                    st.success(
+                        "Feed post created successfully."
+                    )
+
+                    st.rerun()
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # EXISTING POSTS
+        # -----------------------------------------------------
+
+        st.subheader("Existing Feed Posts")
+
+        existing_posts = feed_db.query(
+            LeaguePost
+        ).order_by(
+            LeaguePost.is_pinned.desc(),
+            LeaguePost.id.desc()
+        ).all()
+
+        if not existing_posts:
+
+            st.info(
+                "No feed posts have been created yet."
+            )
+
+        else:
+
+            for post in existing_posts:
+
+                pinned_label = (
+                    "📌 "
+                    if post.is_pinned == 1
+                    else ""
+                )
+
+                published_label = (
+                    "Published"
+                    if post.is_published == 1
+                    else "Draft"
+                )
+
+                expander_title = (
+                    f"{pinned_label}"
+                    f"{post.category} — "
+                    f"{post.title} — "
+                    f"{published_label}"
+                )
+
+                with st.expander(
+                    expander_title,
+                    expanded=False
+                ):
+
+                    st.caption(
+                        f"Post ID: {post.id}"
+                    )
+
+                    st.caption(
+                        f"Created by "
+                        f"{post.created_by or 'Unknown'} "
+                        f"on {post.created_at}"
+                    )
+
+                    edit_category = st.selectbox(
+                        "Category",
+                        category_options,
+                        index=(
+                            category_options.index(
+                                post.category
+                            )
+                            if post.category
+                            in category_options
+                            else category_options.index(
+                                "General"
+                            )
+                        ),
+                        key=f"feed_edit_category_{post.id}"
+                    )
+
+                    platform_options = [
+                        "League",
+                        "YouTube",
+                        "Facebook",
+                        "TikTok"
+                    ]
+
+                    edit_platform = st.selectbox(
+                        "Platform",
+                        platform_options,
+                        index=(
+                            platform_options.index(
+                                post.platform
+                            )
+                            if post.platform
+                            in platform_options
+                            else 0
+                        ),
+                        key=f"feed_edit_platform_{post.id}"
+                    )
+
+                    edit_title = st.text_input(
+                        "Title",
+                        value=post.title or "",
+                        key=f"feed_edit_title_{post.id}"
+                    )
+
+                    edit_message = st.text_area(
+                        "Message",
+                        value=post.message or "",
+                        height=150,
+                        key=f"feed_edit_message_{post.id}"
+                    )
+
+                    edit_image_url = st.text_input(
+                        "Image URL",
+                        value=post.image_url or "",
+                        key=f"feed_edit_image_{post.id}"
+                    )
+
+                    edit_external_url = st.text_input(
+                        "External Link",
+                        value=post.external_url or "",
+                        key=f"feed_edit_external_{post.id}"
+                    )
+
+                    edit_option_col1, edit_option_col2 = (
+                        st.columns(2)
+                    )
+
+                    with edit_option_col1:
+
+                        edit_is_pinned = st.checkbox(
+                            "📌 Pinned",
+                            value=(
+                                post.is_pinned == 1
+                            ),
+                            key=f"feed_edit_pinned_{post.id}"
+                        )
+
+                    with edit_option_col2:
+
+                        edit_is_published = st.checkbox(
+                            "Published",
+                            value=(
+                                post.is_published == 1
+                            ),
+                            key=f"feed_edit_published_{post.id}"
+                        )
+
+                    action_col1, action_col2 = (
+                        st.columns(2)
+                    )
+
+                    with action_col1:
+
+                        if st.button(
+                            "💾 Save Changes",
+                            key=f"feed_save_{post.id}",
+                            use_container_width=True
+                        ):
+
+                            clean_edit_title = (
+                                edit_title.strip()
+                            )
+
+                            clean_edit_message = (
+                                edit_message.strip()
+                            )
+
+                            if not clean_edit_title:
+
+                                st.error(
+                                    "The title cannot be empty."
+                                )
+
+                            elif not clean_edit_message:
+
+                                st.error(
+                                    "The message cannot be empty."
+                                )
+
+                            else:
+
+                                edit_db = SessionLocal()
+
+                                target_post = edit_db.get(
+                                    LeaguePost,
+                                    post.id
+                                )
+
+                                if not target_post:
+
+                                    st.error(
+                                        "The feed post could not be found."
+                                    )
+
+                                else:
+
+                                    target_post.category = (
+                                        edit_category
+                                    )
+
+                                    target_post.platform = (
+                                        edit_platform
+                                    )
+
+                                    target_post.title = (
+                                        clean_edit_title
+                                    )
+
+                                    target_post.message = (
+                                        clean_edit_message
+                                    )
+
+                                    target_post.image_url = (
+                                        edit_image_url.strip()
+                                        or None
+                                    )
+
+                                    target_post.external_url = (
+                                        edit_external_url.strip()
+                                        or None
+                                    )
+
+                                    target_post.is_pinned = (
+                                        1
+                                        if edit_is_pinned
+                                        else 0
+                                    )
+
+                                    target_post.is_published = (
+                                        1
+                                        if edit_is_published
+                                        else 0
+                                    )
+
+                                    edit_db.commit()
+
+                                    st.success(
+                                        "Feed post updated."
+                                    )
+
+                                    edit_db.close()
+
+                                    st.rerun()
+
+                                edit_db.close()
+
+                    with action_col2:
+
+                        confirm_delete = st.checkbox(
+                            "Confirm deletion",
+                            key=f"feed_confirm_delete_{post.id}"
+                        )
+
+                        if st.button(
+                            "🗑 Delete Post",
+                            key=f"feed_delete_{post.id}",
+                            use_container_width=True
+                        ):
+
+                            if not confirm_delete:
+
+                                st.warning(
+                                    "Tick Confirm deletion first."
+                                )
+
+                            else:
+
+                                delete_db = SessionLocal()
+
+                                target_post = delete_db.get(
+                                    LeaguePost,
+                                    post.id
+                                )
+
+                                if target_post:
+
+                                    delete_db.delete(
+                                        target_post
+                                    )
+
+                                    delete_db.commit()
+
+                                delete_db.close()
+
+                                st.success(
+                                    "Feed post deleted."
+                                )
+
+                                st.rerun()
+
+        feed_db.close()
 
 if page == "Home":
 
