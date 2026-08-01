@@ -132,6 +132,26 @@ class Fixture(Base):
         default="0"
     )
 
+    player1_180s = Column(
+        Integer,
+        default=0
+    )
+
+    player2_180s = Column(
+        Integer,
+        default=0
+    )
+
+    player1_high_checkout = Column(
+        Integer,
+        default=0
+    )
+
+    player2_high_checkout = Column(
+        Integer,
+        default=0
+    )
+
     played = Column(
         Integer,
         default=0
@@ -198,14 +218,14 @@ class HallOfFame(Base):
     year = Column(String)
 
     oneeighties = Column(
-    Integer,
-    default=0
-)
+        Integer,
+        default=0
+    )
 
-highest_checkout = Column(
-    Integer,
-    default=0
-)
+    highest_checkout = Column(
+        Integer,
+        default=0
+    )
 
 class User(Base):
 
