@@ -6402,6 +6402,124 @@ if page == "Knockout":
 
     knockout_db = SessionLocal()
 
+    # -----------------------------------------------------
+    # ADMIN: CREATE STANDALONE KNOCKOUT TOURNAMENT
+    # -----------------------------------------------------
+
+    if is_admin:
+
+        with st.expander(
+            "➕ Create Standalone Knockout Tournament",
+            expanded=False
+        ):
+
+            all_players = knockout_db.query(
+                Player
+            ).order_by(
+                Player.name
+            ).all()
+
+            knockout_player_options = {
+                display_player_name(player): player.id
+                for player in all_players
+            }
+
+            new_knockout_name = st.text_input(
+                "Tournament Name",
+                key="new_knockout_tournament_name"
+            )
+
+            new_knockout_format = st.selectbox(
+                "Match Format",
+                [
+                    "Best of 3",
+                    "Best of 5",
+                    "Best of 7",
+                    "Best of 9",
+                    "Best of 11"
+                ],
+                key="new_knockout_match_format"
+            )
+
+            selected_knockout_players = st.multiselect(
+                "Select Players",
+                list(knockout_player_options.keys()),
+                key="new_knockout_players"
+            )
+
+            if st.button(
+                "🏆 Create Knockout Tournament",
+                key="create_standalone_knockout",
+                use_container_width=True
+            ):
+
+                clean_name = new_knockout_name.strip()
+
+                existing_tournament = knockout_db.query(
+                    Tournament
+                ).filter(
+                    Tournament.name == clean_name
+                ).first()
+
+                if not clean_name:
+
+                    st.error(
+                        "Please enter a tournament name."
+                    )
+
+                elif existing_tournament:
+
+                    st.error(
+                        "A tournament with that name already exists."
+                    )
+
+                elif len(selected_knockout_players) < 2:
+
+                    st.error(
+                        "Please select at least two players."
+                    )
+
+                else:
+
+                    new_tournament = Tournament(
+                        name=clean_name,
+                        format_type="Knockout Only",
+                        legs_format=new_knockout_format
+                    )
+
+                    knockout_db.add(
+                        new_tournament
+                    )
+
+                    knockout_db.commit()
+
+                    knockout_db.refresh(
+                        new_tournament
+                    )
+
+                    for player_name in selected_knockout_players:
+
+                        knockout_link = TournamentPlayer(
+                            tournament_id=new_tournament.id,
+                            player_id=knockout_player_options[
+                                player_name
+                            ]
+                        )
+
+                        knockout_db.add(
+                            knockout_link
+                        )
+
+                    knockout_db.commit()
+
+                    st.success(
+                        "Standalone knockout tournament created."
+                    )
+
+                    st.rerun()
+
+        st.divider()
+
     tournaments = knockout_db.query(
         Tournament
     ).order_by(
@@ -6462,12 +6580,36 @@ if page == "Knockout":
             for player in players
         }
 
-        seeded_player_ids = (
-            calculate_knockout_seeds(
+        selected_tournament = knockout_db.get(
+            Tournament,
+            selected_tournament_id
+        )
+
+        if (
+            selected_tournament
+            and selected_tournament.format_type == "Knockout Only"
+        ):
+
+            knockout_links = knockout_db.query(
+                TournamentPlayer
+            ).filter(
+                TournamentPlayer.tournament_id
+                == selected_tournament_id
+            ).order_by(
+                TournamentPlayer.id
+            ).all()
+
+            seeded_player_ids = [
+                link.player_id
+                for link in knockout_links
+            ]
+
+        else:
+
+            seeded_player_ids = calculate_knockout_seeds(
                 knockout_db,
                 selected_tournament_id
             )
-        )
 
         seed_order = {
             player_id: seed_number
@@ -6625,7 +6767,7 @@ if page == "Knockout":
                             "Confirm the knockout seeds first."
                         )
 
-                    elif len(seeded_player_ids) < 8:
+                    elif len(seeded_player_ids) < 2:
 
                         st.error(
                             "At least eight players are required "
@@ -7367,7 +7509,7 @@ if page == "Knockout":
                             st.rerun()
 
         knockout_db.close()
-        
+
 # =========================================================
 # STATISTICS PAGE — UPGRADE
 # =========================================================
