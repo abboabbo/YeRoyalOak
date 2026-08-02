@@ -6573,73 +6573,272 @@ if page == "My Profile":
 
                 st.markdown("### ⚙️ Edit My Profile")
 
-                new_nickname = st.text_input(
-                    "Nickname",
-                    value=player.nickname if player.nickname else "",
-                    key=f"my_profile_nickname_{player.id}"
-                )
-
-                new_logo = st.file_uploader(
-                    "Upload New Logo",
-                    type=["png", "jpg", "jpeg"],
-                    key="my_profile_logo"
-                )
-
-                if st.button(
-                    "💾 Save Profile",
-                    use_container_width=True
+                with st.expander(
+                    "Edit Profile Details",
+                    expanded=False
                 ):
 
-                    db_profile = SessionLocal()
+                    edit_col1, edit_col2 = st.columns(2)
 
-                    target_player = db_profile.get(
-                        Player,
-                        player.id
-                    )
+                    with edit_col1:
 
-                    if target_player:
+                        new_nickname = st.text_input(
+                            "Nickname",
+                            value=player.nickname or "",
+                            key=f"my_profile_nickname_{player.id}"
+                        )
 
-                        target_player.nickname = new_nickname.strip()
+                        new_hometown = st.text_input(
+                            "Hometown",
+                            value=player.hometown or "",
+                            key=f"my_profile_hometown_{player.id}"
+                        )
 
-                        if new_logo is not None:
+                        throwing_hand_options = [
+                            "Not specified",
+                            "Right-handed",
+                            "Left-handed"
+                        ]
 
-                            os.makedirs(
-                                "assets/logos",
-                                exist_ok=True
+                        current_throwing_hand = (
+                            player.throwing_hand
+                            if player.throwing_hand
+                            in throwing_hand_options
+                            else "Not specified"
+                        )
+
+                        new_throwing_hand = st.selectbox(
+                            "Throwing Hand",
+                            throwing_hand_options,
+                            index=throwing_hand_options.index(
+                                current_throwing_hand
+                            ),
+                            key=f"my_profile_throwing_hand_{player.id}"
+                        )
+
+                        new_favourite_double = st.text_input(
+                            "Favourite Double",
+                            value=player.favourite_double or "",
+                            placeholder="Example: D16",
+                            key=f"my_profile_favourite_double_{player.id}"
+                        )
+
+                        new_favourite_checkout = st.text_input(
+                            "Favourite Checkout",
+                            value=player.favourite_checkout or "",
+                            placeholder="Example: 121",
+                            key=f"my_profile_favourite_checkout_{player.id}"
+                        )
+
+                    with edit_col2:
+
+                        new_walk_on_song = st.text_input(
+                            "Walk-On Song",
+                            value=player.walk_on_song or "",
+                            placeholder="Artist — Song",
+                            key=f"my_profile_walk_on_song_{player.id}"
+                        )
+
+                        new_walk_on_url = st.text_input(
+                            "Spotify Walk-On Song Link",
+                            value=player.walk_on_url or "",
+                            placeholder=(
+                                "https://open.spotify.com/track/..."
+                            ),
+                            help=(
+                                "Open the song in Spotify, choose Share, "
+                                "then copy the song link."
+                            ),
+                            key=f"my_profile_walk_on_url_{player.id}"
+                        )
+
+                        new_photo_url = st.text_input(
+                            "Player Photo URL",
+                            value=player.photo_url or "",
+                            help=(
+                                "Optional public image URL. "
+                                "Your player logo remains the fallback."
+                            ),
+                            key=f"my_profile_photo_url_{player.id}"
+                        )
+
+                        new_logo = st.file_uploader(
+                            "Upload New Logo",
+                            type=["png", "jpg", "jpeg"],
+                            key=f"my_profile_logo_{player.id}"
+                        )
+
+                        new_equipment = st.text_area(
+                            "Darts Equipment",
+                            value=player.equipment or "",
+                            height=110,
+                            placeholder=(
+                                "Example: 23g darts, medium stems, "
+                                "standard flights and 35mm points"
+                            ),
+                            key=f"my_profile_equipment_{player.id}"
+                        )
+
+                        new_biography = st.text_area(
+                            "Biography",
+                            value=player.biography or "",
+                            height=160,
+                            placeholder=(
+                                "Add a short introduction, playing history "
+                                "or background."
+                            ),
+                            key=f"my_profile_biography_{player.id}"
+                        )
+
+                        save_my_profile = st.button(
+                            "💾 Save My Profile",
+                            key=f"save_my_profile_{player.id}",
+                            use_container_width=True
+                        )
+
+                if save_my_profile:
+
+                    if (
+                        new_walk_on_url.strip()
+                        and not get_spotify_embed_url(
+                            new_walk_on_url
+                        )
+                    ):
+
+                        st.error(
+                            "Please enter a valid Spotify link."
+                        )
+
+                    elif (
+                        new_photo_url.strip()
+                        and not new_photo_url.strip().startswith(
+                            (
+                                "http://",
+                                "https://"
                             )
+                        )
+                    ):
 
-                            logo_path = os.path.join(
-                                "assets/logos",
-                                new_logo.name
-                            )
-
-                            with open(
-                                logo_path,
-                                "wb"
-                            ) as f:
-
-                                f.write(
-                                    new_logo.getbuffer()
-                                )
-
-                            target_player.logo_path = logo_path
-
-                        db_profile.commit()
-                        db_profile.close()
-
-                        if "league_standings" in st.session_state:
-
-                            del st.session_state["league_standings"]
-
-                        st.success("Profile updated.")
-
-                        st.rerun()
+                        st.error(
+                            "The player photo URL must begin with "
+                            "http:// or https://"
+                        )
 
                     else:
 
-                        db_profile.close()
+                        db_profile = SessionLocal()
 
-                        st.error("Player not found.")
+                        target_player = db_profile.get(
+                            Player,
+                            player.id
+                        )
+
+                        if not target_player:
+
+                            db_profile.close()
+
+                            st.error(
+                                "Player could not be found."
+                            )
+
+                        else:
+
+                            target_player.nickname = (
+                                new_nickname.strip()
+                                or None
+                            )
+
+                            target_player.hometown = (
+                                new_hometown.strip()
+                                or None
+                            )
+
+                            target_player.throwing_hand = (
+                                None
+                                if new_throwing_hand
+                                == "Not specified"
+                                else new_throwing_hand
+                            )
+
+                            target_player.favourite_double = (
+                                new_favourite_double.strip()
+                                or None
+                            )
+
+                            target_player.favourite_checkout = (
+                                new_favourite_checkout.strip()
+                                or None
+                            )
+
+                            target_player.walk_on_song = (
+                                new_walk_on_song.strip()
+                                or None
+                            )
+
+                            target_player.walk_on_url = (
+                                new_walk_on_url.strip()
+                                or None
+                            )
+
+                            target_player.photo_url = (
+                                new_photo_url.strip()
+                                or None
+                            )
+
+                            target_player.equipment = (
+                                new_equipment.strip()
+                                or None
+                            )
+
+                            target_player.biography = (
+                                new_biography.strip()
+                                or None
+                            )
+
+                            if new_logo is not None:
+
+                                os.makedirs(
+                                    "assets/logos",
+                                    exist_ok=True
+                                )
+
+                                safe_logo_name = (
+                                    f"player_{player.id}_"
+                                    f"{new_logo.name}"
+                                )
+
+                                logo_path = os.path.join(
+                                    "assets/logos",
+                                    safe_logo_name
+                                )
+
+                                with open(
+                                    logo_path,
+                                    "wb"
+                                ) as file:
+
+                                    file.write(
+                                        new_logo.getbuffer()
+                                    )
+
+                                target_player.logo_path = (
+                                    logo_path
+                                )
+
+                            db_profile.commit()
+                            db_profile.close()
+
+                            if "league_standings" in st.session_state:
+
+                                del st.session_state[
+                                    "league_standings"
+                                ]
+
+                            st.success(
+                                "Your profile has been updated."
+                            )
+
+                            st.rerun()
 
                 st.divider()
 
