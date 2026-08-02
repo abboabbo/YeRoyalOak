@@ -1384,6 +1384,35 @@ def get_feed_icon(category, platform):
         )
     )
 
+def get_feed_accent(category, platform):
+
+    category_colours = {
+        "Announcement": "#f5b82e",
+        "League News": "#4ba3ff",
+        "Match Result": "#26d07c",
+        "Player of the Week": "#9b7cff",
+        "Checkout of the Week": "#ff8a3d",
+        "Tournament": "#d7b4ff",
+        "Photo": "#58d5d3",
+        "YouTube Video": "#ff4f4f",
+        "Facebook Post": "#4f8cff",
+        "General": "#f5b82e"
+    }
+
+    platform_colours = {
+        "YouTube": "#ff4f4f",
+        "Facebook": "#4f8cff",
+        "TikTok": "#e5e7eb",
+        "League": "#f5b82e"
+    }
+
+    return category_colours.get(
+        category,
+        platform_colours.get(
+            platform,
+            "#f5b82e"
+        )
+    )
 
 def get_feed_link_label(platform):
 
@@ -1453,7 +1482,7 @@ if not st.session_state.logged_in:
             LeaguePost.is_pinned.desc(),
             LeaguePost.id.desc()
         )
-        .limit(8)
+        .limit(30)
         .all()
     )
 
@@ -2497,62 +2526,203 @@ if not st.session_state.logged_in:
 
         st.markdown(
             """
-            <h1 style="text-align:center;">
-                📰 Official League Feed
-            </h1>
+            <style>
+            .feed-page-title {
+                text-align: center;
+                color: #f5b82e;
+                font-size: clamp(34px, 5vw, 52px);
+                font-weight: 950;
+                margin-bottom: 4px;
+            }
 
-            <p style="
-                text-align:center;
-                color:#bfc5d2;
-                font-size:16px;
-            ">
-                League news, videos, announcements
-                and highlights
-            </p>
+            .feed-page-subtitle {
+                text-align: center;
+                color: #aeb6c5;
+                font-size: 17px;
+                margin-bottom: 24px;
+            }
+
+            .feed-card-header {
+                font-size: 13px;
+                font-weight: 900;
+                letter-spacing: 1.2px;
+                text-transform: uppercase;
+            }
+
+            .feed-card-title {
+                color: white;
+                font-size: 27px;
+                font-weight: 950;
+                line-height: 1.15;
+                margin-top: 8px;
+                margin-bottom: 12px;
+            }
+
+            .feed-card-message {
+                color: #d5dae3;
+                font-size: 16px;
+                line-height: 1.6;
+                white-space: pre-wrap;
+            }
+
+            .feed-card-meta {
+                color: #8e98a8;
+                font-size: 13px;
+                margin-top: 14px;
+            }
+
+            .feed-pinned-label {
+                display: inline-block;
+                background: rgba(245,184,46,0.12);
+                border: 1px solid rgba(245,184,46,0.42);
+                color: #f5b82e;
+                border-radius: 20px;
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0.8px;
+                margin-bottom: 8px;
+            }
+            </style>
+
+            <div class="feed-page-title">
+                📰 Official League Feed
+            </div>
+
+            <div class="feed-page-subtitle">
+                League news, announcements, videos,
+                results and highlights
+            </div>
             """,
             unsafe_allow_html=True
         )
 
-        if not public_feed_posts:
+        # -----------------------------------------------------
+        # FEED FILTERS
+        # -----------------------------------------------------
+
+        available_categories = sorted(
+            {
+                post.category
+                for post in public_feed_posts
+                if post.category
+            }
+        )
+
+        filter_col1, filter_col2 = st.columns(
+            [3, 1]
+        )
+
+        with filter_col1:
+
+            selected_feed_category = st.selectbox(
+                "Filter posts",
+                [
+                    "All Posts",
+                    "Pinned Posts",
+                    *available_categories
+                ],
+                key="public_feed_category_filter"
+            )
+
+        with filter_col2:
+
+            feed_display_limit = st.selectbox(
+                "Show",
+                [5, 10, 20, 30],
+                index=1,
+                key="public_feed_display_limit"
+            )
+
+        filtered_posts = public_feed_posts
+
+        if selected_feed_category == "Pinned Posts":
+
+            filtered_posts = [
+                post
+                for post in public_feed_posts
+                if post.is_pinned == 1
+            ]
+
+        elif selected_feed_category != "All Posts":
+
+            filtered_posts = [
+                post
+                for post in public_feed_posts
+                if post.category
+                == selected_feed_category
+            ]
+
+        filtered_posts = filtered_posts[
+            :feed_display_limit
+        ]
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # FEED POSTS
+        # -----------------------------------------------------
+
+        if not filtered_posts:
 
             st.info(
-                "No league-feed posts have been published yet."
+                "There are no published posts "
+                "matching this filter."
             )
 
         else:
 
-            for post in public_feed_posts:
+            for post in filtered_posts:
 
                 post_icon = get_feed_icon(
                     post.category,
                     post.platform
                 )
 
+                accent_colour = get_feed_accent(
+                    post.category,
+                    post.platform
+                )
+
                 with st.container(border=True):
 
-                    heading_col, platform_col = st.columns(
-                        [4, 1]
+                    if post.is_pinned == 1:
+
+                        st.markdown(
+                            """
+                            <div class="feed-pinned-label">
+                                📌 PINNED POST
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                    heading_col, platform_col = (
+                        st.columns([4, 1])
                     )
 
                     with heading_col:
 
-                        category_text = (
-                            f"{post_icon} "
-                            f"{post.category or 'League News'}"
-                        )
-
-                        if post.is_pinned == 1:
-
-                            category_text = (
-                                f"📌 {category_text}"
-                            )
-
-                        st.caption(
-                            category_text.upper()
-                        )
-
                         st.markdown(
-                            f"## {post.title}"
+                            f"""
+                            <div
+                                class="feed-card-header"
+                                style="
+                                    color:{accent_colour};
+                                "
+                            >
+                                {post_icon}
+                                {
+                                    post.category
+                                    or "League News"
+                                }
+                            </div>
+
+                            <div class="feed-card-title">
+                                {post.title}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
                         )
 
                     with platform_col:
@@ -2560,11 +2730,16 @@ if not st.session_state.logged_in:
                         if post.platform:
 
                             st.caption(
-                                post.platform
+                                f"📡 {post.platform}"
                             )
 
-                    st.write(
-                        post.message
+                    st.markdown(
+                        f"""
+                        <div class="feed-card-message">
+                            {post.message}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
 
                     if post.image_url:
@@ -2579,33 +2754,43 @@ if not st.session_state.logged_in:
                         except Exception:
 
                             st.warning(
-                                "The post image could not be displayed."
+                                "The image attached to this "
+                                "post could not be displayed."
                             )
 
-                    footer_col1, footer_col2 = st.columns(
-                        [3, 1]
+                    footer_col1, footer_col2 = (
+                        st.columns([3, 1])
                     )
 
                     with footer_col1:
 
-                        details = []
+                        post_meta = []
 
                         if post.created_by:
 
-                            details.append(
+                            post_meta.append(
                                 f"Posted by {post.created_by}"
                             )
 
                         if post.created_at:
 
-                            details.append(
+                            post_meta.append(
                                 post.created_at
                             )
 
-                        if details:
+                        if post_meta:
 
-                            st.caption(
-                                " · ".join(details)
+                            st.markdown(
+                                f"""
+                                <div class="feed-card-meta">
+                                    {
+                                        " · ".join(
+                                            post_meta
+                                        )
+                                    }
+                                </div>
+                                """,
+                                unsafe_allow_html=True
                             )
 
                     with footer_col2:
@@ -2617,10 +2802,32 @@ if not st.session_state.logged_in:
                                     post.platform
                                 ),
                                 post.external_url,
-                                key=f"feed_page_link_{post.id}",
+                                key=(
+                                    f"public_feed_link_"
+                                    f"{post.id}"
+                                ),
                                 use_container_width=True
                             )
 
+                st.write("")
+
+                st.divider()
+
+        back_left, back_centre, back_right = (
+            st.columns([1.8, 1, 1.8])
+        )
+
+        with back_centre:
+
+            if st.button(
+                "← Back to Main Page",
+                key="feed_back_to_landing",
+                use_container_width=True
+            ):
+
+                st.session_state.public_page = "Home"
+                st.rerun()
+                
     # ---------------------------------------------------------
     # PUBLIC LEAGUE TABLE
     # ---------------------------------------------------------
