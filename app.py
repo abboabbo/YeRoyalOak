@@ -1553,6 +1553,110 @@ def get_spotify_embed_url(url):
 
     return None
 
+def render_player_profile_details(player):
+
+    has_profile_details = any(
+        [
+            player.biography,
+            player.hometown,
+            player.throwing_hand,
+            player.favourite_double,
+            player.favourite_checkout,
+            player.equipment
+        ]
+    )
+
+    if not has_profile_details:
+
+        st.info(
+            "No additional player information "
+            "has been added yet."
+        )
+
+        return
+
+    st.markdown("## 👤 About the Player")
+
+    if player.biography:
+
+        with st.container(border=True):
+
+            st.markdown("### Biography")
+
+            st.write(
+                player.biography
+            )
+
+    detail_col1, detail_col2 = st.columns(2)
+
+    with detail_col1:
+
+        with st.container(border=True):
+
+            st.markdown("### Player Information")
+
+            if player.hometown:
+
+                st.write(
+                    f"📍 **Hometown:** "
+                    f"{player.hometown}"
+                )
+
+            if player.throwing_hand:
+
+                st.write(
+                    f"🎯 **Throwing hand:** "
+                    f"{player.throwing_hand}"
+                )
+
+            if (
+                not player.hometown
+                and not player.throwing_hand
+            ):
+
+                st.caption(
+                    "No player information added."
+                )
+
+    with detail_col2:
+
+        with st.container(border=True):
+
+            st.markdown("### Preferences")
+
+            if player.favourite_double:
+
+                st.write(
+                    f"⭕ **Favourite double:** "
+                    f"{player.favourite_double}"
+                )
+
+            if player.favourite_checkout:
+
+                st.write(
+                    f"🏹 **Favourite checkout:** "
+                    f"{player.favourite_checkout}"
+                )
+
+            if (
+                not player.favourite_double
+                and not player.favourite_checkout
+            ):
+
+                st.caption(
+                    "No checkout preferences added."
+                )
+
+    if player.equipment:
+
+        with st.container(border=True):
+
+            st.markdown("### 🎯 Darts Equipment")
+
+            st.write(
+                player.equipment
+            )
+
 # LOGIN
 
 if "logged_in" not in st.session_state:
@@ -6593,7 +6697,57 @@ if page == "My Profile":
 
                         st.success("Password updated successfully.")
 
-            st.divider()
+                        st.divider()
+
+            render_player_profile_details(
+                player
+            )
+
+            spotify_embed_url = get_spotify_embed_url(
+                player.walk_on_url
+            )
+
+            if player.walk_on_song or spotify_embed_url:
+
+                st.divider()
+
+                st.subheader("🎵 My Walk-On Song")
+
+                if player.walk_on_song:
+
+                    st.markdown(
+                        f"### {player.walk_on_song}"
+                    )
+
+                if spotify_embed_url:
+
+                    spotify_left, spotify_centre, spotify_right = (
+                        st.columns([1, 2.5, 1])
+                    )
+
+                    with spotify_centre:
+
+                        components.html(
+                            f"""
+                            <iframe
+                                src="{spotify_embed_url}"
+                                width="100%"
+                                height="152"
+                                frameborder="0"
+                                allowfullscreen
+                                allow="
+                                    autoplay;
+                                    clipboard-write;
+                                    encrypted-media;
+                                    fullscreen;
+                                    picture-in-picture
+                                "
+                                loading="lazy">
+                            </iframe>
+                            """,
+                            height=165,
+                            scrolling=False
+                        )
 
             col3, col4 = st.columns(2)
 
@@ -10991,6 +11145,12 @@ if page == "View Player":
                 else:
 
                     st.info("No upcoming fixtures.")
+
+                st.divider()
+
+                render_player_profile_details(
+                    player
+                )
 
                 spotify_embed_url = get_spotify_embed_url(
                     player.walk_on_url
