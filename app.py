@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
+import html
 import streamlit.components.v1 as components
 
 from io import BytesIO
@@ -1414,6 +1415,91 @@ def get_feed_accent(category, platform):
         )
     )
 
+def get_feed_time_ago(created_at):
+
+    if not created_at:
+        return ""
+
+    possible_formats = [
+        "%d/%m/%Y %H:%M",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S"
+    ]
+
+    post_time = None
+
+    for date_format in possible_formats:
+
+        try:
+
+            post_time = datetime.strptime(
+                str(created_at),
+                date_format
+            )
+
+            break
+
+        except (TypeError, ValueError):
+
+            continue
+
+    if post_time is None:
+        return str(created_at)
+
+    difference = datetime.now() - post_time
+
+    total_seconds = max(
+        int(difference.total_seconds()),
+        0
+    )
+
+    if total_seconds < 60:
+        return "Just now"
+
+    minutes = total_seconds // 60
+
+    if minutes < 60:
+
+        return (
+            f"{minutes} minute ago"
+            if minutes == 1
+            else f"{minutes} minutes ago"
+        )
+
+    hours = minutes // 60
+
+    if hours < 24:
+
+        return (
+            f"{hours} hour ago"
+            if hours == 1
+            else f"{hours} hours ago"
+        )
+
+    days = hours // 24
+
+    if days < 7:
+
+        return (
+            f"{days} day ago"
+            if days == 1
+            else f"{days} days ago"
+        )
+
+    weeks = days // 7
+
+    if weeks < 5:
+
+        return (
+            f"{weeks} week ago"
+            if weeks == 1
+            else f"{weeks} weeks ago"
+        )
+
+    return post_time.strftime(
+        "%d %B %Y"
+    )
+
 def get_feed_link_label(platform):
 
     link_labels = {
@@ -2684,6 +2770,18 @@ if not st.session_state.logged_in:
                     post.platform
                 )
 
+                safe_title = html.escape(
+                    post.title or "Untitled Post"
+                )
+
+                safe_message = html.escape(
+                    post.message or ""
+                )
+
+                relative_time = get_feed_time_ago(
+                    post.created_at
+                )
+
                 with st.container(border=True):
 
                     if post.is_pinned == 1:
@@ -2719,7 +2817,7 @@ if not st.session_state.logged_in:
                             </div>
 
                             <div class="feed-card-title">
-                                {post.title}
+                                {safe_title}
                             </div>
                             """,
                             unsafe_allow_html=True
@@ -2736,13 +2834,31 @@ if not st.session_state.logged_in:
                     st.markdown(
                         f"""
                         <div class="feed-card-message">
-                            {post.message}
+                            {safe_message}
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
 
-                    if post.image_url:
+                    if (
+                        post.platform == "YouTube"
+                        and post.external_url
+                    ):
+
+                        try:
+
+                            st.video(
+                                post.external_url
+                        )
+
+                        except Exception:
+
+                            st.warning(
+                                "The YouTube video could not "
+                                "be embedded."
+                            )
+
+                    elif post.image_url:
 
                         try:
 
@@ -2772,10 +2888,10 @@ if not st.session_state.logged_in:
                                 f"Posted by {post.created_by}"
                             )
 
-                        if post.created_at:
+                        if relative_time:
 
                             post_meta.append(
-                                post.created_at
+                                relative_time
                             )
 
                         if post_meta:
@@ -2811,7 +2927,7 @@ if not st.session_state.logged_in:
 
                 st.write("")
 
-                st.divider()
+        st.divider()
 
         back_left, back_centre, back_right = (
             st.columns([1.8, 1, 1.8])
