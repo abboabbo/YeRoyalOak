@@ -1,5 +1,6 @@
 from curses import wrapper
 
+from altair import value
 import streamlit as st
 import pandas as pd
 import os
@@ -3586,16 +3587,96 @@ if page == "Players":
 
                 with info_col:
 
-                    if (
+                    st.markdown("### Profile Preview")
+
+                    if player.photo_url:
+
+                        try:
+
+                            st.image(
+                                player.photo_url,
+                                use_container_width=True
+                            )
+
+                        except Exception:
+
+                            if (
+                                player.logo_path
+                                and os.path.exists(
+                                    player.logo_path
+                                )
+                            ):
+
+                                st.image(
+                                    player.logo_path,
+                                    use_container_width=True
+                                )
+
+                            else:
+
+                                st.info(
+                                    "No player photo available."
+                                )
+
+                    elif (
                         player.logo_path
-                        and os.path.exists(player.logo_path)
+                        and os.path.exists(
+                            player.logo_path
+                        )
                     ):
+
                         st.image(
                             player.logo_path,
-                            width=130
+                            use_container_width=True
                         )
+
                     else:
-                        st.info("No logo")
+
+                        st.info(
+                            "No player photo or logo."
+                        )
+
+                    st.markdown(
+                        f"### {display_player_name(player)}"
+                    )
+
+                    if player.name:
+
+                        st.caption(
+                            player.name
+                        )
+
+                    if player.hometown:
+
+                        st.write(
+                            f"📍 {player.hometown}"
+                        )
+
+                    if player.throwing_hand:
+
+                        st.write(
+                            f"🎯 {player.throwing_hand}"
+                        )
+
+                    if player.walk_on_song:
+
+                        st.write(
+                            f"🎵 {player.walk_on_song}"
+                        )
+
+                    if player.favourite_double:
+
+                        st.write(
+                            f"Favourite double: "
+                            f"**{player.favourite_double}**"
+                        )
+
+                    if player.favourite_checkout:
+
+                        st.write(
+                            f"Favourite checkout: "
+                            f"**{player.favourite_checkout}**"
+                        )
 
                 with edit_col:
 
@@ -3603,17 +3684,25 @@ if page == "Players":
                         key=f"admin_player_form_{player.id}"
                     ):
 
-                        updated_name = st.text_input(
-                            "Player Name",
-                            value=player.name or "",
-                            key=f"admin_player_name_{player.id}"
-                        )
+                        st.markdown("### Basic Information")
 
-                        updated_nickname = st.text_input(
-                            "Nickname",
-                            value=player.nickname or "",
-                            key=f"admin_player_nickname_{player.id}"
-                        )
+                        basic_col1, basic_col2 = st.columns(2)
+
+                        with basic_col1:
+
+                            updated_name = st.text_input(
+                                "Player Name",
+                                value=player.name or "",
+                                key=f"admin_player_name_{player.id}"
+                            )
+
+                        with basic_col2:
+
+                            updated_nickname = st.text_input(
+                                "Nickname",
+                                value=player.nickname or "",
+                                key=f"admin_player_nickname_{player.id}"
+                            )
 
                         updated_logo = st.file_uploader(
                             "Upload Replacement Logo",
@@ -3621,10 +3710,114 @@ if page == "Players":
                             key=f"admin_player_logo_{player.id}"
                         )
 
-                        save_player = st.form_submit_button(
-                            "💾 Save Changes",
-                            use_container_width=True
+                        updated_photo_url = st.text_input(
+                            "Player Photo URL",
+                            value=player.photo_url or "",
+                            help=(
+                                "Optional direct image link. "
+                                "The player logo will be used as a fallback."
+                            ),
+                            key=f"admin_player_photo_url_{player.id}"
                         )
+
+                        st.divider()
+
+                        st.markdown("### Player Details")
+
+                        detail_col1, detail_col2 = st.columns(2)
+
+                        with detail_col1:
+
+                            updated_hometown = st.text_input(
+                                "Hometown",
+                                value=player.hometown or "",
+                                key=f"admin_player_hometown_{player.id}"
+                            )
+
+                            throwing_hand_options = [
+                                "Not specified",
+                                "Right-handed",
+                                "Left-handed"
+                            ]
+
+                            current_throwing_hand = (
+                                player.throwing_hand
+                                if player.throwing_hand
+                                in throwing_hand_options
+                                else "Not specified"
+                            )
+
+                            updated_throwing_hand = st.selectbox(
+                                "Throwing Hand",
+                                throwing_hand_options,
+                                index=throwing_hand_options.index(
+                                    current_throwing_hand
+                                ),
+                                key=f"admin_player_throwing_hand_{player.id}"
+                            )
+
+                            updated_favourite_double = st.text_input(
+                                "Favourite Double",
+                                value=player.favourite_double or "",
+                                placeholder="Example: D16",
+                                key=f"admin_player_favourite_double_{player.id}"
+                            )
+
+                        with detail_col2:
+
+                            updated_favourite_checkout = st.text_input(
+                                "Favourite Checkout",
+                                value=player.favourite_checkout or "",
+                                placeholder="Example: 121",
+                                key=f"admin_player_favourite_checkout_{player.id}"
+                            )
+
+                            updated_walk_on_song = st.text_input(
+                                "Walk-On Song",
+                                value=player.walk_on_song or "",
+                                placeholder="Artist — Song",
+                                key=f"admin_player_walk_on_song_{player.id}"
+                            )
+
+                            updated_walk_on_url = st.text_input(
+                                "Walk-On Song Link",
+                                value=player.walk_on_url or "",
+                                help=(
+                                    "Optional YouTube, Spotify or other public link."
+                                ),
+                                key=f"admin_player_walk_on_url_{player.id}"
+                            )
+
+                            st.divider()
+
+                            st.markdown("### Equipment and Biography")
+
+                            updated_equipment = st.text_area(
+                                "Darts Equipment",
+                                value=player.equipment or "",
+                                height=110,
+                                placeholder=(
+                                    "Example: 23g darts, medium stems, "
+                                    "standard flights and 35mm points"
+                                ),
+                                key=f"admin_player_equipment_{player.id}"
+                            )
+
+                            updated_biography = st.text_area(
+                                "Player Biography",
+                                value=player.biography or "",
+                                height=160,
+                                placeholder=(
+                                    "Add a short introduction, playing history "
+                                    "or background about the player."
+                                ),
+                                key=f"admin_player_biography_{player.id}"
+                            )
+
+                            save_player = st.form_submit_button(
+                                "💾 Save Player Profile",
+                                use_container_width=True
+                            )
 
                     if save_player:
 
@@ -3643,6 +3836,28 @@ if page == "Players":
                             edit_db.close()
                             st.error("Player name cannot be empty.")
 
+                        elif not is_valid_optional_url(
+                            updated_photo_url
+                        ):
+
+                            edit_db.close()
+
+                            st.error(
+                                "The photo URL must begin with "
+                                "http:// or https://"
+                            )
+
+                        elif not is_valid_optional_url(
+                            updated_walk_on_url
+                        ):
+
+                            edit_db.close()
+
+                            st.error(
+                                "The walk-on link must begin with "
+                                "http:// or https://"
+                            )
+                        
                         else:
                             target_player.name = (
                                 updated_name.strip()
@@ -3650,6 +3865,53 @@ if page == "Players":
 
                             target_player.nickname = (
                                 updated_nickname.strip()
+                            )
+
+                            target_player.photo_url = (
+                                updated_photo_url.strip()
+                                or None
+                            )
+
+                            target_player.hometown = (
+                                updated_hometown.strip()
+                                or None
+                            )
+
+                            target_player.throwing_hand = (
+                                None
+                                if updated_throwing_hand
+                                == "Not specified"
+                                else updated_throwing_hand
+                            )
+
+                            target_player.walk_on_song = (
+                                updated_walk_on_song.strip()
+                                or None
+                            )
+
+                            target_player.walk_on_url = (
+                                updated_walk_on_url.strip()
+                                or None
+                            )
+
+                            target_player.favourite_double = (
+                                updated_favourite_double.strip()
+                                or None
+                            )
+
+                            target_player.favourite_checkout = (
+                                updated_favourite_checkout.strip()
+                                or None
+                            )
+
+                            target_player.equipment = (
+                                updated_equipment.strip()
+                                or None
+                            )
+
+                            target_player.biography = (
+                                updated_biography.strip()
+                                or None
                             )
 
                             if updated_logo is not None:
@@ -5189,6 +5451,20 @@ if page == "Awards":
 
                         if extra:
                             st.caption(extra)
+
+                def is_valid_optional_url(value):
+
+                    value = str(value or "").strip()
+
+                    if not value:
+                        return True
+
+                    return value.startswith(
+                        (
+                            "https://",
+                            "http://"
+                        )
+                    )
 
 
                 # ---------------------------------------------
