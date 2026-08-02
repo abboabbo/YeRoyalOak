@@ -1514,7 +1514,45 @@ def get_feed_link_label(platform):
         platform,
         "🔗 Open Link"
     )
-    
+
+def get_spotify_embed_url(url):
+
+    url = str(url or "").strip()
+
+    if not url:
+        return None
+
+    if "open.spotify.com/" not in url:
+        return None
+
+    clean_url = url.split("?")[0].rstrip("/")
+
+    supported_types = [
+        "track",
+        "album",
+        "playlist",
+        "artist",
+        "episode",
+        "show"
+    ]
+
+    for content_type in supported_types:
+
+        marker = f"/{content_type}/"
+
+        if marker in clean_url:
+
+            spotify_id = clean_url.split(marker)[-1]
+
+            if spotify_id:
+
+                return (
+                    f"https://open.spotify.com/embed/"
+                    f"{content_type}/{spotify_id}"
+                )
+
+    return None
+
 # LOGIN
 
 if "logged_in" not in st.session_state:
@@ -3664,6 +3702,34 @@ if page == "Players":
                             f"🎵 {player.walk_on_song}"
                         )
 
+                        spotify_embed_url = get_spotify_embed_url(
+                            player.walk_on_url
+                        )
+
+                        if spotify_embed_url:
+
+                            components.html(
+                                f"""
+                                <iframe
+                                    src="{spotify_embed_url}"
+                                    width="100%"
+                                    height="152"
+                                    frameborder="0"
+                                    allowfullscreen
+                                    allow="
+                                        autoplay;
+                                        clipboard-write;
+                                        encrypted-media;
+                                        fullscreen;
+                                        picture-in-picture
+                                    "
+                                    loading="lazy">
+                                </iframe>
+                                """,
+                                height=165,
+                                scrolling=False
+                            )
+
                     if player.favourite_double:
 
                         st.write(
@@ -3780,10 +3846,14 @@ if page == "Players":
                             )
 
                             updated_walk_on_url = st.text_input(
-                                "Walk-On Song Link",
+                                "Spotify Walk-On Song Link",
                                 value=player.walk_on_url or "",
                                 help=(
-                                    "Optional YouTube, Spotify or other public link."
+                                    "Open the song in Spotify, choose Share, "
+                                    "then copy the song link."
+                                ),
+                                placeholder=(
+                                    "https://open.spotify.com/track/..."
                                 ),
                                 key=f"admin_player_walk_on_url_{player.id}"
                             )
@@ -3836,15 +3906,18 @@ if page == "Players":
                             edit_db.close()
                             st.error("Player name cannot be empty.")
 
-                        elif not is_valid_optional_url(
-                            updated_photo_url
+                        elif (
+                            updated_walk_on_url.strip()
+                            and not get_spotify_embed_url(
+                                updated_walk_on_url
+                            )
                         ):
 
                             edit_db.close()
 
                             st.error(
-                                "The photo URL must begin with "
-                                "http:// or https://"
+                                "Please enter a valid Spotify track, "
+                                "album, artist or playlist link."
                             )
 
                         elif not is_valid_optional_url(
@@ -6604,6 +6677,52 @@ if page == "My Profile":
                             f"{fixture.player1_legs} - {fixture.player2_legs}",
                             p2
                         )
+
+                        spotify_embed_url = get_spotify_embed_url(
+                            player.walk_on_url
+                        )
+
+                        if player.walk_on_song or spotify_embed_url:
+
+                            st.divider()
+
+                            st.subheader("🎵 My Walk-On Song")
+
+                            if player.walk_on_song:
+
+                                st.markdown(
+                                    f"### {player.walk_on_song}"
+                                )
+
+                            if spotify_embed_url:
+
+                                spotify_left, spotify_centre, spotify_right = (
+                                    st.columns([1, 2.5, 1])
+                                )
+
+                                with spotify_centre:
+
+                                    components.html(
+                                        f"""
+                                        <iframe
+                                            src="{spotify_embed_url}"
+                                            width="100%"
+                                            height="152"
+                                            frameborder="0"
+                                            allowfullscreen
+                                            allow="
+                                                autoplay;
+                                                clipboard-write;
+                                                encrypted-media;
+                                                fullscreen;
+                                                picture-in-picture
+                                            "
+                                            loading="lazy">
+                                        </iframe>
+                                        """,
+                                        height=165,
+                                        scrolling=False
+                                    )
 
         db.close()
 
@@ -10872,5 +10991,51 @@ if page == "View Player":
                 else:
 
                     st.info("No upcoming fixtures.")
+
+                spotify_embed_url = get_spotify_embed_url(
+                    player.walk_on_url
+                )
+
+                if player.walk_on_song or spotify_embed_url:
+
+                    st.divider()
+
+                    st.subheader("🎵 Walk-On Song")
+
+                    if player.walk_on_song:
+
+                        st.markdown(
+                            f"### {player.walk_on_song}"
+                        )
+
+                    if spotify_embed_url:
+
+                        spotify_left, spotify_centre, spotify_right = (
+                            st.columns([1, 2.5, 1])
+                        )
+
+                        with spotify_centre:
+
+                            components.html(
+                                f"""
+                                <iframe
+                                    src="{spotify_embed_url}"
+                                    width="100%"
+                                    height="152"
+                                    frameborder="0"
+                                    allowfullscreen
+                                    allow="
+                                        autoplay;
+                                        clipboard-write;
+                                        encrypted-media;
+                                        fullscreen;
+                                        picture-in-picture
+                                    "
+                                    loading="lazy">
+                                </iframe>
+                                """,
+                                height=165,
+                                scrolling=False
+                            )
 
         db.close()
