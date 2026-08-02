@@ -279,12 +279,12 @@ def calculate_knockout_seeds(db, tournament_id):
         if player1_legs > player2_legs:
 
             player1["wins"] += 1
-            player1["points"] += 2
+            player1["points"] += 3
 
         elif player2_legs > player1_legs:
 
             player2["wins"] += 1
-            player2["points"] += 2
+            player2["points"] += 3
 
         else:
 
@@ -1885,12 +1885,12 @@ if not st.session_state.logged_in:
             if player1_legs > player2_legs:
 
                 player1_data["wins"] += 1
-                player1_data["points"] += 2
+                player1_data["points"] += 3
 
             elif player2_legs > player1_legs:
 
                 player2_data["wins"] += 1
-                player2_data["points"] += 2
+                player2_data["points"] += 3
 
             else:
 
@@ -3149,13 +3149,13 @@ if not st.session_state.logged_in:
             if fixture.player1_legs > fixture.player2_legs:
 
                 p1["won"] += 1
-                p1["points"] += 2
+                p1["points"] += 3
                 p2["lost"] += 1
 
             elif fixture.player2_legs > fixture.player1_legs:
 
                 p2["won"] += 1
-                p2["points"] += 2
+                p2["points"] += 3
                 p1["lost"] += 1
 
             else:
@@ -8442,7 +8442,7 @@ if page == "League":
                 if player1_legs > player2_legs:
 
                     player1["won"] += 1
-                    player1["points"] += 2
+                    player1["points"] += 3
                     player1["form"].append("W")
 
                     player2["lost"] += 1
@@ -8451,7 +8451,7 @@ if page == "League":
                 elif player2_legs > player1_legs:
 
                     player2["won"] += 1
-                    player2["points"] += 2
+                    player2["points"] += 3
                     player2["form"].append("W")
 
                     player1["lost"] += 1
