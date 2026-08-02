@@ -32,6 +32,51 @@ class Player(Base):
         String
     )
 
+    photo_url = Column(
+        String,
+        nullable=True
+    )
+
+    hometown = Column(
+        String,
+        nullable=True
+    )
+
+    throwing_hand = Column(
+        String,
+        nullable=True
+    )
+
+    walk_on_song = Column(
+        String,
+        nullable=True
+    )
+
+    walk_on_url = Column(
+        String,
+        nullable=True
+    )
+
+    favourite_double = Column(
+        String,
+        nullable=True
+    )
+
+    favourite_checkout = Column(
+        String,
+        nullable=True
+    )
+
+    equipment = Column(
+        Text,
+        nullable=True
+    )
+
+    biography = Column(
+        Text,
+        nullable=True
+    )
+
     # Statistics
 
     oneeighties = Column(
@@ -48,6 +93,8 @@ class Player(Base):
         Integer,
         default=0
     )
+
+    
 
 
 class Tournament(Base):
