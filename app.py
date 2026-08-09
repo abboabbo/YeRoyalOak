@@ -7407,6 +7407,44 @@ if page == "Fixtures":
                 key="fixture_view_mode"
             )
 
+            # -------------------------------------------------
+            # RESULT DATE FILTER
+            # -------------------------------------------------
+
+            result_date_filter = None
+
+            if view_mode == "Results":
+
+                st.markdown("### 🔎 Filter Results")
+
+                filter_col1, filter_col2 = st.columns(
+                    [3, 1]
+                )
+
+                with filter_col1:
+
+                    result_date_filter = st.date_input(
+                        "Show results from date",
+                        value=None,
+                        key="results_date_filter"
+                    )
+
+                with filter_col2:
+
+                    st.write("")
+
+                    st.write("")
+
+                    if st.button(
+                        "Clear Date",
+                        key="clear_results_date_filter",
+                        use_container_width=True
+                    ):
+
+                        st.session_state.results_date_filter = None
+                        st.rerun()
+
+
             if view_mode == "Upcoming":
 
                 displayed_fixtures = [
@@ -7423,9 +7461,29 @@ if page == "Fixtures":
                     if fixture.played == 1
                 ]
 
+                # Apply date filter if one has been selected
+                if result_date_filter:
+
+                    displayed_fixtures = [
+                        fixture
+                        for fixture in displayed_fixtures
+                        if fixture.date_played
+                        == result_date_filter
+                    ]
+
             else:
 
                 displayed_fixtures = fixtures
+
+            if (
+                view_mode == "Results"
+                and result_date_filter
+            ):
+
+                st.caption(
+                    f"📅 Showing results from "
+                    f"{result_date_filter.strftime('%A %d %B %Y')}"
+                )    
 
             if not displayed_fixtures:
 
