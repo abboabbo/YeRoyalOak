@@ -1132,7 +1132,8 @@ def get_winning_legs(legs_format):
 def validate_match_score(
     player1_score,
     player2_score,
-    legs_format
+    legs_format,
+    allow_draw=False
 ):
 
     try:
@@ -1148,9 +1149,71 @@ def validate_match_score(
 
         return False, "Scores cannot be negative."
 
+    if not legs_format:
+
+        return (
+            False,
+            "The tournament match format could not be recognised."
+        )
+
+    try:
+
+        total_legs = int(
+            str(legs_format)
+            .lower()
+            .replace("best of", "")
+            .strip()
+        )
+
+    except (TypeError, ValueError):
+
+        return (
+            False,
+            "The tournament match format could not be recognised."
+        )
+
+    # ---------------------------------------------------------
+    # DRAW
+    # ---------------------------------------------------------
+
     if player1_score == player2_score:
 
-        return False, "A darts match cannot finish as a draw."
+        if not allow_draw:
+
+            return (
+                False,
+                "This match must have a winner."
+            )
+
+        # A draw only makes sense when the scheduled
+        # number of legs is even.
+        if total_legs % 2 != 0:
+
+            return (
+                False,
+                f"A {legs_format} match cannot finish as a draw."
+            )
+
+        draw_score = total_legs // 2
+
+        if (
+            player1_score != draw_score
+            or player2_score != draw_score
+        ):
+
+            return (
+                False,
+                (
+                    f"A drawn {legs_format} match must "
+                    f"finish {draw_score}-{draw_score}."
+                )
+            )
+
+        return True, ""
+
+    # ---------------------------------------------------------
+    # WIN / LOSS
+    # ---------------------------------------------------------
 
     winning_legs = get_winning_legs(
         legs_format
@@ -7816,7 +7879,14 @@ if page == "Fixtures":
                                             score_is_valid, score_error = validate_match_score(
                                                 edit_p1_legs,
                                                 edit_p2_legs,
-                                                selected_tournament_object.legs_format
+                                                selected_tournament_object.legs_format,
+                                                allow_draw=(
+                                                    selected_tournament_object.format.type
+                                                    in [
+                                                        "League + Knockout",
+                                                        "League Only"
+                                                    ]
+                                                )    
                                             )
 
                                             if not score_is_valid:
@@ -8156,7 +8226,14 @@ if page == "Fixtures":
                                             score_is_valid, score_error = validate_match_score(
                                                 player1_legs,
                                                 player2_legs,
-                                                selected_tournament_object.legs_format
+                                                selected_tournament_object.legs_format,
+                                                allow_draw=(
+                                                    selected_tournament_object.format_type
+                                                    in [
+                                                        "League + Knockout",
+                                                        "League Only"
+                                                    ]
+                                                )
                                             )
 
                                             if not score_is_valid:
