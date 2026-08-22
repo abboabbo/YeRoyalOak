@@ -6929,33 +6929,33 @@ if page == "My Profile":
 
                             if new_logo is not None:
 
-                                os.makedirs(
-                                    "assets/logos",
-                                    exist_ok=True
-                                )
+                                try:
 
-                                safe_logo_name = (
-                                    f"player_{player.id}_"
-                                    f"{new_logo.name}"
-                                )
-
-                                logo_path = os.path.join(
-                                    "assets/logos",
-                                    safe_logo_name
-                                )
-
-                                with open(
-                                    logo_path,
-                                    "wb"
-                                ) as file:
-
-                                    file.write(
-                                        new_logo.getbuffer()
+                                    logo_url = upload_player_logo(
+                                        new_logo,
+                                        player.id
                                     )
 
-                                target_player.logo_path = (
-                                    logo_path
-                                )
+                                    if logo_url:
+
+                                        target_player.logo_path = (
+                                            logo_url
+                                        )
+
+                                except Exception as error:
+
+                                    db_profile.rollback()
+                                    db_profile.close()
+
+                                    st.error(
+                                        "The logo could not be uploaded."
+                                    )
+
+                                    st.error(
+                                        str(error)
+                                    )
+
+                                    st.stop()
 
                             db_profile.commit()
                             db_profile.close()
