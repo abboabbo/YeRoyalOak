@@ -14,7 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from textwrap import dedent
-from Supabase import create_client
+from supabase import create_client
 
 from PIL import Image
 from itertools import combinations
