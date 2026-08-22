@@ -4,3 +4,4 @@ sqlalchemy
 pillow
 psycopg2-binary
 reportlab
+supabase

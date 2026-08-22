@@ -14,6 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from textwrap import dedent
+from supabase import create_client
 
 from PIL import Image
 from itertools import combinations
@@ -42,6 +43,74 @@ TIKTOK_URL = (
 YOUTUBE_URL = (
     "https://www.youtube.com/@YeRoyalOakDarts"
 )
+
+def upload_player_logo(
+    uploaded_file,
+    player_id
+):
+
+    if uploaded_file is None:
+        return None
+
+    supabase = create_client(
+        st.secrets["SUPABASE_URL"],
+        st.secrets["SUPABASE_KEY"]
+    )
+
+    original_name = str(
+        uploaded_file.name
+    )
+
+    file_extension = (
+        original_name
+        .rsplit(".", 1)[-1]
+        .lower()
+    )
+
+    allowed_extensions = [
+        "png",
+        "jpg",
+        "jpeg"
+    ]
+
+    if file_extension not in allowed_extensions:
+
+        raise ValueError(
+            "Logo must be a PNG, JPG or JPEG image."
+        )
+
+    file_name = (
+        f"player_{player_id}."
+        f"{file_extension}"
+    )
+
+    file_bytes = (
+        uploaded_file.getvalue()
+    )
+
+    supabase.storage.from_(
+        "player-logos"
+    ).upload(
+        path=file_name,
+        file=file_bytes,
+        file_options={
+            "content-type": (
+                uploaded_file.type
+                or "image/png"
+            ),
+            "upsert": "true"
+        }
+    )
+
+    public_url = (
+        supabase.storage
+        .from_("player-logos")
+        .get_public_url(
+            file_name
+        )
+    )
+
+    return public_url
 
 
 def image_to_base64(path):
