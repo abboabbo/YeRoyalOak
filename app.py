@@ -7191,10 +7191,6 @@ if page == "My Profile":
                             p2
                         )
 
-                        spotify_embed_url = get_spotify_embed_url(
-                            player.walk_on_url
-                        )
-
                         if player.walk_on_song or spotify_embed_url:
 
                             st.divider()
