@@ -14,7 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from textwrap import dedent
-from supabase import create_client
+from Supabase import create_client
 
 from PIL import Image
 from itertools import combinations
@@ -79,8 +79,13 @@ def upload_player_logo(
             "Logo must be a PNG, JPG or JPEG image."
         )
 
+    timestamp = datetime.now().strftime(
+        "%Y%m%d%H%M%S%f"
+    )
+
     file_name = (
-        f"player_{player_id}."
+        f"player_{player_id}_"
+        f"{timestamp}."
         f"{file_extension}"
     )
 
@@ -97,8 +102,7 @@ def upload_player_logo(
             "content-type": (
                 uploaded_file.type
                 or "image/png"
-            ),
-            "upsert": "true"
+            )
         }
     )
 
