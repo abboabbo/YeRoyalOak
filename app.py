@@ -44,6 +44,28 @@ YOUTUBE_URL = (
     "https://www.youtube.com/@YeRoyalOakDarts"
 )
 
+def player_logo_available(logo_path):
+
+    if not logo_path:
+        return False
+
+    logo_path = str(
+        logo_path
+    ).strip()
+
+    if logo_path.startswith(
+        (
+            "http://",
+            "https://"
+        )
+    ):
+
+        return True
+
+    return os.path.exists(
+        logo_path
+    )
+
 def upload_player_logo(
     uploaded_file,
     player_id
@@ -6631,7 +6653,9 @@ if page == "My Profile":
 
                 logo_html = ""
 
-                if player.logo_path and os.path.exists(player.logo_path):
+                if player_logo_available(
+                    player.logo_path
+                ):
 
                     st.image(
                         player.logo_path,
@@ -8984,8 +9008,7 @@ if page == "League":
 
                                 if (
                                     player
-                                    and player.logo_path
-                                    and os.path.exists(
+                                    and player_logo_available(
                                         player.logo_path
                                     )
                                 ):
@@ -11448,7 +11471,9 @@ if page == "View Player":
 
             with col1:
 
-                if player.logo_path and os.path.exists(player.logo_path):
+                if player_logo_available(
+                    player.logo_path
+                ):
 
                     st.image(
                         player.logo_path,
