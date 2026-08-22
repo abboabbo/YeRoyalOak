@@ -7939,7 +7939,7 @@ if page == "Fixtures":
                                                 edit_p2_legs,
                                                 selected_tournament_object.legs_format,
                                                 allow_draw=(
-                                                    selected_tournament_object.format.type
+                                                    selected_tournament_object.format_type
                                                     in [
                                                         "League + Knockout",
                                                         "League Only"
