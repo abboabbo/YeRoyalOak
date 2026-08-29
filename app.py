@@ -3704,6 +3704,14 @@ with st.sidebar:
         ):
             st.session_state.page = "Feed Manager"
 
+        if st.button(
+            "✨ AI Match Report",
+            key="sidebar_ai_match_report",
+            use_container_width=True
+        ):
+            
+            st.session_state.page = "AI Match Report"
+
     page = st.session_state.page
 
     st.markdown("---")
@@ -5615,6 +5623,44 @@ if page == "Home":
         )
 
     db.close()
+
+# =========================================================
+# ADMIN: AI MATCH REPORT
+# =========================================================
+
+if page == "AI Match Report":
+
+    if not is_admin:
+
+        st.error(
+            "Administrator access is required."
+        )
+
+    else:
+
+        st.markdown(
+            """
+            <h1 style="text-align:center;">
+                ✨ AI Match Report
+            </h1>
+
+            <p style="
+                text-align:center;
+                color:#bfc5d2;
+                font-size:17px;
+            ">
+                Create professional match reports
+                from your league results
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.info(
+            "The AI Match Report generator "
+            "will be built here."
+        )
+
 
 # =========================================================
 # AWARDS PAGE
