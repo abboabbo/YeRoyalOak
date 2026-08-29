@@ -6724,7 +6724,14 @@ Return only the finished article.
                                 f"Match Report"
                             ),
                             key="ai_feed_report_title"
-                        )                        
+                        )  
+
+                        publish_to_feed = st.button(
+                            "📢 Publish to League Feed",
+                            type="primary",
+                            use_container_width=True,
+                            key="ai_publish_to_feed"
+                        )                                        
 
                         if publish_to_feed:
 
