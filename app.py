@@ -6265,6 +6265,308 @@ if page == "AI Match Report":
                             )
                         }
 
+                        results_output_lines = [
+                            "## RESULTS",
+                            ""
+                        ]
+
+                        for fixture in selected_report_fixtures:
+
+                            player1 = (
+                                report_player_lookup.get(
+                                    fixture.player1_id
+                                )
+                            )
+
+                            player2 = (
+                                report_player_lookup.get(
+                                    fixture.player2_id
+                                )
+                            )
+
+                            player1_name = (
+                                display_player_name(player1)
+                                if player1
+                                else "Unknown"
+                            )
+
+                            player2_name = (
+                                display_player_name(player2)
+                                if player2
+                                else "Unknown"
+                            )
+
+                            results_output_lines.append(
+                                f"**{player1_name} "
+                                f"{fixture.player1_legs} - "
+                                f"{fixture.player2_legs} "
+                                f"{player2_name}**"
+                            )
+
+                        results_output = "\n".join(
+                            results_output_lines
+                        )                        
+
+                        all_league_fixtures = (
+                            report_db.query(Fixture)
+                            .filter(
+                                Fixture.tournament_id
+                                == selected_report_tournament_id,
+                                Fixture.played == 1
+                            )
+                            .all()
+                        )
+
+                        tournament_player_links = (
+                            report_db.query(
+                                TournamentPlayer
+                            )
+                            .filter(
+                                TournamentPlayer.tournament_id
+                                == selected_report_tournament_id
+                            )
+                            .all()
+                        )
+
+                        league_stats = {}
+
+                        for link in tournament_player_links:
+
+                            player = (
+                                report_player_lookup.get(
+                                    link.player_id
+                                )
+                            )
+
+                            if player:
+
+                                league_stats[
+                                    player.id
+                                ] = {
+                                    "name": (
+                                        display_player_name(
+                                            player
+                                        )
+                                    ),
+                                    "played": 0,
+                                    "won": 0,
+                                    "drawn": 0,
+                                    "lost": 0,
+                                    "legs_for": 0,
+                                    "legs_against": 0,
+                                    "averages": [],
+                                    "points": 0
+                                }
+
+                        for fixture in all_league_fixtures:
+
+                            if (
+                                fixture.player1_id
+                                not in league_stats
+                                or fixture.player2_id
+                                not in league_stats
+                            ):
+                                continue
+
+                            player1_stats = (
+                                league_stats[
+                                    fixture.player1_id
+                                ]
+                            )
+
+                            player2_stats = (
+                                league_stats[
+                                    fixture.player2_id
+                                ]
+                            )
+
+                            player1_stats["played"] += 1
+                            player2_stats["played"] += 1
+
+                            player1_stats["legs_for"] += (
+                                fixture.player1_legs or 0
+                            )
+
+                            player1_stats[
+                                "legs_against"
+                            ] += (
+                                fixture.player2_legs or 0
+                            )
+
+                            player2_stats["legs_for"] += (
+                                fixture.player2_legs or 0
+                            )
+
+                            player2_stats[
+                                "legs_against"
+                            ] += (
+                                fixture.player1_legs or 0
+                            )                                
+
+                            if (
+                                fixture.player1_legs
+                                > fixture.player2_legs
+                            ):
+
+                                player1_stats["won"] += 1
+                                player2_stats["lost"] += 1
+
+                                player1_stats[
+                                    "points"
+                                ] += 3
+
+                            elif (
+                                fixture.player2_legs
+                                > fixture.player1_legs
+                            ):
+
+                                player2_stats["won"] += 1
+                                player1_stats["lost"] += 1
+
+                                player2_stats[
+                                    "points"
+                                ] += 3
+
+                            else:
+
+                                player1_stats[
+                                    "drawn"
+                                ] += 1
+
+                                player2_stats[
+                                    "drawn"
+                                ] += 1
+
+                                player1_stats[
+                                    "points"
+                                ] += 1
+
+                                player2_stats[
+                                    "points"
+                                ] += 1
+
+                            try:
+
+                                if (
+                                    fixture.player1_average
+                                    is not None
+                                ):
+
+                                    player1_stats[
+                                        "averages"
+                                    ].append(
+                                        float(
+                                            fixture.player1_average
+                                        )
+                                    )
+
+                            except (TypeError, ValueError):
+                                pass
+
+                            try:
+
+                                if (
+                                    fixture.player2_average
+                                    is not None
+                                ):
+
+                                    player2_stats[
+                                        "averages"
+                                    ].append(
+                                        float(
+                                            fixture.player2_average
+                                        )
+                                    )
+
+                            except (TypeError, ValueError):
+                                pass                                
+
+                        league_table_rows = []
+
+                        for player_id, stats in (
+                            league_stats.items()
+                        ):
+
+                            difference = (
+                                stats["legs_for"]
+                                - stats["legs_against"]
+                            )
+
+                            if stats["averages"]:
+
+                                player_average = round(
+                                    sum(
+                                        stats["averages"]
+                                    )
+                                    / len(
+                                        stats["averages"]
+                                    ),
+                                    2
+                                )
+
+                            else:
+
+                                player_average = 0.00
+
+                            league_table_rows.append(
+                                {
+                                    "Player": stats["name"],
+                                    "P": stats["played"],
+                                    "W": stats["won"],
+                                    "D": stats["drawn"],
+                                    "L": stats["lost"],
+                                    "LF": stats["legs_for"],
+                                    "LA": stats[
+                                        "legs_against"
+                                    ],
+                                    "+/-": difference,
+                                    "Avg": player_average,
+                                    "Pts": stats["points"]
+                                }
+                            )
+
+                        league_table_rows.sort(
+                            key=lambda row: (
+                                row["Pts"],
+                                row["+/-"],
+                                row["LF"]
+                            ),
+                            reverse=True
+                        )    
+
+                        league_table_output = (
+                            "## LATEST LEAGUE TABLE\n\n"
+                        )
+
+                        league_table_output += (
+                            "| Pos | Player | P | W | D | "
+                            "L | LF | LA | +/- | Avg | Pts |\n"
+                        )
+
+                        league_table_output += (
+                            "|---:|---|---:|---:|---:|---:|"
+                            "---:|---:|---:|---:|---:|\n"
+                        )
+
+                        for position, row in enumerate(
+                            league_table_rows,
+                            start=1
+                        ):
+
+                            league_table_output += (
+                                f"| {position} "
+                                f"| {row['Player']} "
+                                f"| {row['P']} "
+                                f"| {row['W']} "
+                                f"| {row['D']} "
+                                f"| {row['L']} "
+                                f"| {row['LF']} "
+                                f"| {row['LA']} "
+                                f"| {row['+/-']} "
+                                f"| {row['Avg']:.2f} "
+                                f"| {row['Pts']} |\n"
+                            )                                                
+
                         report_prompt = f"""
 You are writing an official match report for the
 Ye Royal Oak Darts League.
@@ -6287,6 +6589,9 @@ HEADLINE STYLE:
 MATCH DATA:
 {match_data}
 
+CURRENT LEAGUE TABLE:
+{league_table_output if include_standings else "League table context not requested."}
+
 ADDITIONAL USER INSTRUCTIONS:
 {custom_report_instructions or "None"}
 
@@ -6302,6 +6607,9 @@ IMPORTANT RULES:
 - Never claim a player is unbeaten, top of the league,
   bottom of the league, champion, eliminated or qualified
   unless that information is explicitly supplied.
+-The suppliedleague table is authoritative.
+-You may discuss league positions only using that table.
+-Do not calculate or alter league positions yourself.
 - Do not change any player names.
 - Treat draws as draws.
 - Mention statistics naturally rather than listing every
@@ -6336,8 +6644,25 @@ Return only the finished article.
                                     )
                                 )
 
-                                generated_report = (
+                                ai_article = (
                                     response.output_text.strip()
+                                )
+
+                                report_sections = [
+                                    ai_article,
+                                    results_output
+                                ]
+
+                                if include_standings:
+
+                                    report_sections.append(
+                                        league_table_output
+                                    )
+
+                                generated_report = (
+                                    "\n\n---\n\n".join(
+                                        report_sections
+                                    )
                                 )
 
                                 st.session_state[
