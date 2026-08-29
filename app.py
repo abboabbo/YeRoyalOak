@@ -5656,10 +5656,96 @@ if page == "AI Match Report":
             unsafe_allow_html=True
         )
 
-        st.info(
-            "The AI Match Report generator "
-            "will be built here."
+        report_db = SessionLocal()
+        
+        report_tournaments = (
+            report_db.query(Tournament)
+            .order_by(
+                Tournament.id.desc()
+            )
+            .all()
         )
+
+        if not report_tournaments:
+
+            st.warning(
+                "No tournaments are available."
+            )
+
+            report_db.close()
+
+
+        else:
+            report_tournament_options = {
+                tournament.name: tournament.id
+                for tournament
+                in report_tournaments
+            }
+
+            selected_report_tournament_name = (
+                st.selectbox(
+                    "Tournament",
+                    list(
+                        report_tournament_options.keys()
+                    ),
+                    key="ai_report_tournament"
+                )
+            )
+
+            selected_report_tournament_id = (
+                report_tournament_options[
+                    selected_report_tournament_name
+                ]
+            )
+
+            selected_report_tournament_id = (
+                ...
+            )
+
+            report_fixtures = (
+                report_db.query(Fixture)
+                .filter(
+                    Fixture.tournament_id
+                    == selected_report_tournament_id,
+                    Fixture.played == 1
+                )
+                .order_by(
+                    Fixture.round_number,
+                    Fixture.id
+                )
+                .all()
+            )
+
+            report_players = (
+                report_db.query(Player)
+                .all()
+            )
+
+            report_player_lookup = {
+                player.id: player
+                for player
+                in report_players
+            }
+
+            st.divider()
+
+            if not report_fixtures:
+
+                st.info(
+                    "There are no completed results "
+                    "for this tournament yet."
+                )
+
+            else:
+
+                st.success(
+                    f"{len(report_fixtures)} completed "
+                    f"matches are available for "
+                    f"{selected_report_tournament_name}."
+                )
+
+            report_db.close()
+
 
 
 # =========================================================
