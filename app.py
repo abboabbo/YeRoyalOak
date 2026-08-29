@@ -5740,6 +5740,189 @@ if page == "AI Match Report":
                     f"{selected_report_tournament_name}."
                 )
 
+                st.markdown("### Select Results")
+
+                st.caption(
+                    "Choose which completed matches "
+                    "you want to include in the report."
+                )
+
+                report_source = st.radio(
+                    "Create report from",
+                    [
+                        "Round",
+                        "Date",
+                        "Custom Fixtures"
+                    ],
+                    horizontal=True,
+                    key="ai_report_source"
+                )
+
+                selected_report_fixtures = []
+
+                if report_source == "Round":
+
+                    available_rounds = sorted(
+                        {
+                            fixture.round_number
+                            for fixture
+                            in report_fixtures
+                            if fixture.round_number
+                            is not None
+                        }
+                    )
+
+                    if not available_rounds:
+
+                        st.info(
+                            "No completed rounds "
+                            "are available."
+                        )
+
+                    else:
+
+                        selected_round = st.selectbox(
+                            "Round",
+                            available_rounds,
+                            format_func=lambda value: (
+                                f"Round {value}"
+                            ),
+                            key="ai_report_round"
+                        )
+
+                        selected_report_fixtures = [
+                            fixture
+                            for fixture
+                            in report_fixtures
+                            if fixture.round_number
+                            == selected_round
+                        ]
+
+                elif report_source == "Date":
+
+                    available_dates = sorted(
+                        {
+                            fixture.date_played
+                            for fixture
+                            in report_fixtures
+                            if fixture.date_played
+                        },
+                        reverse=True
+                    )
+
+                    if not available_dates:
+
+                        st.info(
+                            "No result dates "
+                            "are available."
+                        )
+
+                    else:
+
+                        selected_report_date = (
+                            st.selectbox(
+                                "Result Date",
+                                available_dates,
+                                key="ai_report_date"
+                            )
+                        )
+
+                        selected_report_fixtures = [
+                            fixture
+                            for fixture
+                            in report_fixtures
+                            if fixture.date_played
+                            == selected_report_date
+                        ]
+
+                elif report_source == "Custom Fixtures":
+
+                    fixture_options = {}
+
+                    for fixture in report_fixtures:
+
+                        player1 = (
+                            report_player_lookup.get(
+                                fixture.player1_id
+                            )
+                        )
+
+                        player2 = (
+                            report_player_lookup.get(
+                                fixture.player2_id
+                            )
+                        )
+
+                        player1_name = (
+                            display_player_name(player1)
+                            if player1
+                            else "Unknown"
+                        )
+
+                        player2_name = (
+                            display_player_name(player2)
+                            if player2
+                            else "Unknown"
+                        )
+
+                        fixture_label = (
+                            f"Round "
+                            f"{fixture.round_number} — "
+                            f"{player1_name} "
+                            f"{fixture.player1_legs}"
+                            f" - "
+                            f"{fixture.player2_legs} "
+                            f"{player2_name}"
+                        )
+
+                        fixture_options[
+                            fixture_label
+                        ] = fixture.id
+
+                    selected_fixture_labels = (
+                        st.multiselect(
+                            "Select Matches",
+                            list(
+                                fixture_options.keys()
+                            ),
+                            key=(
+                                "ai_report_custom_fixtures"
+                            )
+                        )
+                    )
+
+                    selected_fixture_ids = {
+                        fixture_options[label]
+                        for label
+                        in selected_fixture_labels
+                    }
+
+                    selected_report_fixtures = [
+                        fixture
+                        for fixture
+                        in report_fixtures
+                        if fixture.id
+                        in selected_fixture_ids
+                    ]
+
+                st.divider()
+
+                if selected_report_fixtures:
+
+                    st.success(
+                        f"{len(selected_report_fixtures)} "
+                        f"match"
+                        f"{'es' if len(selected_report_fixtures) != 1 else ''} "
+                        f"selected for the report."
+                    )
+
+                else:
+
+                    st.warning(
+                        "No matches are currently "
+                        "selected for the report."
+                    )
+
             report_db.close()
 
 
