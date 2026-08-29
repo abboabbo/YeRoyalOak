@@ -5698,10 +5698,6 @@ if page == "AI Match Report":
                 ]
             )
 
-            selected_report_tournament_id = (
-                ...
-            )
-
             report_fixtures = (
                 report_db.query(Fixture)
                 .filter(
