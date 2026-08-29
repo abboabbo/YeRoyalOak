@@ -15,6 +15,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from textwrap import dedent
 from supabase import create_client
+from openai import OpenAI
 
 from PIL import Image
 from itertools import combinations
@@ -5656,7 +5657,11 @@ if page == "AI Match Report":
             unsafe_allow_html=True
         )
 
-        report_db = SessionLocal()
+        openai_client = OpenAI(
+            api_key=st.secrets["OPENAI_API_KEY"]
+        )
+
+        report_db = SessionLocal()        
         
         report_tournaments = (
             report_db.query(Tournament)
@@ -6076,24 +6081,50 @@ if page == "AI Match Report":
                             )
                         )
 
-                    st.divider()
+                    st.divider()   
 
-                    st.button(
+                    generate_report = st.button(
                         "✨ Generate Match Report",
                         type="primary",
                         use_container_width=True,
-                        disabled=True,
-                        help=(
-                            "AI generation will be enabled "
-                            "in the next stage."
-                        ),
-                        key="ai_generate_report_disabled"
-                    )
+                        key="ai_generate_report"
+                    )      
 
-                    st.caption(
-                        "AI generation will be connected "
-                        "in the next stage."
-                    )                        
+                    if generate_report:
+
+                        with st.spinner(
+                            "Testing AI connection..."
+                        ):
+
+                            try:
+
+                                response = (
+                                    openai_client.responses.create(
+                                        model="gpt-5.6-luna",
+                                        input=(
+                                            "Reply with exactly this "
+                                            "sentence and nothing else: "
+                                            "AI Match Report connection "
+                                            "successful."
+                                        )
+                                    )
+                                )
+
+                                st.success(
+                                    "OpenAI connection successful."
+                                )
+
+                                st.write(
+                                    response.output_text
+                                )
+
+                            except Exception as error:
+
+                                st.error(
+                                    "OpenAI connection failed."
+                                )
+
+                                st.exception(error)                                                   
 
             report_db.close()
 
