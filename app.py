@@ -6092,8 +6092,239 @@ if page == "AI Match Report":
 
                     if generate_report:
 
+                        match_data_lines = []
+
+                        for fixture in selected_report_fixtures:
+
+                            player1 = (
+                                report_player_lookup.get(
+                                    fixture.player1_id
+                                )
+                            )
+
+                            player2 = (
+                                report_player_lookup.get(
+                                    fixture.player2_id
+                                )
+                            )
+
+                            player1_name = (
+                                display_player_name(player1)
+                                if player1
+                                else "Unknown"
+                            )
+
+                            player2_name = (
+                                display_player_name(player2)
+                                if player2
+                                else "Unknown"
+                            )
+
+                            match_lines = [
+                                (
+                                    f"Match: {player1_name} "
+                                    f"{fixture.player1_legs} - "
+                                    f"{fixture.player2_legs} "
+                                    f"{player2_name}"
+                                )
+                            ] 
+
+                            if fixture.round_number is not None:
+
+                                match_lines.append(
+                                    f"Round: "
+                                    f"{fixture.round_number}"
+                                )
+
+                            if fixture.date_played:
+
+                                match_lines.append(
+                                    f"Date: "
+                                    f"{fixture.date_played}"
+                                )    
+
+                            if include_averages:
+
+                                if (
+                                    fixture.player1_average
+                                    is not None
+                                ):
+
+                                    match_lines.append(
+                                        f"{player1_name} "
+                                        f"3-dart average: "
+                                        f"{fixture.player1_average}"
+                                    )
+
+                                if (
+                                    fixture.player2_average
+                                    is not None
+                                ):
+
+                                    match_lines.append(
+                                        f"{player2_name} "
+                                        f"3-dart average: "
+                                        f"{fixture.player2_average}"
+                                    )                                                                                                          
+
+                            if include_180s:
+
+                                match_lines.append(
+                                    f"{player1_name} 180s: "
+                                    f"{fixture.player1_180s or 0}"
+                                )
+
+                                match_lines.append(
+                                    f"{player2_name} 180s: "
+                                    f"{fixture.player2_180s or 0}"
+                                )
+
+                            if include_checkouts:
+
+                                if (
+                                    fixture.player1_high_checkout
+                                    is not None
+                                ):
+
+                                    match_lines.append(
+                                        f"{player1_name} "
+                                        f"highest checkout: "
+                                        f"{fixture.player1_high_checkout}"
+                                    )
+
+                                if (
+                                    fixture.player2_high_checkout
+                                    is not None
+                                ):
+
+                                    match_lines.append(
+                                        f"{player2_name} "
+                                        f"highest checkout: "
+                                        f"{fixture.player2_high_checkout}"
+                                    )
+
+                            match_data_lines.append(
+                                "\n".join(match_lines)
+                            )
+
+                        match_data = "\n\n".join(
+                            match_data_lines
+                        )
+
+                        style_instructions = {
+                            "Sky Sports Style": (
+                                "Write as a polished British "
+                                "sports news report with energetic "
+                                "but professional match analysis."
+                            ),
+                            "PDC Commentary Style": (
+                                "Write with the excitement and "
+                                "pace of professional televised "
+                                "darts coverage."
+                            ),
+                            "Local Newspaper": (
+                                "Write as a well-written local "
+                                "newspaper sports report."
+                            ),
+                            "Professional League Report": (
+                                "Write as an official professional "
+                                "league match report."
+                            ),
+                            "Ye Royal Oak Banter": (
+                                "Write an entertaining darts "
+                                "report with friendly humour and "
+                                "light-hearted pub league banter. "
+                                "Do not be offensive or cruel."
+                            ),
+                            "Social Media Report": (
+                                "Write an energetic sports report "
+                                "suitable for posting on social "
+                                "media, while still covering the "
+                                "important results."
+                            ),
+                            "Custom": (
+                                custom_style_description
+                                or
+                                "Write in a custom engaging "
+                                "sports-report style."
+                            )
+                        }                        
+
+                        length_instructions = {
+                            "Short": (
+                                "Keep the report concise, around "
+                                "150 to 250 words."
+                            ),
+                            "Medium": (
+                                "Write approximately "
+                                "350 to 550 words."
+                            ),
+                            "Long": (
+                                "Write a detailed report of "
+                                "approximately 700 to 1000 words."
+                            )
+                        }
+
+                        report_prompt = f"""
+You are writing an official match report for the
+Ye Royal Oak Darts League.
+
+TOURNAMENT:
+{selected_report_tournament_name}
+
+WRITING STYLE:
+{style_instructions[report_style]}
+
+TONE:
+{report_tone}
+
+REPORT LENGTH:
+{length_instructions[report_length]}
+
+HEADLINE STYLE:
+{headline_style}
+
+MATCH DATA:
+{match_data}
+
+ADDITIONAL USER INSTRUCTIONS:
+{custom_report_instructions or "None"}
+
+IMPORTANT RULES:
+
+- Use only the match information supplied above.
+- Never invent scores.
+- Never invent averages.
+- Never invent 180s.
+- Never invent checkouts.
+- Never invent player quotes.
+- Never invent injuries, incidents or crowd reactions.
+- Never claim a player is unbeaten, top of the league,
+  bottom of the league, champion, eliminated or qualified
+  unless that information is explicitly supplied.
+- Do not change any player names.
+- Treat draws as draws.
+- Mention statistics naturally rather than listing every
+  number mechanically.
+- If a statistic is not supplied, do not guess it.
+- Keep friendly humour respectful.
+
+OUTPUT FORMAT:
+
+Start with a strong headline.
+
+Then write the report in clear paragraphs.
+
+Do not include phrases such as:
+"Here is your report"
+or
+"Based on the information provided".
+
+Return only the finished article.
+"""
+
                         with st.spinner(
-                            "Testing AI connection..."
+                            "Writing match report..."
                         ):
 
                             try:
@@ -6101,30 +6332,80 @@ if page == "AI Match Report":
                                 response = (
                                     openai_client.responses.create(
                                         model="gpt-5.6-luna",
-                                        input=(
-                                            "Reply with exactly this "
-                                            "sentence and nothing else: "
-                                            "AI Match Report connection "
-                                            "successful."
-                                        )
+                                        input=report_prompt
                                     )
                                 )
 
-                                st.success(
-                                    "OpenAI connection successful."
+                                generated_report = (
+                                    response.output_text.strip()
                                 )
 
-                                st.write(
-                                    response.output_text
+                                st.session_state[
+                                    "ai_generated_report"
+                                ] = generated_report
+
+                                st.success(
+                                    "Match report generated."
                                 )
 
                             except Exception as error:
 
                                 st.error(
-                                    "OpenAI connection failed."
+                                    "The match report "
+                                    "could not be generated."
                                 )
 
-                                st.exception(error)                                                   
+                                st.exception(error)
+
+                    if st.session_state.get(
+                        "ai_generated_report"
+                    ):
+
+                        st.divider()
+
+                        st.markdown(
+                            "## 📰 Generated Match Report"
+                        )
+
+                        st.caption(
+                            "You can edit the report below "
+                            "before publishing it."
+                        )
+
+                        edited_report = st.text_area(
+                            "Match Report",
+                            value=st.session_state[
+                                "ai_generated_report"
+                            ],
+                            height=500,
+                            key="ai_report_editor"
+                        )                                
+
+                        st.markdown(
+                            "### Preview"
+                        )
+
+                        st.markdown(
+                            edited_report
+                        )
+
+                        if st.button(
+                            "🗑️ Clear Generated Report",
+                            use_container_width=True,
+                            key="ai_clear_report"
+                        ):
+
+                            st.session_state.pop(
+                                "ai_generated_report",
+                                None
+                            )
+
+                            st.session_state.pop(
+                                "ai_report_editor",
+                                None
+                            )
+
+                            st.rerun()
 
             report_db.close()
 
