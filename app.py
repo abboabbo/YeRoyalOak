@@ -5923,6 +5923,178 @@ if page == "AI Match Report":
                         "selected for the report."
                     )
 
+                if selected_report_fixtures:
+
+                    st.markdown("## ✍️ Report Style")
+
+                    st.caption(
+                        "Choose how you want the match "
+                        "report to be written."
+                    )
+
+                    report_style = st.selectbox(
+                        "Writing Style",
+                        [
+                            "Sky Sports Style",
+                            "PDC Commentary Style",
+                            "Local Newspaper",
+                            "Professional League Report",
+                            "Ye Royal Oak Banter",
+                            "Social Media Report",
+                            "Custom"
+                        ],
+                        key="ai_report_style"
+                    )
+
+                    style_col1, style_col2 = (
+                        st.columns(2)
+                    )
+
+                    with style_col1:
+
+                        report_tone = st.selectbox(
+                            "Tone",
+                            [
+                                "Exciting",
+                                "Professional",
+                                "Dramatic",
+                                "Light-hearted",
+                                "Funny",
+                                "Neutral"
+                            ],
+                            key="ai_report_tone"
+                        )
+
+                    with style_col2:
+
+                        report_length = st.selectbox(
+                            "Report Length",
+                            [
+                                "Short",
+                                "Medium",
+                                "Long"
+                            ],
+                            index=1,
+                            key="ai_report_length"
+                        )
+
+                    headline_style = st.selectbox(
+                        "Headline Style",
+                        [
+                            "Sports News",
+                            "Dramatic",
+                            "Professional",
+                            "Funny",
+                            "Automatic"
+                        ],
+                        key="ai_report_headline_style"
+                    )                                                               
+
+                    st.markdown(
+                        "### 📊 Include in Report"
+                    )
+
+                    include_col1, include_col2 = (
+                        st.columns(2)
+                    )
+
+                    with include_col1:
+
+                        include_averages = st.checkbox(
+                            "3 Dart Averages",
+                            value=True,
+                            key="ai_include_averages"
+                        )
+
+                        include_180s = st.checkbox(
+                            "180s",
+                            value=True,
+                            key="ai_include_180s"
+                        )
+
+                        include_checkouts = st.checkbox(
+                            "Highest Checkouts",
+                            value=True,
+                            key="ai_include_checkouts"
+                        )
+
+                    with include_col2:
+
+                        include_scores = st.checkbox(
+                            "Match Scores",
+                            value=True,
+                            key="ai_include_scores"
+                        )
+
+                        include_standings = st.checkbox(
+                            "League Table Context",
+                            value=True,
+                            key="ai_include_standings"
+                        )
+
+                        include_upcoming = st.checkbox(
+                            "Upcoming Fixtures",
+                            value=False,
+                            key="ai_include_upcoming"
+                        )
+
+                    st.markdown(
+                        "### 📝 Additional Instructions"
+                    )
+
+                    custom_report_instructions = (
+                        st.text_area(
+                            "Optional instructions",
+                            placeholder=(
+                                "Example: Focus heavily on "
+                                "the battle at the top of the "
+                                "league and mention any surprise "
+                                "results."
+                            ),
+                            key=(
+                                "ai_report_custom_instructions"
+                            )
+                        )
+                    )                        
+
+                    custom_style_description = ""
+
+                    if report_style == "Custom":
+
+                        custom_style_description = (
+                            st.text_area(
+                                "Describe your writing style",
+                                placeholder=(
+                                    "Example: Write like an "
+                                    "excitable darts commentator "
+                                    "with short punchy paragraphs "
+                                    "and plenty of humour."
+                                ),
+                                key=(
+                                    "ai_custom_style_description"
+                                )
+                            )
+                        )
+
+                    st.divider()
+
+                    st.button(
+                        "✨ Generate Match Report",
+                        type="primary",
+                        use_container_width=True,
+                        disabled=True,
+                        help=(
+                            "AI generation will be enabled "
+                            "in the next stage."
+                        ),
+                        key="ai_generate_report_disabled"
+                    )
+
+                    st.caption(
+                        "AI generation will be connected "
+                        "in the next stage."
+                    )                        
+
             report_db.close()
 
 
