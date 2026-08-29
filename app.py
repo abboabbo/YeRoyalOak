@@ -5052,6 +5052,7 @@ if page == "Feed Manager":
                 "Announcement",
                 "League News",
                 "Match Result",
+                "Match Report",
                 "Player of the Week",
                 "Checkout of the Week",
                 "Tournament",
@@ -6710,9 +6711,171 @@ Return only the finished article.
                             "### Preview"
                         )
 
+                        st.divider()
+
+                        st.markdown(
+                            "## 📢 Publish to League Feed"
+                        )
+
+                        feed_report_title = st.text_input(
+                            "Feed Post Title",
+                            value=(
+                                f"{selected_report_tournament_name} "
+                                f"Match Report"
+                            ),
+                            key="ai_feed_report_title"
+                        )                        
+
+                        if publish_to_feed:
+
+                            clean_feed_title = (
+                                feed_report_title.strip()
+                            )
+
+                            clean_feed_message = (
+                                edited_report.strip()
+                            )
+
+                            if not clean_feed_title:
+
+                                st.error(
+                                    "Please enter a title "
+                                    "for the feed post."
+                                )
+
+                            elif not clean_feed_message:
+
+                                st.error(
+                                    "The match report is empty."
+                                )
+
+                            else:
+
+                                publish_db = SessionLocal()
+
+                                try:
+
+                                    created_time = (
+                                        datetime.now().strftime(
+                                            "%d/%m/%Y %H:%M"
+                                        )
+                                    )
+
+                                    new_post = LeaguePost(
+                                        category="Match Report",
+                                        title=clean_feed_title,
+                                        message=clean_feed_message,
+                                        platform="League",
+                                        image_url=None,
+                                        external_url=None,
+                                        is_pinned=0,
+                                        is_published=1,
+                                        created_by=(
+                                            st.session_state.get(
+                                                "username",
+                                                "Admin"
+                                            )
+                                        ),
+                                        created_at=created_time
+                                    )
+
+                                    publish_db.add(
+                                        new_post
+                                    )
+
+                                    publish_db.commit()
+
+                                    st.success(
+                                        "Match report published "
+                                        "to the League Feed!"
+                                    )
+
+                                except Exception as error:
+
+                                    publish_db.rollback()
+
+                                    st.error(
+                                        "The match report could "
+                                        "not be published."
+                                    )
+
+                                    st.exception(error)
+
+                                finally:
+
+                                    publish_db.close()
+
                         st.markdown(
                             edited_report
                         )
+
+                        st.divider()
+
+                        st.markdown(
+                            "### 📢 Publish Report"
+                        )
+
+                        st.caption(
+                            "Publish the finished match report "
+                            "directly to the League Feed."
+                        )
+
+                        publish_report = st.button(
+                            "📢 Publish to League Feed",
+                            type="primary",
+                            use_container_width=True,
+                            key="ai_publish_to_feed"
+                        )
+
+                        if publish_report:
+
+                            if not edited_report.strip():
+
+                                st.warning(
+                                    "The match report is empty."
+                                )
+
+                            else:
+
+                                publish_db = SessionLocal()
+
+                                try:
+
+                                    new_feed_post = LeaguePost(
+                                        category="Match Report",
+                                        title=(
+                                            f"{selected_report_tournament_name} "
+                                            f"Match Report"
+                                        ),
+                                        content=edited_report.strip(),
+                                        created_at=datetime.now()
+                                    )
+
+                                    publish_db.add(
+                                        new_feed_post
+                                    )
+
+                                    publish_db.commit()
+
+                                    st.success(
+                                        "Match report published "
+                                        "to the League Feed."
+                                    )
+
+                                except Exception as error:
+
+                                    publish_db.rollback()
+
+                                    st.error(
+                                        "The match report could "
+                                        "not be published."
+                                    )
+
+                                    st.exception(error)
+
+                                finally:
+
+                                    publish_db.close()
 
                         if st.button(
                             "🗑️ Clear Generated Report",
