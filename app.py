@@ -3838,31 +3838,14 @@ with st.sidebar:
 
         st.markdown(
             f"""
-            <div style="
-                text-align:center;
-                margin-top:2px;
-                margin-bottom:8px;
-            ">
-                <div style="
-                    color:#ffffff;
-                    font-size:18px;
-                    font-weight:900;
-                    line-height:1.1;
-                ">
+            <p style="text-align:center; margin:2px 0 0 0;">
+                <span style="color:white; font-size:18px; font-weight:900;">
                     {youtube_count_text}
-                </div>
-
-                <div style="
-                    color:#9ca3af;
-                    font-size:10px;
-                    font-weight:800;
-                    text-transform:uppercase;
-                    letter-spacing:0.7px;
-                    margin-top:3px;
-                ">
-                    Subscribers
-                </div>
-            </div>
+                </span><br>
+                <span style="color:#9ca3af; font-size:10px; font-weight:800;">
+                    SUBSCRIBERS
+                </span>
+            </p>
             """,
             unsafe_allow_html=True
         )
