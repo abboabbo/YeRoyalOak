@@ -3793,103 +3793,103 @@ with st.sidebar:
 
     st.markdown("---")
 
-youtube_subscribers = (
-    get_youtube_subscriber_count()
-)
+    youtube_subscribers = (
+        get_youtube_subscriber_count()
+    )
 
-youtube_count_text = (
-    f"{youtube_subscribers:,}"
-    if youtube_subscribers is not None
-    else "—"
-)
+    youtube_count_text = (
+        f"{youtube_subscribers:,}"
+        if youtube_subscribers is not None
+        else "—"
+    )
 
-social_col1, social_col2, social_col3 = (
-    st.columns(3)
-)    
+    social_col1, social_col2, social_col3 = (
+        st.columns(3)
+    )    
 
 # ---------------------------------------------------------
 # FACEBOOK
 # ---------------------------------------------------------
 
-with social_col1:
+    with social_col1:
 
-    st.image(
-        "assets/social/facebook.png",
-        width=60
-    )
+        st.image(
+            "assets/social/facebook.png",
+            width=60
+        )
 
-    st.link_button(
-        "Facebook",
-        FACEBOOK_URL,
-        use_container_width=True
-    )
+        st.link_button(
+            "Facebook",
+            FACEBOOK_URL,
+            use_container_width=True
+        )
 
 
 # ---------------------------------------------------------
 # YOUTUBE
 # ---------------------------------------------------------
 
-with social_col2:
+    with social_col2:
 
-    st.image(
-        "assets/social/youtube.png",
-        width=60
-    )
+        st.image(
+            "assets/social/youtube.png",
+            width=60
+        )
 
-    st.markdown(
-        f"""
-        <div style="
-            text-align:center;
-            margin-top:2px;
-            margin-bottom:8px;
-        ">
+        st.markdown(
+            f"""
             <div style="
-                color:#ffffff;
-                font-size:18px;
-                font-weight:900;
-                line-height:1.1;
+                text-align:center;
+                margin-top:2px;
+                margin-bottom:8px;
             ">
-                {youtube_count_text}
-            </div>
+                <div style="
+                    color:#ffffff;
+                    font-size:18px;
+                    font-weight:900;
+                    line-height:1.1;
+                ">
+                    {youtube_count_text}
+                </div>
 
-            <div style="
-                color:#9ca3af;
-                font-size:10px;
-                font-weight:800;
-                text-transform:uppercase;
-                letter-spacing:0.7px;
-                margin-top:3px;
-            ">
-                Subscribers
+                <div style="
+                    color:#9ca3af;
+                    font-size:10px;
+                    font-weight:800;
+                    text-transform:uppercase;
+                    letter-spacing:0.7px;
+                    margin-top:3px;
+                ">
+                    Subscribers
+                </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+            """,
+            unsafe_allow_html=True
+        )
 
-    st.link_button(
-        "YouTube",
-        YOUTUBE_URL,
-        use_container_width=True
-    )
+        st.link_button(
+            "YouTube",
+            YOUTUBE_URL,
+            use_container_width=True
+        )
 
 
 # ---------------------------------------------------------
 # TIKTOK
 # ---------------------------------------------------------
 
-with social_col3:
+    with social_col3:
 
-    st.image(
-        "assets/social/tiktok.png",
-        width=60
-    )
+        st.image(
+            "assets/social/tiktok.png",
+            width=60
+        )
 
-    st.link_button(
-        "TikTok",
-        TIKTOK_URL,
-        use_container_width=True
-    )
+        st.link_button(
+            "TikTok",
+            TIKTOK_URL,
+            use_container_width=True
+        )
 # =========================================================
 # ADMIN: PLAYERS
 # =========================================================
