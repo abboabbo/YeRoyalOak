@@ -7,6 +7,7 @@ import os
 import base64
 import html
 import streamlit.components.v1 as components
+import requests
 
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -1514,6 +1515,69 @@ def get_sidebar_dashboard():
         "latest_result": latest_result_text
 
     }
+
+@st.cache_data(ttl=900)
+def get_youtube_subscriber_count():
+
+    api_key = st.secrets.get(
+        "YOUTUBE_API_KEY"
+    )
+
+    channel_id = st.secrets.get(
+        "YOUTUBE_CHANNEL_ID"
+    )
+
+    if not api_key or not channel_id:
+        return None
+
+    try:
+
+        response = requests.get(
+            "https://www.googleapis.com/youtube/v3/channels",
+            params={
+                "part": "statistics",
+                "id": channel_id,
+                "key": api_key
+            },
+            timeout=10
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        items = data.get(
+            "items",
+            []
+        )
+
+        if not items:
+            return None
+
+        statistics = items[0].get(
+            "statistics",
+            {}
+        )
+
+        if statistics.get(
+            "hiddenSubscriberCount"
+        ):
+            return None
+
+        subscriber_count = statistics.get(
+            "subscriberCount"
+        )
+
+        if subscriber_count is None:
+            return None
+
+        return int(
+            subscriber_count
+        )
+
+    except Exception:
+
+        return None    
 
 def get_feed_icon(category, platform):
 
@@ -3717,29 +3781,37 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("### Follow Us")
+    st.markdown("---")
 
     social_col1, social_col2, social_col3 = st.columns(3)
 
     with social_col1:
 
-        st.image(
-            "assets/social/facebook.png",
-            width=55
-        )
-
         st.markdown(
-            """
+            f"""
             <div style="text-align:center;">
-                <a href="https://www.facebook.com/groups/1063585262569763/"
-                    target="_blank"
-                    style="
-                        font-size:12px;
-                        font-weight:bold;
-                        text-decoration:none;
-                    ">
-                    Open
+                <a href="{FACEBOOK_URL}"
+                   target="_blank"
+                   style="text-decoration:none;">
+                    <img
+                        src="data:image/png;base64,{base64.b64encode(open('assets/social/facebook.png', 'rb').read()).decode()}"
+                        style="
+                            width:52px;
+                            height:52px;
+                            object-fit:contain;
+                            transition:transform 0.2s;
+                        "
+                    >
                 </a>
+
+                <div style="
+                    margin-top:5px;
+                    font-size:12px;
+                    font-weight:800;
+                    color:#bfc5d2;
+                ">
+                    Facebook
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -3747,23 +3819,30 @@ with st.sidebar:
 
     with social_col2:
 
-        st.image(
-            "assets/social/youtube.png",
-            width=55
-        )
-
         st.markdown(
-            """
+            f"""
             <div style="text-align:center;">
-                <a href="https://www.youtube.com/@YeRoyalOakDarts"
-                    target="_blank"
-                    style="
-                        font-size:12px;
-                        font-weight:bold;
-                        text-decoration:none;
-                    ">
-                    Open
+                <a href="{YOUTUBE_URL}"
+                   target="_blank"
+                   style="text-decoration:none;">
+                    <img
+                        src="data:image/png;base64,{base64.b64encode(open('assets/social/youtube.png', 'rb').read()).decode()}"
+                        style="
+                            width:52px;
+                            height:52px;
+                            object-fit:contain;
+                        "
+                    >
                 </a>
+
+                <div style="
+                    margin-top:5px;
+                    font-size:12px;
+                    font-weight:800;
+                    color:#bfc5d2;
+                ">
+                    YouTube
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -3771,28 +3850,34 @@ with st.sidebar:
 
     with social_col3:
 
-        st.image(
-            "assets/social/tiktok.png",
-            width=55
-        )
-
         st.markdown(
-            """
+            f"""
             <div style="text-align:center;">
-                <a href="https://www.tiktok.com/@yeroyaloakdarts"
-                    target="_blank"
-                    style="
-                        font-size:12px;
-                        font-weight:bold;
-                        text-decoration:none;
-                    ">
-                    Open
+                <a href="{TIKTOK_URL}"
+                   target="_blank"
+                   style="text-decoration:none;">
+                    <img
+                        src="data:image/png;base64,{base64.b64encode(open('assets/social/tiktok.png', 'rb').read()).decode()}"
+                        style="
+                            width:52px;
+                            height:52px;
+                            object-fit:contain;
+                        "
+                    >
                 </a>
+
+                <div style="
+                    margin-top:5px;
+                    font-size:12px;
+                    font-weight:800;
+                    color:#bfc5d2;
+                ">
+                    TikTok
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
-
 # =========================================================
 # ADMIN: PLAYERS
 # =========================================================
