@@ -3793,101 +3793,93 @@ with st.sidebar:
 
     st.markdown("---")
 
-    social_col1, social_col2, social_col3 = st.columns(3)
+social_col1, social_col2, social_col3 = (
+    st.columns(3)
+)
 
-    with social_col1:
+# ---------------------------------------------------------
+# FACEBOOK
+# ---------------------------------------------------------
 
-        st.markdown(
-            f"""
-            <div style="text-align:center;">
-                <a href="{FACEBOOK_URL}"
-                   target="_blank"
-                   style="text-decoration:none;">
-                    <img
-                        src="data:image/png;base64,{base64.b64encode(open('assets/social/facebook.png', 'rb').read()).decode()}"
-                        style="
-                            width:52px;
-                            height:52px;
-                            object-fit:contain;
-                            transition:transform 0.2s;
-                        "
-                    >
-                </a>
+with social_col1:
 
-                <div style="
-                    margin-top:5px;
-                    font-size:12px;
-                    font-weight:800;
-                    color:#bfc5d2;
-                ">
-                    Facebook
-                </div>
+    st.image(
+        "assets/social/facebook.png",
+        width=60
+    )
+
+    st.link_button(
+        "Facebook",
+        FACEBOOK_URL,
+        use_container_width=True
+    )
+
+
+# ---------------------------------------------------------
+# YOUTUBE
+# ---------------------------------------------------------
+
+with social_col2:
+
+    st.image(
+        "assets/social/youtube.png",
+        width=60
+    )
+
+    st.markdown(
+        f"""
+        <div style="
+            text-align:center;
+            margin-top:2px;
+            margin-bottom:8px;
+        ">
+            <div style="
+                color:#ffffff;
+                font-size:18px;
+                font-weight:900;
+                line-height:1.1;
+            ">
+                {youtube_count_text}
             </div>
-            """,
-            unsafe_allow_html=True
-        )
 
-    with social_col2:
-
-        st.markdown(
-            f"""
-            <div style="text-align:center;">
-                <a href="{YOUTUBE_URL}"
-                   target="_blank"
-                   style="text-decoration:none;">
-                    <img
-                        src="data:image/png;base64,{base64.b64encode(open('assets/social/youtube.png', 'rb').read()).decode()}"
-                        style="
-                            width:52px;
-                            height:52px;
-                            object-fit:contain;
-                        "
-                    >
-                </a>
-
-                <div style="
-                    margin-top:5px;
-                    font-size:12px;
-                    font-weight:800;
-                    color:#bfc5d2;
-                ">
-                    YouTube
-                </div>
+            <div style="
+                color:#9ca3af;
+                font-size:10px;
+                font-weight:800;
+                text-transform:uppercase;
+                letter-spacing:0.7px;
+                margin-top:3px;
+            ">
+                Subscribers
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    with social_col3:
+    st.link_button(
+        "YouTube",
+        YOUTUBE_URL,
+        use_container_width=True
+    )
 
-        st.markdown(
-            f"""
-            <div style="text-align:center;">
-                <a href="{TIKTOK_URL}"
-                   target="_blank"
-                   style="text-decoration:none;">
-                    <img
-                        src="data:image/png;base64,{base64.b64encode(open('assets/social/tiktok.png', 'rb').read()).decode()}"
-                        style="
-                            width:52px;
-                            height:52px;
-                            object-fit:contain;
-                        "
-                    >
-                </a>
 
-                <div style="
-                    margin-top:5px;
-                    font-size:12px;
-                    font-weight:800;
-                    color:#bfc5d2;
-                ">
-                    TikTok
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+# ---------------------------------------------------------
+# TIKTOK
+# ---------------------------------------------------------
+
+with social_col3:
+
+    st.image(
+        "assets/social/tiktok.png",
+        width=60
+    )
+
+    st.link_button(
+        "TikTok",
+        TIKTOK_URL,
+        use_container_width=True
+    )
 # =========================================================
 # ADMIN: PLAYERS
 # =========================================================
