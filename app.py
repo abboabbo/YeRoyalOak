@@ -3793,9 +3793,19 @@ with st.sidebar:
 
     st.markdown("---")
 
+youtube_subscribers = (
+    get_youtube_subscriber_count()
+)
+
+youtube_count_text = (
+    f"{youtube_subscribers:,}"
+    if youtube_subscribers is not None
+    else "—"
+)
+
 social_col1, social_col2, social_col3 = (
     st.columns(3)
-)
+)    
 
 # ---------------------------------------------------------
 # FACEBOOK
