@@ -9809,91 +9809,76 @@ if page == "My Profile":
 
                 form_display = "No form yet"
 
-            st.markdown("### ✨ New Player Card Preview")
-
-            render_premium_player_card(
-                player=player,
-                overall_rating=overall_rating,
-                played=played,
-                wins=wins,
-                draws=draws,
-                losses=losses,
-                avg=avg,
-                win_pct=win_pct,
-                recent_form=recent_form,
-                league_position=league_position,
-                total_180s=total_180s,
-                highest_checkout=highest_checkout
-            )
-
-            st.divider()
-
             col1, col2 = st.columns(
                 [1, 1.4]
             )
 
             with col1:
 
-                logo_html = ""
-
-                if player_logo_available(
-                    player.logo_path
-                ):
-
-                    st.image(
-                        player.logo_path,
-                        width=180
-                    )
-
-                components.html(
-                    f"""
-                    <div style="
-                        background: linear-gradient(160deg, #2b2108, #05080f 55%, #111827);
-                        border: 2px solid #f5c542;
-                        border-radius: 28px;
-                        padding: 24px;
-                        text-align: center;
-                        box-shadow: 0 0 35px rgba(245,197,66,0.18);
-                        font-family: Arial, sans-serif;
-                    ">
-                        <div style="font-size:54px; font-weight:900; color:#f5c542;">
-                            {overall_rating}
-                        </div>
-
-                        <div style="color:#bfc5d2; font-weight:800; margin-bottom:16px;">
-                            OVR
-                        </div>
-
-                        <div style="font-size:28px; font-weight:900; color:white;">
-                            {display_player_name(player)}
-                        </div>
-
-                        <div style="color:#f5c542; font-size:15px; font-weight:700;">
-                            {player.name}
-                        </div>
-        
-                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; color:white; font-weight:800;">
-                            <div><span style="color:#f5c542;">AVG</span><br>{avg}</div>
-                            <div><span style="color:#f5c542;">WIN %</span><br>{win_pct}%</div>
-                            <div><span style="color:#f5c542;">WINS</span><br>{wins}</div>
-                            <div><span style="color:#f5c542;">PLAYED</span><br>{played}</div>
-                        </div>
-
-                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
-
-                        <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
-                            Recent Form
-                        </div>
-
-                        <div style="font-size:24px; margin-top:6px;">
-                            {form_display}
-                        </div>
-                    </div>
-                    """,
-                    height=520
+                st.markdown(
+                    "### Player Card"
                 )
+
+                render_premium_player_card(
+                    player=player,
+                    overall_rating=overall_rating,
+                    played=played,
+                    wins=wins,
+                    draws=draws,
+                    losses=losses,
+                    avg=avg,
+                    win_pct=win_pct,
+                    recent_form=recent_form,
+                    league_position=league_position,
+                    total_180s=total_180s,
+                    highest_checkout=highest_checkout
+                )
+
+                player_card_png = (
+                    generate_player_card_png(
+                        player=player,
+                        overall_rating=overall_rating,
+                        played=played,
+                        wins=wins,
+                        draws=draws,
+                        losses=losses,
+                        avg=avg,
+                        win_pct=win_pct,
+                        recent_form=recent_form,
+                        league_position=league_position,
+                        total_180s=total_180s,
+                        highest_checkout=highest_checkout
+                    )
+                )
+
+                safe_player_filename = (
+                    display_player_name(
+                        player
+                    )
+                    .replace(
+                        " ",
+                        "_"
+                    )
+                    .replace(
+                        "/",
+                        "_"
+                    )
+                )
+
+                st.download_button(
+                    "⬇ Download Player Card PNG",
+                    data=player_card_png,
+                    file_name=(
+                        f"{safe_player_filename}"
+                        f"_player_card.png"
+                    ),
+                    mime="image/png",
+                    key=(
+                        f"download_my_player_card_"
+                        f"{player.id}"
+                    ),
+                    use_container_width=True
+                )                
 
             with col2:
 
@@ -14670,27 +14655,18 @@ if page == "View Player":
 
                 form_display = "No form yet"
 
-            st.markdown(
-                "### ✨ Premium Player Card"
+
+            col1, col2 = st.columns(
+                [1, 1.4]
             )
 
-            render_premium_player_card(
-                player=player,
-                overall_rating=overall_rating,
-                played=played,
-                wins=wins,
-                draws=draws,
-                losses=losses,
-                avg=avg,
-                win_pct=win_pct,
-                recent_form=recent_form,
-                league_position=league_position,
-                total_180s=total_180s,
-                highest_checkout=highest_checkout
-            )
+            with col1:
 
-            player_card_png = (
-                generate_player_card_png(
+                st.markdown(
+                    "### Player Card"
+                )
+
+                render_premium_player_card(
                     player=player,
                     overall_rating=overall_rating,
                     played=played,
@@ -14704,102 +14680,51 @@ if page == "View Player":
                     total_180s=total_180s,
                     highest_checkout=highest_checkout
                 )
-            )
 
-            safe_player_filename = (
-                display_player_name(
-                    player
-                )
-                .replace(
-                    " ",
-                    "_"
-                )
-                .replace(
-                    "/",
-                    "_"
-                )
-            )
-
-            st.download_button(
-                "⬇ Download Player Card PNG",
-                data=player_card_png,
-                file_name=(
-                    f"{safe_player_filename}"
-                    f"_player_card.png"
-                ),
-                mime="image/png",
-                key=(
-                    f"download_player_card_"
-                    f"{player.id}"
-                ),
-                use_container_width=True
-            )            
-
-            st.divider()
-
-            col1, col2 = st.columns(
-                [1, 1.4]
-            )
-
-            with col1:
-
-                if player_logo_available(
-                    player.logo_path
-                ):
-
-                    st.image(
-                        player.logo_path,
-                        width=180
+                player_card_png = (
+                    generate_player_card_png(
+                        player=player,
+                        overall_rating=overall_rating,
+                        played=played,
+                        wins=wins,
+                        draws=draws,
+                        losses=losses,
+                        avg=avg,
+                        win_pct=win_pct,
+                        recent_form=recent_form,
+                        league_position=league_position,
+                        total_180s=total_180s,
+                        highest_checkout=highest_checkout
                     )
+                )
 
-                components.html(
-                    f"""
-                    <div style="
-                        background: linear-gradient(160deg, #2b2108, #05080f 55%, #111827);
-                        border: 2px solid #f5c542;
-                        border-radius: 28px;
-                        padding: 24px;
-                        text-align: center;
-                        box-shadow: 0 0 35px rgba(245,197,66,0.18);
-                        font-family: Arial, sans-serif;
-                    ">
-                        <div style="font-size:54px; font-weight:900; color:#f5c542;">
-                            {overall_rating}
-                        </div>
+                safe_player_filename = (
+                    display_player_name(
+                        player
+                    )
+                    .replace(
+                        " ",
+                        "_"
+                    )
+                    .replace(
+                        "/",
+                        "_"
+                    )
+                )
 
-                        <div style="color:#bfc5d2; font-weight:800; margin-bottom:16px;">
-                            OVR
-                        </div>
-
-                        <div style="font-size:28px; font-weight:900; color:white;">
-                            {display_player_name(player)}
-                        </div>
-
-                        <div style="color:#f5c542; font-size:15px; font-weight:700;">
-                            {player.name}
-                        </div>
-
-                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; color:white; font-weight:800;">
-                            <div><span style="color:#f5c542;">AVG</span><br>{avg}</div>
-                            <div><span style="color:#f5c542;">WIN %</span><br>{win_pct}%</div>
-                            <div><span style="color:#f5c542;">WINS</span><br>{wins}</div>
-                            <div><span style="color:#f5c542;">PLAYED</span><br>{played}</div>
-                        </div>
-
-                        <hr style="border:0; border-top:1px solid rgba(245,197,66,.35); margin:18px 0;">
-
-                        <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
-                            Recent Form
-                        </div>
-
-                        <div style="font-size:24px; margin-top:6px;">
-                            {form_display}
-                        </div>
-                    </div>
-                    """,
-                    height=520
+                st.download_button(
+                    "⬇ Download Player Card PNG",
+                    data=player_card_png,
+                    file_name=(
+                        f"{safe_player_filename}"
+                        f"_player_card.png"
+                    ),
+                    mime="image/png",
+                    key=(
+                        f"download_admin_player_card_"
+                        f"{player.id}"
+                    ),
+                    use_container_width=True
                 )
 
             with col2:
