@@ -4949,6 +4949,192 @@ if page == "Tournaments":
                         "No players are linked to this tournament."
                     )
 
+                                # ---------------------------------------------
+                # WITHDRAW PLAYER
+                # ---------------------------------------------
+
+                if tournament_players:
+
+                    with st.expander(
+                        "🚪 Withdraw Player",
+                        expanded=False
+                    ):
+
+                        withdraw_player_options = {
+                            display_player_name(player): player.id
+                            for player in tournament_players
+                        }
+
+                        withdraw_player_name = st.selectbox(
+                            "Select Player",
+                            list(withdraw_player_options.keys()),
+                            key=(
+                                f"withdraw_player_select_"
+                                f"{tournament.id}"
+                            )
+                        )
+
+                        withdraw_player_id = (
+                            withdraw_player_options[
+                                withdraw_player_name
+                            ]
+                        )
+
+                        completed_player_matches = (
+                            db.query(Fixture)
+                            .filter(
+                                Fixture.tournament_id
+                                == tournament.id,
+                                Fixture.played == 1,
+                                (
+                                    (
+                                        Fixture.player1_id
+                                        == withdraw_player_id
+                                    )
+                                    |
+                                    (
+                                        Fixture.player2_id
+                                        == withdraw_player_id
+                                    )
+                                )
+                            )
+                            .count()
+                        )
+
+                        remaining_player_matches = (
+                            db.query(Fixture)
+                            .filter(
+                                Fixture.tournament_id
+                                == tournament.id,
+                                Fixture.played == 0,
+                                (
+                                    (
+                                        Fixture.player1_id
+                                        == withdraw_player_id
+                                    )
+                                    |
+                                    (
+                                        Fixture.player2_id
+                                        == withdraw_player_id
+                                    )
+                                )
+                            )
+                            .count()
+                        )
+
+                        st.write(
+                            f"**Completed matches:** "
+                            f"{completed_player_matches}"
+                        )
+
+                        st.write(
+                            f"**Remaining fixtures:** "
+                            f"{remaining_player_matches}"
+                        )
+
+                        if completed_player_matches > 0:
+
+                            st.error(
+                                "This player has already played "
+                                "league matches. Automatic withdrawal "
+                                "has been blocked to protect existing "
+                                "results."
+                            )
+
+                        else:
+
+                            st.info(
+                                "Withdrawing this player will remove "
+                                f"{remaining_player_matches} unplayed "
+                                "fixtures and remove them from this "
+                                "tournament. Their player profile will "
+                                "not be deleted."
+                            )
+
+                            confirm_withdraw = st.checkbox(
+                                "Confirm player withdrawal",
+                                key=(
+                                    f"confirm_withdraw_"
+                                    f"{tournament.id}_"
+                                    f"{withdraw_player_id}"
+                                )
+                            )
+
+                            if st.button(
+                                "🚪 Withdraw Player",
+                                key=(
+                                    f"withdraw_player_button_"
+                                    f"{tournament.id}_"
+                                    f"{withdraw_player_id}"
+                                ),
+                                use_container_width=True
+                            ):
+
+                                if not confirm_withdraw:
+
+                                    st.warning(
+                                        "Tick Confirm player "
+                                        "withdrawal first."
+                                    )
+
+                                else:
+
+                                    withdraw_db = SessionLocal()
+
+                                    withdraw_db.query(
+                                        Fixture
+                                    ).filter(
+                                        Fixture.tournament_id
+                                        == tournament.id,
+                                        Fixture.played == 0,
+                                        (
+                                            (
+                                                Fixture.player1_id
+                                                == withdraw_player_id
+                                            )
+                                            |
+                                            (
+                                                Fixture.player2_id
+                                                == withdraw_player_id
+                                            )
+                                        )
+                                    ).delete(
+                                        synchronize_session=False
+                                    )
+
+                                    withdraw_db.query(
+                                        TournamentPlayer
+                                    ).filter(
+                                        TournamentPlayer.tournament_id
+                                        == tournament.id,
+                                        TournamentPlayer.player_id
+                                        == withdraw_player_id
+                                    ).delete(
+                                        synchronize_session=False
+                                    )
+
+                                    withdraw_db.commit()
+                                    withdraw_db.close()
+
+                                    if (
+                                        "league_standings"
+                                        in st.session_state
+                                    ):
+
+                                        del st.session_state[
+                                            "league_standings"
+                                        ]
+
+                                    st.success(
+                                        f"{withdraw_player_name} "
+                                        "has been withdrawn from "
+                                        "the tournament."
+                                    )
+
+                                    st.rerun()
+
+                st.divider()    
+
                 st.divider()
 
                 action_col1, action_col2 = st.columns(2)
