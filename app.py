@@ -9785,19 +9785,82 @@ if page == "My Profile":
                     2
                 )
 
+            average_rating = min(
+                99,
+                max(
+                    0,
+                    (
+                        avg
+                        / 100
+                    )
+                    * 99
+                )
+            )
+
+            win_rating = (
+                win_pct
+                / 100
+            ) * 99
+
+            form_points = 0
+
+            for result in recent_form[-5:]:
+
+                result_text = str(
+                    result
+                )
+
+                if result_text in [
+                    "W",
+                    "🟢"
+                ]:
+
+                    form_points += 3
+
+                elif result_text in [
+                    "D",
+                    "🟡"
+                ]:
+
+                    form_points += 1
+
+            max_form_points = 15
+
+            if recent_form:
+
+                form_rating = (
+                    form_points
+                    / max_form_points
+                ) * 99
+
+            else:
+
+                form_rating = 0
+
             overall_rating = int(
+                round(
+                    (
+                        average_rating
+                        * 0.50
+                    )
+                    +
+                    (
+                        win_rating
+                        * 0.35
+                    )
+                    +
+                    (
+                        form_rating
+                        * 0.15
+                    )
+                )
+            )
+
+            overall_rating = max(
+                40,
                 min(
                     99,
-                    max(
-                        40,
-                        (
-                            win_pct * 0.45
-                            +
-                            avg * 0.45
-                            +
-                            played * 0.5
-                        )
-                    )
+                    overall_rating
                 )
             )
 
@@ -14631,19 +14694,82 @@ if page == "View Player":
                     2
                 )
 
+            average_rating = min(
+                99,
+                max(
+                    0,
+                    (
+                        avg
+                        / 100
+                    )
+                    * 99
+                )
+            )
+
+            win_rating = (
+                win_pct
+                / 100
+            ) * 99
+
+            form_points = 0
+
+            for result in recent_form[-5:]:
+
+                result_text = str(
+                    result
+                )
+
+                if result_text in [
+                    "W",
+                    "🟢"
+                ]:
+
+                    form_points += 3
+
+                elif result_text in [
+                    "D",
+                    "🟡"
+                ]:
+
+                    form_points += 1
+
+            max_form_points = 15
+
+            if recent_form:
+
+                form_rating = (
+                    form_points
+                    / max_form_points
+                ) * 99
+
+            else:
+
+                form_rating = 0
+
             overall_rating = int(
+                round(
+                    (
+                        average_rating
+                        * 0.50
+                    )
+                    +
+                    (
+                        win_rating
+                        * 0.35
+                    )
+                    +
+                    (
+                        form_rating
+                        * 0.15
+                    )
+                )
+            )
+
+            overall_rating = max(
+                40,
                 min(
                     99,
-                    max(
-                        40,
-                        (
-                            win_pct * 0.45
-                            +
-                            avg * 0.45
-                            +
-                            played * 0.5
-                        )
-                    )
+                    overall_rating
                 )
             )
 
