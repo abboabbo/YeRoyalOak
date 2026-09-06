@@ -2704,40 +2704,28 @@ def generate_player_card_png(
     # =========================================================
     # FONT LOADER
     # =========================================================
-
+    
     def load_font(
         size,
         bold=False
     ):
 
-        font_paths = []
-
         if bold:
 
             font_paths = [
-                (
-                    "/usr/share/fonts/truetype/"
-                    "dejavu/DejaVuSans-Bold.ttf"
-                ),
-                (
-                    "/usr/share/fonts/truetype/"
-                    "liberation2/"
-                    "LiberationSans-Bold.ttf"
-                )
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
             ]
 
         else:
 
             font_paths = [
-                (
-                    "/usr/share/fonts/truetype/"
-                    "dejavu/DejaVuSans.ttf"
-                ),
-                (
-                    "/usr/share/fonts/truetype/"
-                    "liberation2/"
-                    "LiberationSans-Regular.ttf"
-                )
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
             ]
 
         for font_path in font_paths:
@@ -2746,66 +2734,88 @@ def generate_player_card_png(
 
                 return ImageFont.truetype(
                     font_path,
-                    size
+                    size=size
                 )
 
             except Exception:
 
                 continue
 
-        return ImageFont.load_default()
+        # Pillow can often locate DejaVu by filename
+        # even when its full Linux path differs.
+        try:
+
+            if bold:
+
+                return ImageFont.truetype(
+                    "DejaVuSans-Bold.ttf",
+                    size=size
+                )
+
+            return ImageFont.truetype(
+                "DejaVuSans.ttf",
+                size=size
+            )
+
+        except Exception:
+
+            pass
+
+        return ImageFont.load_default(
+            size=size
+        )
 
     # =========================================================
     # FONTS
     # =========================================================
 
     font_brand = load_font(
-        42,
+        62,
         True
     )
 
     font_position = load_font(
-        68,
+        82,
         True
     )
 
     font_name = load_font(
-        88,
+        105,
         True
     )
 
     font_nickname = load_font(
-        46,
+        58,
         True
     )
 
     font_rating = load_font(
-        132,
+        165,
         True
     )
 
     font_rating_label = load_font(
-        32,
+        40,
         True
     )
 
     font_stat_value = load_font(
-        64,
+        82,
         True
     )
 
     font_stat_label = load_font(
-        27,
+        32,
         True
     )
 
     font_form = load_font(
-        36,
+        42,
         True
     )
 
     font_record = load_font(
-        34,
+        46,
         True
     )
 
@@ -3059,10 +3069,10 @@ def generate_player_card_png(
 
     draw.text(
         (
-            610,
-            270
+            600,
+            255
         ),
-        player_name,
+        player_name.upper(),
         font=font_name,
         fill=white
     )
@@ -3071,8 +3081,8 @@ def generate_player_card_png(
 
         draw.text(
             (
-                615,
-                375
+                605,
+                385
             ),
             f'"{nickname}"',
             font=font_nickname,
@@ -3098,7 +3108,7 @@ def generate_player_card_png(
 
     draw_centered_text(
         1642,
-        275,
+        265,
         overall_rating,
         font_rating,
         gold
@@ -3106,7 +3116,7 @@ def generate_player_card_png(
 
     draw_centered_text(
         1642,
-        435,
+        440,
         "OVERALL",
         font_rating_label,
         grey
@@ -3124,18 +3134,18 @@ def generate_player_card_png(
 
     draw.text(
         (
-            620,
-            480
+            605,
+            500
         ),
-        "RECORD",
+        "SEASON RECORD",
         font=font_stat_label,
         fill=grey
     )
 
     draw.text(
         (
-            620,
-            520
+            605,
+            550
         ),
         record_text,
         font=font_record,
@@ -3215,7 +3225,7 @@ def generate_player_card_png(
 
         draw_centered_text(
             centre_x,
-            755,
+            745,
             value,
             font_stat_value,
             white
@@ -3223,7 +3233,7 @@ def generate_player_card_png(
 
         draw_centered_text(
             centre_x,
-            830,
+            835,
             label,
             font_stat_label,
             grey
