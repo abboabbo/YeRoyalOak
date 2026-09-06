@@ -2626,8 +2626,12 @@ def generate_player_card_png(
     highest_checkout=0
 ):
 
-    width = 1600
-    height = 900
+    # =========================================================
+    # CANVAS
+    # =========================================================
+
+    width = 1920
+    height = 1080
 
     image = Image.new(
         "RGBA",
@@ -2637,21 +2641,9 @@ def generate_player_card_png(
 
     draw = ImageDraw.Draw(image)
 
-    # ---------------------------------------------------------
-    # CARD AREA
-    # ---------------------------------------------------------
-
-    card_left = 120
-    card_top = 110
-    card_right = 1480
-    card_bottom = 790
-
-    card_bg = (
-        10,
-        15,
-        25,
-        245
-    )
+    # =========================================================
+    # COLOURS
+    # =========================================================
 
     gold = (
         245,
@@ -2668,41 +2660,87 @@ def generate_player_card_png(
     )
 
     grey = (
-        160,
-        168,
         180,
+        188,
+        200,
         255
     )
 
-    draw.rounded_rectangle(
-        [
-            card_left,
-            card_top,
-            card_right,
-            card_bottom
-        ],
-        radius=34,
-        fill=card_bg,
-        outline=gold,
-        width=5
+    dark = (
+        8,
+        13,
+        22,
+        248
     )
 
-    # ---------------------------------------------------------
-    # FONTS
-    # ---------------------------------------------------------
+    dark_panel = (
+        20,
+        28,
+        42,
+        245
+    )
 
-    def load_font(size, bold=False):
+    green = (
+        22,
+        163,
+        74,
+        255
+    )
 
-        possible_fonts = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-            if bold
-            else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf"
-            if bold
-            else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"
-        ]
+    red = (
+        220,
+        38,
+        38,
+        255
+    )
 
-        for font_path in possible_fonts:
+    draw_gold = (
+        202,
+        138,
+        4,
+        255
+    )
+
+    # =========================================================
+    # FONT LOADER
+    # =========================================================
+
+    def load_font(
+        size,
+        bold=False
+    ):
+
+        font_paths = []
+
+        if bold:
+
+            font_paths = [
+                (
+                    "/usr/share/fonts/truetype/"
+                    "dejavu/DejaVuSans-Bold.ttf"
+                ),
+                (
+                    "/usr/share/fonts/truetype/"
+                    "liberation2/"
+                    "LiberationSans-Bold.ttf"
+                )
+            ]
+
+        else:
+
+            font_paths = [
+                (
+                    "/usr/share/fonts/truetype/"
+                    "dejavu/DejaVuSans.ttf"
+                ),
+                (
+                    "/usr/share/fonts/truetype/"
+                    "liberation2/"
+                    "LiberationSans-Regular.ttf"
+                )
+            ]
+
+        for font_path in font_paths:
 
             try:
 
@@ -2711,67 +2749,162 @@ def generate_player_card_png(
                     size
                 )
 
-            except:
+            except Exception:
 
                 continue
 
         return ImageFont.load_default()
 
+    # =========================================================
+    # FONTS
+    # =========================================================
+
     font_brand = load_font(
-        28,
-        True
-    )
-
-    font_position = load_font(
-        48,
-        True
-    )
-
-    font_name = load_font(
-        64,
-        True
-    )
-
-    font_nickname = load_font(
-        34,
-        True
-    )
-
-    font_rating = load_font(
-        92,
-        True
-    )
-
-    font_rating_label = load_font(
-        24,
-        True
-    )
-
-    font_stat_value = load_font(
         42,
         True
     )
 
+    font_position = load_font(
+        68,
+        True
+    )
+
+    font_name = load_font(
+        88,
+        True
+    )
+
+    font_nickname = load_font(
+        46,
+        True
+    )
+
+    font_rating = load_font(
+        132,
+        True
+    )
+
+    font_rating_label = load_font(
+        32,
+        True
+    )
+
+    font_stat_value = load_font(
+        64,
+        True
+    )
+
     font_stat_label = load_font(
-        20,
+        27,
+        True
+    )
+
+    font_form = load_font(
+        36,
         True
     )
 
     font_record = load_font(
-        26,
+        34,
         True
     )
 
-    # ---------------------------------------------------------
-    # BRAND / POSITION
-    # ---------------------------------------------------------
+    # =========================================================
+    # HELPER FOR CENTRED TEXT
+    # =========================================================
+
+    def draw_centered_text(
+        x,
+        y,
+        text,
+        font,
+        fill
+    ):
+
+        bbox = draw.textbbox(
+            (0, 0),
+            str(text),
+            font=font
+        )
+
+        text_width = (
+            bbox[2]
+            - bbox[0]
+        )
+
+        draw.text(
+            (
+                x
+                - text_width / 2,
+                y
+            ),
+            str(text),
+            font=font,
+            fill=fill
+        )
+
+    # =========================================================
+    # MAIN CARD
+    # =========================================================
+
+    card_left = 70
+    card_top = 70
+    card_right = 1850
+    card_bottom = 1010
+
+    draw.rounded_rectangle(
+        [
+            card_left,
+            card_top,
+            card_right,
+            card_bottom
+        ],
+        radius=48,
+        fill=dark,
+        outline=gold,
+        width=7
+    )
+
+    # =========================================================
+    # GOLD HEADER STRIP
+    # =========================================================
+
+    draw.rounded_rectangle(
+        [
+            90,
+            90,
+            1830,
+            185
+        ],
+        radius=28,
+        fill=(
+            245,
+            184,
+            46,
+            30
+        ),
+        outline=(
+            245,
+            184,
+            46,
+            80
+        ),
+        width=2
+    )
 
     draw.text(
-        (175, 155),
+        (
+            135,
+            112
+        ),
         "YE ROYAL OAK DARTS",
         font=font_brand,
         fill=gold
     )
+
+    # =========================================================
+    # LEAGUE POSITION
+    # =========================================================
 
     position_text = (
         f"#{league_position}"
@@ -2780,61 +2913,18 @@ def generate_player_card_png(
     )
 
     draw.text(
-        (1310, 145),
+        (
+            1650,
+            98
+        ),
         position_text,
         font=font_position,
         fill=gold
     )
 
-    # ---------------------------------------------------------
-    # PLAYER NAME
-    # ---------------------------------------------------------
-
-    player_name = str(
-        player.name or ""
-    )
-
-    nickname = str(
-        player.nickname or ""
-    )
-
-    draw.text(
-        (520, 275),
-        player_name,
-        font=font_name,
-        fill=white
-    )
-
-    if nickname:
-
-        draw.text(
-            (525, 355),
-            f'"{nickname}"',
-            font=font_nickname,
-            fill=gold
-        )
-
-    # ---------------------------------------------------------
-    # RATING
-    # ---------------------------------------------------------
-
-    draw.text(
-        (1240, 255),
-        str(overall_rating),
-        font=font_rating,
-        fill=gold
-    )
-
-    draw.text(
-        (1260, 360),
-        "OVERALL",
-        font=font_rating_label,
-        fill=grey
-    )
-
-    # ---------------------------------------------------------
-    # PLAYER LOGO / PHOTO
-    # ---------------------------------------------------------
+    # =========================================================
+    # PLAYER IMAGE
+    # =========================================================
 
     player_image_url = (
         getattr(
@@ -2847,6 +2937,35 @@ def generate_player_card_png(
             "logo_path",
             None
         )
+    )
+
+    image_area_x = 150
+    image_area_y = 255
+    image_area_size = 390
+
+    draw.rounded_rectangle(
+        [
+            image_area_x,
+            image_area_y,
+            image_area_x
+            + image_area_size,
+            image_area_y
+            + image_area_size
+        ],
+        radius=36,
+        fill=(
+            255,
+            255,
+            255,
+            12
+        ),
+        outline=(
+            245,
+            184,
+            46,
+            100
+        ),
+        width=3
     )
 
     if player_image_url:
@@ -2886,44 +3005,161 @@ def generate_player_card_png(
                 )
 
             player_image.thumbnail(
-                (260, 260)
+                (
+                    340,
+                    340
+                )
             )
 
-            image_x = 210 + (
-                260
-                - player_image.width
-            ) // 2
+            player_x = (
+                image_area_x
+                +
+                (
+                    image_area_size
+                    - player_image.width
+                )
+                // 2
+            )
 
-            image_y = 245 + (
-                260
-                - player_image.height
-            ) // 2
+            player_y = (
+                image_area_y
+                +
+                (
+                    image_area_size
+                    - player_image.height
+                )
+                // 2
+            )
 
             image.alpha_composite(
                 player_image,
                 (
-                    image_x,
-                    image_y
+                    player_x,
+                    player_y
                 )
             )
 
-        except:
+        except Exception:
 
             pass
 
-    # ---------------------------------------------------------
-    # DIVIDER
-    # ---------------------------------------------------------
+    # =========================================================
+    # PLAYER NAME
+    # =========================================================
 
-    draw.line(
-        (180, 520, 1420, 520),
-        fill=gold,
-        width=2
+    player_name = str(
+        player.name
+        or ""
     )
 
-    # ---------------------------------------------------------
-    # STATS
-    # ---------------------------------------------------------
+    nickname = str(
+        player.nickname
+        or ""
+    )
+
+    draw.text(
+        (
+            610,
+            270
+        ),
+        player_name,
+        font=font_name,
+        fill=white
+    )
+
+    if nickname:
+
+        draw.text(
+            (
+                615,
+                375
+            ),
+            f'"{nickname}"',
+            font=font_nickname,
+            fill=gold
+        )
+
+    # =========================================================
+    # OVERALL RATING PANEL
+    # =========================================================
+
+    draw.rounded_rectangle(
+        [
+            1510,
+            245,
+            1775,
+            515
+        ],
+        radius=34,
+        fill=dark_panel,
+        outline=gold,
+        width=3
+    )
+
+    draw_centered_text(
+        1642,
+        275,
+        overall_rating,
+        font_rating,
+        gold
+    )
+
+    draw_centered_text(
+        1642,
+        435,
+        "OVERALL",
+        font_rating_label,
+        grey
+    )
+
+    # =========================================================
+    # RECORD
+    # =========================================================
+
+    record_text = (
+        f"{wins}W"
+        f"   {draws}D"
+        f"   {losses}L"
+    )
+
+    draw.text(
+        (
+            620,
+            480
+        ),
+        "RECORD",
+        font=font_stat_label,
+        fill=grey
+    )
+
+    draw.text(
+        (
+            620,
+            520
+        ),
+        record_text,
+        font=font_record,
+        fill=white
+    )
+
+    # =========================================================
+    # DIVIDER
+    # =========================================================
+
+    draw.line(
+        (
+            130,
+            690,
+            1790,
+            690
+        ),
+        fill=gold,
+        width=3
+    )
+
+    # =========================================================
+    # STAT PANELS
+    # =========================================================
 
     stats = [
         (
@@ -2944,74 +3180,101 @@ def generate_player_card_png(
         )
     ]
 
-    stat_x_positions = [
-        260,
-        580,
-        900,
-        1220
+    stat_centres = [
+        320,
+        745,
+        1170,
+        1595
     ]
 
     for (
         value,
         label
-    ), x_position in zip(
+    ), centre_x in zip(
         stats,
-        stat_x_positions
+        stat_centres
     ):
 
-        draw.text(
-            (
-                x_position,
-                565
+        draw.rounded_rectangle(
+            [
+                centre_x - 180,
+                735,
+                centre_x + 180,
+                885
+            ],
+            radius=24,
+            fill=dark_panel,
+            outline=(
+                255,
+                255,
+                255,
+                30
             ),
+            width=2
+        )
+
+        draw_centered_text(
+            centre_x,
+            755,
             value,
-            font=font_stat_value,
-            fill=white
+            font_stat_value,
+            white
         )
 
-        draw.text(
-            (
-                x_position,
-                620
-            ),
+        draw_centered_text(
+            centre_x,
+            830,
             label,
-            font=font_stat_label,
-            fill=grey
+            font_stat_label,
+            grey
         )
 
-    # ---------------------------------------------------------
+    # =========================================================
     # FORM
-    # ---------------------------------------------------------
+    # =========================================================
 
     form_results = []
 
     for result in recent_form[-5:]:
 
-        if str(result) in [
+        result_text = str(
+            result
+        )
+
+        if result_text in [
             "W",
             "🟢"
         ]:
 
             form_results.append(
-                "W"
+                (
+                    "W",
+                    green
+                )
             )
 
-        elif str(result) in [
+        elif result_text in [
             "D",
             "🟡"
         ]:
 
             form_results.append(
-                "D"
+                (
+                    "D",
+                    draw_gold
+                )
             )
 
-        elif str(result) in [
+        elif result_text in [
             "L",
             "🔴"
         ]:
 
             form_results.append(
-                "L"
+                (
+                    "L",
+                    red
+                )
             )
 
     while len(
@@ -3020,43 +3283,85 @@ def generate_player_card_png(
 
         form_results.insert(
             0,
-            "—"
+            (
+                "—",
+                (
+                    70,
+                    78,
+                    90,
+                    255
+                )
+            )
         )
 
-    form_text = (
-        "  ".join(
-            form_results
+    draw.text(
+        (
+            145,
+            930
+        ),
+        "FORM",
+        font=font_stat_label,
+        fill=grey
+    )
+
+    form_start_x = 285
+
+    for index, (
+        result_letter,
+        result_colour
+    ) in enumerate(
+        form_results
+    ):
+
+        box_x = (
+            form_start_x
+            +
+            (
+                index
+                * 92
+            )
         )
+
+        draw.rounded_rectangle(
+            [
+                box_x,
+                915,
+                box_x + 70,
+                985
+            ],
+            radius=14,
+            fill=result_colour
+        )
+
+        draw_centered_text(
+            box_x + 35,
+            926,
+            result_letter,
+            font_form,
+            white
+        )
+
+    # =========================================================
+    # PLAYED
+    # =========================================================
+
+    played_text = (
+        f"PLAYED   {played}"
     )
 
     draw.text(
-        (505, 690),
-        f"FORM   {form_text}",
+        (
+            1390,
+            930
+        ),
+        played_text,
         font=font_record,
         fill=white
     )
 
-    # ---------------------------------------------------------
-    # RECORD
-    # ---------------------------------------------------------
-
-    record_text = (
-        f"RECORD   "
-        f"{wins}W  "
-        f"{draws}D  "
-        f"{losses}L"
-    )
-
-    draw.text(
-        (885, 690),
-        record_text,
-        font=font_record,
-        fill=white
-    )
-
-    # ---------------------------------------------------------
-    # SAVE TO MEMORY
-    # ---------------------------------------------------------
+    # =========================================================
+    # EXPORT
+    # =========================================================
 
     output = BytesIO()
 
