@@ -13705,6 +13705,9 @@ if page == "View Player":
             results = []
             upcoming = []
 
+            total_180s = 0
+            highest_checkout = 0
+
             players = db.query(Player).all()
 
             player_lookup = {
@@ -13735,11 +13738,68 @@ if page == "View Player":
                         opponent_legs = fixture.player2_legs
                         player_average = fixture.player1_average
 
+                        player_180s = (
+                            getattr(
+                                fixture,
+                                "player1_180s",
+                                0
+                            )
+                            or 0
+                        )
+
+                        player_checkout = (
+                            getattr(
+                                fixture,
+                                "player1_high_checkout",
+                                0
+                            )
+                            or 0
+                        )
+
                     else:
 
                         player_legs = fixture.player2_legs
                         opponent_legs = fixture.player1_legs
                         player_average = fixture.player2_average
+
+                        player_180s = (
+                            getattr(
+                                fixture,
+                                "player2_180s",
+                                0
+                            )
+                            or 0
+                        )
+
+                        player_checkout = (
+                            getattr(
+                                fixture,
+                                "player2_high_checkout",
+                                0
+                            )
+                            or 0
+                        )
+
+                    try:
+
+                        total_180s += int(
+                            player_180s
+                        )
+
+                    except (TypeError, ValueError):
+
+                        pass
+
+                    try:
+
+                        highest_checkout = max(
+                            highest_checkout,
+                            int(player_checkout)
+                        )
+
+                    except (TypeError, ValueError):
+
+                        pass
 
                     try:
 
@@ -13787,6 +13847,13 @@ if page == "View Player":
                         }
                     )
 
+            league_position = (
+                get_player_league_position(
+                    db,
+                    player_id
+                )
+            )
+
             win_pct = 0
 
             if played > 0:
@@ -13828,6 +13895,27 @@ if page == "View Player":
             if not form_display:
 
                 form_display = "No form yet"
+
+            st.markdown(
+                "### ✨ Premium Player Card"
+            )
+
+            render_premium_player_card(
+                player=player,
+                overall_rating=overall_rating,
+                played=played,
+                wins=wins,
+                draws=draws,
+                losses=losses,
+                avg=avg,
+                win_pct=win_pct,
+                recent_form=recent_form,
+                league_position=league_position,
+                total_180s=total_180s,
+                highest_checkout=highest_checkout
+            )
+
+            st.divider()
 
             col1, col2 = st.columns(
                 [1, 1.4]
