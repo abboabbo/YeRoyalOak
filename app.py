@@ -1776,6 +1776,264 @@ def get_spotify_embed_url(url):
 
     return None
 
+def get_player_league_position(
+    db,
+    player_id
+):
+
+    # ---------------------------------------------------------
+    # FIND LATEST LEAGUE TOURNAMENT FOR THIS PLAYER
+    # ---------------------------------------------------------
+
+    player_links = (
+        db.query(TournamentPlayer)
+        .filter(
+            TournamentPlayer.player_id
+            == player_id
+        )
+        .all()
+    )
+
+    tournament_ids = [
+        link.tournament_id
+        for link in player_links
+    ]
+
+    if not tournament_ids:
+        return None
+
+    league_tournament = (
+        db.query(Tournament)
+        .filter(
+            Tournament.id.in_(
+                tournament_ids
+            ),
+            Tournament.format_type.in_(
+                [
+                    "League + Knockout",
+                    "League Only"
+                ]
+            )
+        )
+        .order_by(
+            Tournament.id.desc()
+        )
+        .first()
+    )
+
+    if not league_tournament:
+        return None
+
+    # ---------------------------------------------------------
+    # GET TOURNAMENT PLAYERS
+    # ---------------------------------------------------------
+
+    tournament_links = (
+        db.query(TournamentPlayer)
+        .filter(
+            TournamentPlayer.tournament_id
+            == league_tournament.id
+        )
+        .all()
+    )
+
+    tournament_player_ids = [
+        link.player_id
+        for link in tournament_links
+    ]
+
+    if player_id not in tournament_player_ids:
+        return None
+
+    standings = {}
+
+    for current_player_id in tournament_player_ids:
+
+        standings[current_player_id] = {
+            "played": 0,
+            "won": 0,
+            "legs_for": 0,
+            "legs_against": 0,
+            "points": 0,
+            "averages": []
+        }
+
+    # ---------------------------------------------------------
+    # LOAD COMPLETED FIXTURES
+    # ---------------------------------------------------------
+
+    league_fixtures = (
+        db.query(Fixture)
+        .filter(
+            Fixture.tournament_id
+            == league_tournament.id,
+            Fixture.played == 1
+        )
+        .all()
+    )
+
+    for fixture in league_fixtures:
+
+        if (
+            fixture.player1_id
+            not in standings
+            or
+            fixture.player2_id
+            not in standings
+        ):
+            continue
+
+        player1 = standings[
+            fixture.player1_id
+        ]
+
+        player2 = standings[
+            fixture.player2_id
+        ]
+
+        player1["played"] += 1
+        player2["played"] += 1
+
+        p1_legs = (
+            fixture.player1_legs or 0
+        )
+
+        p2_legs = (
+            fixture.player2_legs or 0
+        )
+
+        player1["legs_for"] += p1_legs
+        player1["legs_against"] += p2_legs
+
+        player2["legs_for"] += p2_legs
+        player2["legs_against"] += p1_legs
+
+        # -----------------------------------------------------
+        # AVERAGES
+        # -----------------------------------------------------
+
+        try:
+
+            p1_average = float(
+                fixture.player1_average
+            )
+
+            if 0 < p1_average <= 200:
+
+                player1[
+                    "averages"
+                ].append(
+                    p1_average
+                )
+
+        except (TypeError, ValueError):
+
+            pass
+
+        try:
+
+            p2_average = float(
+                fixture.player2_average
+            )
+
+            if 0 < p2_average <= 200:
+
+                player2[
+                    "averages"
+                ].append(
+                    p2_average
+                )
+
+        except (TypeError, ValueError):
+
+            pass
+
+        # -----------------------------------------------------
+        # RESULT / POINTS
+        # -----------------------------------------------------
+
+        if p1_legs > p2_legs:
+
+            player1["won"] += 1
+            player1["points"] += 3
+
+        elif p2_legs > p1_legs:
+
+            player2["won"] += 1
+            player2["points"] += 3
+
+        else:
+
+            player1["points"] += 1
+            player2["points"] += 1
+
+    # ---------------------------------------------------------
+    # BUILD RANKING
+    # ---------------------------------------------------------
+
+    ranking = []
+
+    for current_player_id, data in standings.items():
+
+        average = 0.0
+
+        if data["averages"]:
+
+            average = (
+                sum(data["averages"])
+                / len(data["averages"])
+            )
+
+        difference = (
+            data["legs_for"]
+            - data["legs_against"]
+        )
+
+        ranking.append(
+            {
+                "player_id":
+                    current_player_id,
+
+                "points":
+                    data["points"],
+
+                "difference":
+                    difference,
+
+                "won":
+                    data["won"],
+
+                "average":
+                    average
+            }
+        )
+
+    ranking = sorted(
+        ranking,
+        key=lambda row: (
+            row["points"],
+            row["difference"],
+            row["won"],
+            row["average"]
+        ),
+        reverse=True
+    )
+
+    # ---------------------------------------------------------
+    # FIND PLAYER POSITION
+    # ---------------------------------------------------------
+
+    for position, row in enumerate(
+        ranking,
+        start=1
+    ):
+
+        if row["player_id"] == player_id:
+
+            return position
+
+    return None    
+
 def render_premium_player_card(
     player,
     overall_rating,
@@ -8620,6 +8878,9 @@ if page == "My Profile":
             recent_form = []
             upcoming = []
 
+            total_180s = 0
+            highest_checkout = 0
+
             for fixture in fixtures:
 
                 if fixture.played == 0:
@@ -8636,11 +8897,68 @@ if page == "My Profile":
                         opponent_legs = fixture.player2_legs
                         player_avg = fixture.player1_average
 
+                        player_180s = (
+                            getattr(
+                                fixture,
+                                "player1_180s",
+                                0
+                            )
+                            or 0
+                        )
+
+                        player_checkout = (
+                            getattr(
+                                fixture,
+                                "player1_high_checkout",
+                                0
+                            )
+                            or 0
+                        )
+
                     else:
 
                         player_legs = fixture.player2_legs
                         opponent_legs = fixture.player1_legs
                         player_avg = fixture.player2_average
+
+                        player_180s = (
+                            getattr(
+                                fixture,
+                                "player2_180s",
+                                0
+                            )
+                            or 0
+                        )
+
+                        player_checkout = (
+                            getattr(
+                                fixture,
+                                "player2_high_checkout",
+                                0
+                            )
+                            or 0
+                        )
+
+                    try:
+
+                        total_180s += int(
+                            player_180s
+                        )
+
+                    except (TypeError, ValueError):
+
+                        pass
+
+                    try:
+
+                        highest_checkout = max(
+                            highest_checkout,
+                            int(player_checkout)
+                        )
+
+                    except (TypeError, ValueError):
+
+                        pass
 
                     try:
 
@@ -8666,6 +8984,13 @@ if page == "My Profile":
 
                         draws += 1
                         recent_form.append("🟡")
+
+            league_position = (
+                get_player_league_position(
+                    db,
+                    player_id
+                )
+            )
 
             win_pct = 0
 
@@ -8721,9 +9046,9 @@ if page == "My Profile":
                 avg=avg,
                 win_pct=win_pct,
                 recent_form=recent_form,
-                league_position=None,
-                total_180s=0,
-                highest_checkout=0
+                league_position=league_position,
+                total_180s=total_180s,
+                highest_checkout=highest_checkout
             )
 
             st.divider()
