@@ -1776,6 +1776,581 @@ def get_spotify_embed_url(url):
 
     return None
 
+def render_premium_player_card(
+    player,
+    overall_rating,
+    played,
+    wins,
+    draws,
+    losses,
+    avg,
+    win_pct,
+    recent_form,
+    league_position=None,
+    total_180s=0,
+    highest_checkout=0
+):
+
+    # ---------------------------------------------------------
+    # PLAYER IMAGE
+    # ---------------------------------------------------------
+
+    player_image = None
+
+    if getattr(player, "photo_url", None):
+        player_image = image_to_base64(
+            player.photo_url
+        )
+
+    if (
+        not player_image
+        and getattr(player, "logo_path", None)
+    ):
+        player_image = image_to_base64(
+            player.logo_path
+        )
+
+    if player_image:
+
+        image_html = f"""
+        <img
+            src="{html.escape(player_image, quote=True)}"
+            style="
+                width:150px;
+                height:150px;
+                object-fit:contain;
+                border-radius:20px;
+                filter:
+                    drop-shadow(
+                        0 10px 18px
+                        rgba(0,0,0,0.45)
+                    );
+            "
+        >
+        """
+
+    else:
+
+        image_html = """
+        <div style="
+            width:150px;
+            height:150px;
+            margin:auto;
+            border-radius:20px;
+            border:
+                1px solid
+                rgba(245,184,46,0.35);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:60px;
+            background:
+                rgba(255,255,255,0.03);
+        ">
+            🎯
+        </div>
+        """
+
+    # ---------------------------------------------------------
+    # PLAYER NAME / NICKNAME
+    # ---------------------------------------------------------
+
+    player_name = html.escape(
+        str(player.name or "")
+    )
+
+    nickname = html.escape(
+        str(player.nickname or "")
+    )
+
+    if nickname:
+
+        nickname_html = f"""
+        <div style="
+            color:#f5b82e;
+            font-size:16px;
+            font-weight:800;
+            margin-top:4px;
+        ">
+            "{nickname}"
+        </div>
+        """
+
+    else:
+
+        nickname_html = ""
+
+    # ---------------------------------------------------------
+    # LEAGUE POSITION
+    # ---------------------------------------------------------
+
+    if league_position:
+
+        position_text = f"#{league_position}"
+
+    else:
+
+        position_text = "—"
+
+    # ---------------------------------------------------------
+    # FORM
+    # ---------------------------------------------------------
+
+    form_items = []
+
+    for result in recent_form[-5:]:
+
+        result_text = str(result)
+
+        if result_text in ["W", "🟢"]:
+
+            form_items.append(
+                """
+                <span style="
+                    background:#15803d;
+                    color:white;
+                    width:34px;
+                    height:34px;
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:8px;
+                    font-weight:900;
+                ">
+                    W
+                </span>
+                """
+            )
+
+        elif result_text in ["D", "🟡"]:
+
+            form_items.append(
+                """
+                <span style="
+                    background:#ca8a04;
+                    color:white;
+                    width:34px;
+                    height:34px;
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:8px;
+                    font-weight:900;
+                ">
+                    D
+                </span>
+                """
+            )
+
+        elif result_text in ["L", "🔴"]:
+
+            form_items.append(
+                """
+                <span style="
+                    background:#b91c1c;
+                    color:white;
+                    width:34px;
+                    height:34px;
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:8px;
+                    font-weight:900;
+                ">
+                    L
+                </span>
+                """
+            )
+
+    while len(form_items) < 5:
+
+        form_items.insert(
+            0,
+            """
+            <span style="
+                background:#374151;
+                color:#9ca3af;
+                width:34px;
+                height:34px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:8px;
+                font-weight:900;
+            ">
+                —
+            </span>
+            """
+        )
+
+    form_html = "".join(
+        form_items
+    )
+
+    # ---------------------------------------------------------
+    # CARD
+    # ---------------------------------------------------------
+
+    components.html(
+        f"""
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+        <meta charset="UTF-8">
+
+        <style>
+
+            * {{
+                box-sizing:border-box;
+            }}
+
+            html,
+            body {{
+                margin:0;
+                padding:0;
+                background:transparent;
+                font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+            }}
+
+            .player-card {{
+                width:100%;
+                max-width:760px;
+                margin:auto;
+
+                background:
+                    radial-gradient(
+                        circle at 75% 10%,
+                        rgba(245,184,46,0.18),
+                        transparent 30%
+                    ),
+                    linear-gradient(
+                        145deg,
+                        #131b28 0%,
+                        #05080f 55%,
+                        #101827 100%
+                    );
+
+                border:
+                    2px solid
+                    #f5b82e;
+
+                border-radius:26px;
+
+                padding:26px;
+
+                box-shadow:
+                    0 18px 45px
+                    rgba(0,0,0,0.45),
+                    0 0 28px
+                    rgba(245,184,46,0.12);
+
+                color:white;
+
+                overflow:hidden;
+            }}
+
+            .top-row {{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:20px;
+            }}
+
+            .league-brand {{
+                color:#f5b82e;
+                font-size:13px;
+                font-weight:900;
+                letter-spacing:1.6px;
+            }}
+
+            .position {{
+                color:#f5b82e;
+                font-size:26px;
+                font-weight:950;
+            }}
+
+            .identity-grid {{
+                display:grid;
+                grid-template-columns:
+                    175px 1fr 120px;
+
+                gap:22px;
+                align-items:center;
+            }}
+
+            .player-name {{
+                font-size:32px;
+                font-weight:950;
+                line-height:1.05;
+            }}
+
+            .rating-box {{
+                text-align:center;
+            }}
+
+            .rating {{
+                color:#f5b82e;
+                font-size:58px;
+                font-weight:950;
+                line-height:1;
+            }}
+
+            .rating-label {{
+                margin-top:3px;
+                color:#9ca3af;
+                font-size:11px;
+                font-weight:900;
+                letter-spacing:1.4px;
+            }}
+
+            .divider {{
+                height:1px;
+                margin:24px 0;
+                background:
+                    linear-gradient(
+                        90deg,
+                        transparent,
+                        rgba(245,184,46,0.7),
+                        transparent
+                    );
+            }}
+
+            .stats-grid {{
+                display:grid;
+                grid-template-columns:
+                    repeat(4, 1fr);
+                gap:12px;
+            }}
+
+            .stat {{
+                text-align:center;
+                padding:13px 7px;
+
+                background:
+                    rgba(255,255,255,0.035);
+
+                border:
+                    1px solid
+                    rgba(255,255,255,0.08);
+
+                border-radius:12px;
+            }}
+
+            .stat-value {{
+                color:white;
+                font-size:23px;
+                font-weight:950;
+            }}
+
+            .stat-label {{
+                margin-top:4px;
+                color:#9ca3af;
+                font-size:10px;
+                font-weight:850;
+                letter-spacing:0.7px;
+                text-transform:uppercase;
+            }}
+
+            .form-title {{
+                text-align:center;
+                color:#9ca3af;
+                font-size:11px;
+                font-weight:900;
+                letter-spacing:1px;
+                text-transform:uppercase;
+                margin-bottom:10px;
+            }}
+
+            .form-row {{
+                display:flex;
+                justify-content:center;
+                gap:7px;
+            }}
+
+            .record {{
+                margin-top:18px;
+                text-align:center;
+                color:#bfc5d2;
+                font-size:13px;
+                font-weight:700;
+            }}
+
+            .record strong {{
+                color:white;
+            }}
+
+            @media (
+                max-width:600px
+            ) {{
+
+                .identity-grid {{
+                    grid-template-columns:1fr;
+                    text-align:center;
+                }}
+
+                .stats-grid {{
+                    grid-template-columns:
+                        repeat(2,1fr);
+                }}
+
+                .player-name {{
+                    font-size:27px;
+                }}
+
+            }}
+
+        </style>
+
+        </head>
+
+        <body>
+
+        <div class="player-card">
+
+            <div class="top-row">
+
+                <div class="league-brand">
+                    YE ROYAL OAK DARTS
+                </div>
+
+                <div class="position">
+                    {position_text}
+                </div>
+
+            </div>
+
+            <div class="identity-grid">
+
+                <div style="text-align:center;">
+                    {image_html}
+                </div>
+
+                <div>
+
+                    <div class="player-name">
+                        {player_name}
+                    </div>
+
+                    {nickname_html}
+
+                </div>
+
+                <div class="rating-box">
+
+                    <div class="rating">
+                        {overall_rating}
+                    </div>
+
+                    <div class="rating-label">
+                        OVERALL
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="stats-grid">
+
+                <div class="stat">
+
+                    <div class="stat-value">
+                        {avg:.2f}
+                    </div>
+
+                    <div class="stat-label">
+                        3-Dart Avg
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-value">
+                        {win_pct:.1f}%
+                    </div>
+
+                    <div class="stat-label">
+                        Win Rate
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-value">
+                        {total_180s}
+                    </div>
+
+                    <div class="stat-label">
+                        180s
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-value">
+                        {highest_checkout}
+                    </div>
+
+                    <div class="stat-label">
+                        High Checkout
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="form-title">
+                Recent Form
+            </div>
+
+            <div class="form-row">
+                {form_html}
+            </div>
+
+            <div class="record">
+
+                Record:
+
+                <strong>
+                    {wins}W
+                    ·
+                    {draws}D
+                    ·
+                    {losses}L
+                </strong>
+
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+
+                Played:
+
+                <strong>
+                    {played}
+                </strong>
+
+            </div>
+
+        </div>
+
+        </body>
+
+        </html>
+        """,
+        height=520,
+        scrolling=False
+    )    
+
 def render_player_profile_details(player):
 
     has_profile_details = any(
