@@ -8709,6 +8709,25 @@ if page == "My Profile":
 
                 form_display = "No form yet"
 
+            st.markdown("### ✨ New Player Card Preview")
+
+            render_premium_player_card(
+                player=player,
+                overall_rating=overall_rating,
+                played=played,
+                wins=wins,
+                draws=draws,
+                losses=losses,
+                avg=avg,
+                win_pct=win_pct,
+                recent_form=recent_form,
+                league_position=None,
+                total_180s=0,
+                highest_checkout=0
+            )
+
+            st.divider()
+
             col1, col2 = st.columns(
                 [1, 1.4]
             )
