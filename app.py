@@ -21,6 +21,8 @@ from openai import OpenAI
 from PIL import Image
 from itertools import combinations
 from datetime import date, datetime, timedelta
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 from database import SessionLocal
 from models import (
@@ -2605,9 +2607,467 @@ def render_premium_player_card(
 
         </html>
         """,
-        height=520,
+        height=560,
         scrolling=False
     )    
+
+def generate_player_card_png(
+    player,
+    overall_rating,
+    played,
+    wins,
+    draws,
+    losses,
+    avg,
+    win_pct,
+    recent_form,
+    league_position=None,
+    total_180s=0,
+    highest_checkout=0
+):
+
+    width = 1600
+    height = 900
+
+    image = Image.new(
+        "RGBA",
+        (width, height),
+        (0, 0, 0, 0)
+    )
+
+    draw = ImageDraw.Draw(image)
+
+    # ---------------------------------------------------------
+    # CARD AREA
+    # ---------------------------------------------------------
+
+    card_left = 120
+    card_top = 110
+    card_right = 1480
+    card_bottom = 790
+
+    card_bg = (
+        10,
+        15,
+        25,
+        245
+    )
+
+    gold = (
+        245,
+        184,
+        46,
+        255
+    )
+
+    white = (
+        255,
+        255,
+        255,
+        255
+    )
+
+    grey = (
+        160,
+        168,
+        180,
+        255
+    )
+
+    draw.rounded_rectangle(
+        [
+            card_left,
+            card_top,
+            card_right,
+            card_bottom
+        ],
+        radius=34,
+        fill=card_bg,
+        outline=gold,
+        width=5
+    )
+
+    # ---------------------------------------------------------
+    # FONTS
+    # ---------------------------------------------------------
+
+    def load_font(size, bold=False):
+
+        possible_fonts = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+            if bold
+            else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf"
+            if bold
+            else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"
+        ]
+
+        for font_path in possible_fonts:
+
+            try:
+
+                return ImageFont.truetype(
+                    font_path,
+                    size
+                )
+
+            except:
+
+                continue
+
+        return ImageFont.load_default()
+
+    font_brand = load_font(
+        28,
+        True
+    )
+
+    font_position = load_font(
+        48,
+        True
+    )
+
+    font_name = load_font(
+        64,
+        True
+    )
+
+    font_nickname = load_font(
+        34,
+        True
+    )
+
+    font_rating = load_font(
+        92,
+        True
+    )
+
+    font_rating_label = load_font(
+        24,
+        True
+    )
+
+    font_stat_value = load_font(
+        42,
+        True
+    )
+
+    font_stat_label = load_font(
+        20,
+        True
+    )
+
+    font_record = load_font(
+        26,
+        True
+    )
+
+    # ---------------------------------------------------------
+    # BRAND / POSITION
+    # ---------------------------------------------------------
+
+    draw.text(
+        (175, 155),
+        "YE ROYAL OAK DARTS",
+        font=font_brand,
+        fill=gold
+    )
+
+    position_text = (
+        f"#{league_position}"
+        if league_position
+        else "—"
+    )
+
+    draw.text(
+        (1310, 145),
+        position_text,
+        font=font_position,
+        fill=gold
+    )
+
+    # ---------------------------------------------------------
+    # PLAYER NAME
+    # ---------------------------------------------------------
+
+    player_name = str(
+        player.name or ""
+    )
+
+    nickname = str(
+        player.nickname or ""
+    )
+
+    draw.text(
+        (520, 275),
+        player_name,
+        font=font_name,
+        fill=white
+    )
+
+    if nickname:
+
+        draw.text(
+            (525, 355),
+            f'"{nickname}"',
+            font=font_nickname,
+            fill=gold
+        )
+
+    # ---------------------------------------------------------
+    # RATING
+    # ---------------------------------------------------------
+
+    draw.text(
+        (1240, 255),
+        str(overall_rating),
+        font=font_rating,
+        fill=gold
+    )
+
+    draw.text(
+        (1260, 360),
+        "OVERALL",
+        font=font_rating_label,
+        fill=grey
+    )
+
+    # ---------------------------------------------------------
+    # PLAYER LOGO / PHOTO
+    # ---------------------------------------------------------
+
+    player_image_url = (
+        getattr(
+            player,
+            "photo_url",
+            None
+        )
+        or getattr(
+            player,
+            "logo_path",
+            None
+        )
+    )
+
+    if player_image_url:
+
+        try:
+
+            if str(
+                player_image_url
+            ).startswith(
+                (
+                    "http://",
+                    "https://"
+                )
+            ):
+
+                response = requests.get(
+                    player_image_url,
+                    timeout=10
+                )
+
+                response.raise_for_status()
+
+                player_image = Image.open(
+                    BytesIO(
+                        response.content
+                    )
+                ).convert(
+                    "RGBA"
+                )
+
+            else:
+
+                player_image = Image.open(
+                    player_image_url
+                ).convert(
+                    "RGBA"
+                )
+
+            player_image.thumbnail(
+                (260, 260)
+            )
+
+            image_x = 210 + (
+                260
+                - player_image.width
+            ) // 2
+
+            image_y = 245 + (
+                260
+                - player_image.height
+            ) // 2
+
+            image.alpha_composite(
+                player_image,
+                (
+                    image_x,
+                    image_y
+                )
+            )
+
+        except:
+
+            pass
+
+    # ---------------------------------------------------------
+    # DIVIDER
+    # ---------------------------------------------------------
+
+    draw.line(
+        (180, 520, 1420, 520),
+        fill=gold,
+        width=2
+    )
+
+    # ---------------------------------------------------------
+    # STATS
+    # ---------------------------------------------------------
+
+    stats = [
+        (
+            f"{avg:.2f}",
+            "3-DART AVG"
+        ),
+        (
+            f"{win_pct:.1f}%",
+            "WIN RATE"
+        ),
+        (
+            str(total_180s),
+            "180s"
+        ),
+        (
+            str(highest_checkout),
+            "HIGH CHECKOUT"
+        )
+    ]
+
+    stat_x_positions = [
+        260,
+        580,
+        900,
+        1220
+    ]
+
+    for (
+        value,
+        label
+    ), x_position in zip(
+        stats,
+        stat_x_positions
+    ):
+
+        draw.text(
+            (
+                x_position,
+                565
+            ),
+            value,
+            font=font_stat_value,
+            fill=white
+        )
+
+        draw.text(
+            (
+                x_position,
+                620
+            ),
+            label,
+            font=font_stat_label,
+            fill=grey
+        )
+
+    # ---------------------------------------------------------
+    # FORM
+    # ---------------------------------------------------------
+
+    form_results = []
+
+    for result in recent_form[-5:]:
+
+        if str(result) in [
+            "W",
+            "🟢"
+        ]:
+
+            form_results.append(
+                "W"
+            )
+
+        elif str(result) in [
+            "D",
+            "🟡"
+        ]:
+
+            form_results.append(
+                "D"
+            )
+
+        elif str(result) in [
+            "L",
+            "🔴"
+        ]:
+
+            form_results.append(
+                "L"
+            )
+
+    while len(
+        form_results
+    ) < 5:
+
+        form_results.insert(
+            0,
+            "—"
+        )
+
+    form_text = (
+        "  ".join(
+            form_results
+        )
+    )
+
+    draw.text(
+        (505, 690),
+        f"FORM   {form_text}",
+        font=font_record,
+        fill=white
+    )
+
+    # ---------------------------------------------------------
+    # RECORD
+    # ---------------------------------------------------------
+
+    record_text = (
+        f"RECORD   "
+        f"{wins}W  "
+        f"{draws}D  "
+        f"{losses}L"
+    )
+
+    draw.text(
+        (885, 690),
+        record_text,
+        font=font_record,
+        fill=white
+    )
+
+    # ---------------------------------------------------------
+    # SAVE TO MEMORY
+    # ---------------------------------------------------------
+
+    output = BytesIO()
+
+    image.save(
+        output,
+        format="PNG"
+    )
+
+    output.seek(0)
+
+    return output.getvalue()
 
 def render_player_profile_details(player):
 
@@ -9120,7 +9580,6 @@ if page == "My Profile":
                     height=520
                 )
 
-
             with col2:
 
                 st.markdown("### 📊 Player Stats")
@@ -13914,6 +14373,52 @@ if page == "View Player":
                 total_180s=total_180s,
                 highest_checkout=highest_checkout
             )
+
+            player_card_png = (
+                generate_player_card_png(
+                    player=player,
+                    overall_rating=overall_rating,
+                    played=played,
+                    wins=wins,
+                    draws=draws,
+                    losses=losses,
+                    avg=avg,
+                    win_pct=win_pct,
+                    recent_form=recent_form,
+                    league_position=league_position,
+                    total_180s=total_180s,
+                    highest_checkout=highest_checkout
+                )
+            )
+
+            safe_player_filename = (
+                display_player_name(
+                    player
+                )
+                .replace(
+                    " ",
+                    "_"
+                )
+                .replace(
+                    "/",
+                    "_"
+                )
+            )
+
+            st.download_button(
+                "⬇ Download Player Card PNG",
+                data=player_card_png,
+                file_name=(
+                    f"{safe_player_filename}"
+                    f"_player_card.png"
+                ),
+                mime="image/png",
+                key=(
+                    f"download_player_card_"
+                    f"{player.id}"
+                ),
+                use_container_width=True
+            )            
 
             st.divider()
 
