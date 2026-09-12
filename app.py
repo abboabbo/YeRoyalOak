@@ -2047,7 +2047,7 @@ def render_premium_player_card(
     win_pct,
     recent_form,
     league_position=None,
-    total_180s=0,
+    total_maximums=0,
     highest_checkout=0
 ):
 
@@ -2546,11 +2546,11 @@ def render_premium_player_card(
                 <div class="stat">
 
                     <div class="stat-value">
-                        {total_180s}
+                        {total_maximums}
                     </div>
 
                     <div class="stat-label">
-                        180s
+                        Maximums
                     </div>
 
                 </div>
@@ -2622,7 +2622,7 @@ def generate_player_card_png(
     win_pct,
     recent_form,
     league_position=None,
-    total_180s=0,
+    total_maximums=0,
     highest_checkout=0
 ):
 
@@ -3181,8 +3181,8 @@ def generate_player_card_png(
             "WIN RATE"
         ),
         (
-            str(total_180s),
-            "180s"
+            str(total_maximums),
+            "MAXIMUMS"
         ),
         (
             str(highest_checkout),
@@ -5160,7 +5160,7 @@ if not st.session_state.logged_in:
                 st.subheader("TikTok")
 
                 st.write(
-                    "180s, big checkouts, funny "
+                    "Maximums, big checkouts, funny "
                     "moments and short highlights."
                 )
 
@@ -7886,10 +7886,10 @@ if page == "AI Match Report":
                             key="ai_include_averages"
                         )
 
-                        include_180s = st.checkbox(
-                            "180s",
+                        include_maximums = st.checkbox(
+                            "Maximums",
                             value=True,
-                            key="ai_include_180s"
+                            key="ai_include_maximums"
                         )
 
                         include_checkouts = st.checkbox(
@@ -8042,16 +8042,16 @@ if page == "AI Match Report":
                                         f"{fixture.player2_average}"
                                     )                                                                                                          
 
-                            if include_180s:
+                            if include_maximums:
 
                                 match_lines.append(
-                                    f"{player1_name} 180s: "
-                                    f"{fixture.player1_180s or 0}"
+                                    f"{player1_name} Maximums: "
+                                    f"{fixture.player1_maximums or 0}"
                                 )
 
                                 match_lines.append(
-                                    f"{player2_name} 180s: "
-                                    f"{fixture.player2_180s or 0}"
+                                    f"{player2_name} Maximums: "
+                                    f"{fixture.player2_maximums or 0}"
                                 )
 
                             if include_checkouts:
@@ -8475,7 +8475,7 @@ IMPORTANT RULES:
 - Use only the match information supplied above.
 - Never invent scores.
 - Never invent averages.
-- Never invent 180s.
+- Never invent Maximums.
 - Never invent checkouts.
 - Never invent player quotes.
 - Never invent injuries, incidents or crowd reactions.
@@ -8934,18 +8934,18 @@ if page == "Awards":
                         fixture.player2_average
                     )
 
-                    p1_180s = safe_int(
+                    p1_Maximums = safe_int(
                         getattr(
                             fixture,
-                            "player1_180s",
+                            "player1_Maximums",
                             0
                         )
                     )
 
-                    p2_180s = safe_int(
+                    p2_Maximums = safe_int(
                         getattr(
                             fixture,
-                            "player2_180s",
+                            "player2_Maximums",
                             0
                         )
                     )
@@ -8979,7 +8979,7 @@ if page == "Awards":
                                 0,
                                 p1_legs - p2_legs
                             ),
-                            "180s": p1_180s,
+                            "Maximums": p1_Maximums,
                             "checkout": p1_checkout
                         }
                     )
@@ -8997,7 +8997,7 @@ if page == "Awards":
                                 0,
                                 p2_legs - p1_legs
                             ),
-                            "180s": p2_180s,
+                            "Maximums": p2_Maximums,
                             "checkout": p2_checkout
                         }
                     )
@@ -9022,7 +9022,7 @@ if page == "Awards":
                         ] = (
                             performance["average"]
                             + performance["margin"] * 3
-                            + performance["180s"] * 4
+                            + performance["Maximums"] * 4
                             + (
                                 performance["checkout"]
                                 / 20
@@ -9056,10 +9056,10 @@ if page == "Awards":
                         ]
                     )
 
-                    most_180s = max(
+                    most_Maximums = max(
                         round_performances,
                         key=lambda item: (
-                            item["180s"],
+                            item["Maximums"],
                             item["average"]
                         )
                     )
@@ -9109,7 +9109,7 @@ if page == "Awards":
                             ),
                             (
                                 f'{player_of_round["average"]:.2f} AVG'
-                                f' · {player_of_round["180s"]} 180s'
+                                f' · {player_of_round["Maximums"]} Maximums'
                                 f' · {player_of_round["checkout"]} checkout'
                             )
                         )
@@ -9189,18 +9189,18 @@ if page == "Awards":
 
                         show_award(
                             "💯",
-                            "Most 180s",
+                            "Most Maximums",
                             display_player_name(
-                                most_180s["player"]
+                                most_Maximums["player"]
                             ),
                             (
-                                f'{most_180s["180s"]}'
+                                f'{most_Maximums["Maximums"]}'
                                 " maximums"
                             ),
                             (
                                 "Against "
                                 + display_player_name(
-                                    most_180s["opponent"]
+                                    most_Maximums["opponent"]
                                 )
                             )
                         )
@@ -9248,7 +9248,7 @@ if page == "Awards":
                             "played": 0,
                             "wins": 0,
                             "averages": [],
-                            "180s": 0,
+                            "Maximums": 0,
                             "highest_checkout": 0,
                             "legs_for": 0,
                             "legs_against": 0
@@ -9315,18 +9315,18 @@ if page == "Awards":
                                 p2_average
                             )
 
-                        p1_stats["180s"] += safe_int(
+                        p1_stats["Maximums"] += safe_int(
                             getattr(
                                 fixture,
-                                "player1_180s",
+                                "player1_Maximums",
                                 0
                             )
                         )
 
-                        p2_stats["180s"] += safe_int(
+                        p2_stats["Maximums"] += safe_int(
                             getattr(
                                 fixture,
-                                "player2_180s",
+                                "player2_Maximums",
                                 0
                             )
                         )
@@ -9423,10 +9423,10 @@ if page == "Awards":
                             )
                         )
 
-                        season_most_180s = max(
+                        season_most_maximums = max(
                             season_rows,
                             key=lambda item: (
-                                item["180s"],
+                                item["maximums"],
                                 item["average"]
                             )
                         )
@@ -9487,14 +9487,14 @@ if page == "Awards":
 
                             show_award(
                                 "💯",
-                                "Most 180s",
+                                "Most Maximums",
                                 display_player_name(
-                                    season_most_180s[
+                                    season_most_maximums[
                                         "player"
                                     ]
                                 ),
                                 (
-                                    f'{season_most_180s["180s"]}'
+                                    f'{season_most_maximums["maximums"]}'
                                     " total maximums"
                                 )
                             )
@@ -9653,7 +9653,7 @@ if page == "My Profile":
             recent_form = []
             upcoming = []
 
-            total_180s = 0
+            total_Maximumss = 0
             highest_checkout = 0
 
             for fixture in fixtures:
@@ -9672,10 +9672,10 @@ if page == "My Profile":
                         opponent_legs = fixture.player2_legs
                         player_avg = fixture.player1_average
 
-                        player_180s = (
+                        player_Maximums = (
                             getattr(
                                 fixture,
-                                "player1_180s",
+                                "player1_Maximums",
                                 0
                             )
                             or 0
@@ -9696,10 +9696,10 @@ if page == "My Profile":
                         opponent_legs = fixture.player1_legs
                         player_avg = fixture.player2_average
 
-                        player_180s = (
+                        player_Maximums = (
                             getattr(
                                 fixture,
-                                "player2_180s",
+                                "player2_Maximums",
                                 0
                             )
                             or 0
@@ -9716,8 +9716,8 @@ if page == "My Profile":
 
                     try:
 
-                        total_180s += int(
-                            player_180s
+                        total_Maximums += int(
+                            player_Maximums
                         )
 
                     except (TypeError, ValueError):
@@ -9893,7 +9893,7 @@ if page == "My Profile":
                     win_pct=win_pct,
                     recent_form=recent_form,
                     league_position=league_position,
-                    total_180s=total_180s,
+                    total_Maximums=total_Maximums,
                     highest_checkout=highest_checkout
                 )
 
@@ -9909,7 +9909,7 @@ if page == "My Profile":
                         win_pct=win_pct,
                         recent_form=recent_form,
                         league_position=league_position,
-                        total_180s=total_180s,
+                        total_Maximums=total_Maximums,
                         highest_checkout=highest_checkout
                     )
                 )
@@ -10945,10 +10945,10 @@ if page == "Fixtures":
 
                                     st.caption(
                                         (
-                                            "💯 180s: "
-                                            f"{getattr(fixture, 'player1_180s', 0) or 0}"
+                                            "💯 Maximums: "
+                                            f"{getattr(fixture, 'player1_Maximums', 0) or 0}"
                                             " / "
-                                            f"{getattr(fixture, 'player2_180s', 0) or 0}"
+                                            f"{getattr(fixture, 'player2_Maximums', 0) or 0}"
                                         )
                                     )
 
@@ -11100,55 +11100,55 @@ if page == "Fixtures":
                                                     )
                                                 )
 
-                                            edit_180_col1, edit_180_col2 = (
+                                            edit_Maximum_col1, edit_Maximum_col2 = (
                                                 st.columns(2)
                                             )
 
-                                            with edit_180_col1:
+                                            with edit_Maximum_col1:
 
-                                                edit_p1_180s = (
+                                                edit_p1_Maximums = (
                                                     st.number_input(
                                                         (
                                                             f"{player1_name} "
-                                                            "180s"
+                                                            "Maximums"
                                                         ),
                                                         min_value=0,
                                                         max_value=50,
                                                         value=int(
                                                             getattr(
                                                                 fixture,
-                                                                "player1_180s",
+                                                                "player1_Maximums",
                                                                 0
                                                             )
                                                             or 0
                                                         ),
                                                         key=(
-                                                            f"edit_p1_180s_"
+                                                            f"edit_p1_Maximums_"
                                                             f"{fixture.id}"
                                                         )
                                                     )
                                                 )
 
-                                            with edit_180_col2:
+                                            with edit_Maximums_col2:
 
-                                                edit_p2_180s = (
+                                                edit_p2_Maximums = (
                                                     st.number_input(
                                                         (
                                                             f"{player2_name} "
-                                                            "180s"
+                                                            "Maximums"
                                                         ),
                                                         min_value=0,
                                                         max_value=50,
                                                         value=int(
                                                             getattr(
                                                                 fixture,
-                                                                "player2_180s",
+                                                                "player2_Maximums",
                                                                 0
                                                             )
                                                             or 0
                                                         ),
                                                         key=(
-                                                            f"edit_p2_180s_"
+                                                            f"edit_p2_Maximums_"
                                                             f"{fixture.id}"
                                                         )
                                                     )
@@ -11296,12 +11296,12 @@ if page == "Fixtures":
                                                         edit_p2_avg
                                                     )
 
-                                                    target_fixture.player1_180s = (
-                                                        edit_p1_180s
+                                                    target_fixture.player1_Maximums = (
+                                                        edit_p1_Maximums
                                                     )
 
-                                                    target_fixture.player2_180s = (
-                                                        edit_p2_180s
+                                                    target_fixture.player2_Maximums = (
+                                                        edit_p2_Maximums
                                                     )
 
                                                     target_fixture.player1_high_checkout = (
@@ -11480,17 +11480,17 @@ if page == "Fixtures":
 
                                             with one_eighty_col1:
 
-                                                player1_180s = (
+                                                player1_Maximums = (
                                                     st.number_input(
                                                         (
                                                             f"{player1_name} "
-                                                            "180s"
+                                                            "Maximums"
                                                         ),
                                                         min_value=0,
                                                         max_value=50,
                                                         value=0,
                                                         key=(
-                                                            f"result_p1_180s_"
+                                                            f"result_p1_Maximums_"
                                                             f"{fixture.id}"
                                                         )
                                                     )
@@ -11498,17 +11498,17 @@ if page == "Fixtures":
 
                                             with one_eighty_col2:
 
-                                                player2_180s = (
+                                                player2_Maximums = (
                                                     st.number_input(
                                                         (
                                                             f"{player2_name} "
-                                                            "180s"
+                                                            "Maximums"
                                                         ),
                                                         min_value=0,
                                                         max_value=50,
                                                         value=0,
                                                         key=(
-                                                            f"result_p2_180s_"
+                                                            f"result_p2_Maximums_"
                                                             f"{fixture.id}"
                                                         )
                                                     )
@@ -11630,8 +11630,8 @@ if page == "Fixtures":
                                                     target_fixture.player1_average = player1_average
                                                     target_fixture.player2_average = player2_average
 
-                                                    target_fixture.player1_180s = player1_180s
-                                                    target_fixture.player2_180s = player2_180s
+                                                    target_fixture.player1_Maximums = player1_Maximums
+                                                    target_fixture.player2_Maximums = player2_Maximums
 
                                                     target_fixture.player1_high_checkout = (
                                                         player1_checkout
@@ -13702,7 +13702,7 @@ if page == "Statistics":
                 "legs_for": 0,
                 "legs_against": 0,
                 "averages": [],
-                "180s": 0,
+                "Maximums": 0,
                 "highest_checkout": 0,
                 "form": []
             }
@@ -13770,18 +13770,18 @@ if page == "Statistics":
                     player2_average
                 )
 
-            player1_stats["180s"] += safe_int(
+            player1_stats["Maximums"] += safe_int(
                 getattr(
                     fixture,
-                    "player1_180s",
+                    "player1_Maximums",
                     0
                 )
             )
 
-            player2_stats["180s"] += safe_int(
+            player2_stats["Maximums"] += safe_int(
                 getattr(
                     fixture,
-                    "player2_180s",
+                    "player2_Maximums",
                     0
                 )
             )
@@ -13887,7 +13887,7 @@ if page == "Statistics":
             if data["played"] > 0:
 
                 one_eighties_per_match = round(
-                    data["180s"]
+                    data["Maximums"]
                     / data["played"],
                     2
                 )
@@ -13945,8 +13945,8 @@ if page == "Statistics":
                         win_percentage
                     ),
                     "Average": average,
-                    "180s": data["180s"],
-                    "180s Per Match": (
+                    "Maximums": data["Maximums"],
+                    "Maximums Per Match": (
                         one_eighties_per_match
                     ),
                     "Highest Checkout": (
@@ -14017,10 +14017,10 @@ if page == "Statistics":
                 )
             )
 
-            most_180s = max(
+            most_maximums = max(
                 statistic_rows,
                 key=lambda row: (
-                    row["180s"],
+                    row["Maximums"],
                     row["Average"]
                 )
             )
@@ -14066,10 +14066,10 @@ if page == "Statistics":
             with leader_col3:
 
                 dashboard_card(
-                    "💯 Most 180s",
-                    most_180s["Player"],
+                    "💯 Most Maximums",
+                    most_maximums["Player"],
                     (
-                        f'{most_180s["180s"]}'
+                        f'{most_maximums["Maximums"]}'
                         " maximums"
                     )
                 )
@@ -14099,7 +14099,7 @@ if page == "Statistics":
                     "Average"
                 ),
                 "Most Wins": "Wins",
-                "Most 180s": "180s",
+                "Most Maximums": "Maximums",
                 "Highest Checkout": (
                     "Highest Checkout"
                 ),
@@ -14304,10 +14304,10 @@ if page == "Statistics":
 
                             main_label = "WIN RATE"
 
-                        elif sort_column == "180s":
+                        elif sort_column == "Maximums":
 
-                            main_value = row["180s"]
-                            main_label = "180s"
+                            main_value = row["Maximums"]
+                            main_label = "MAXIMUMS"
 
                         elif sort_column == (
                             "Highest Checkout"
@@ -14397,16 +14397,16 @@ if page == "Statistics":
                     with scoring_col1:
 
                         st.metric(
-                            "Total 180s",
-                            row["180s"]
+                            "Total Maximums",
+                            row["Maximums"]
                         )
 
                     with scoring_col2:
 
                         st.metric(
-                            "180s Per Match",
+                            "Maximums Per Match",
                             (
-                                f'{row["180s Per Match"]:.2f}'
+                                f'{row["Maximums Per Match"]:.2f}'
                             )
                         )
 
@@ -14527,7 +14527,7 @@ if page == "View Player":
             results = []
             upcoming = []
 
-            total_180s = 0
+            total_maximums = 0
             highest_checkout = 0
 
             players = db.query(Player).all()
@@ -14560,10 +14560,10 @@ if page == "View Player":
                         opponent_legs = fixture.player2_legs
                         player_average = fixture.player1_average
 
-                        player_180s = (
+                        player_maximums = (
                             getattr(
                                 fixture,
-                                "player1_180s",
+                                "player1_maximums",
                                 0
                             )
                             or 0
@@ -14584,10 +14584,10 @@ if page == "View Player":
                         opponent_legs = fixture.player1_legs
                         player_average = fixture.player2_average
 
-                        player_180s = (
+                        player_maximums = (
                             getattr(
                                 fixture,
-                                "player2_180s",
+                                "player2_maximums",
                                 0
                             )
                             or 0
@@ -14604,8 +14604,8 @@ if page == "View Player":
 
                     try:
 
-                        total_180s += int(
-                            player_180s
+                        total_maximums += int(
+                            player_maximums
                         )
 
                     except (TypeError, ValueError):
@@ -14803,7 +14803,7 @@ if page == "View Player":
                     win_pct=win_pct,
                     recent_form=recent_form,
                     league_position=league_position,
-                    total_180s=total_180s,
+                    total_maximums=total_maximums,
                     highest_checkout=highest_checkout
                 )
 
@@ -14819,7 +14819,7 @@ if page == "View Player":
                         win_pct=win_pct,
                         recent_form=recent_form,
                         league_position=league_position,
-                        total_180s=total_180s,
+                        total_maximums=total_maximums,
                         highest_checkout=highest_checkout
                     )
                 )
