@@ -11129,7 +11129,7 @@ if page == "Fixtures":
                                                     )
                                                 )
 
-                                            with edit_Maximums_col2:
+                                            with edit_Maximum_col2:
 
                                                 edit_p2_Maximums = (
                                                     st.number_input(
