@@ -1439,6 +1439,11 @@ def create_league_table_pdf(league_rows):
 
     return buffer
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+
 def get_sidebar_dashboard():
 
     db = SessionLocal()
@@ -11380,6 +11385,8 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
+                                                    get_sidebar_dahsboard.clear()    
+
                                                     st.success("Result updated.")
 
                                                     st.rerun()
@@ -11706,6 +11713,8 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
+                                                    get_sidebar_dahsboard.clear()
+                                                    
                                                     st.success("Result saved.")
                                                     st.rerun()
 
