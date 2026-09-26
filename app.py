@@ -7614,6 +7614,7 @@ if page == "Home":
                 "No upcoming fixtures"
             )
 
+
     with col5:
 
         if latest_result:
@@ -7631,9 +7632,9 @@ if page == "Home":
 
             match_card(
                 "🔥 Latest Result",
-                p1,
-                f"{latest_result.player1_legs} - {latest_result.player2_legs}",
-                p2
+                latest_result["player1"],
+                f"{latest_result['player1_legs']} - {latest_result['player2_legs']}",
+                latest_result["player2"]
             )
 
         else:
