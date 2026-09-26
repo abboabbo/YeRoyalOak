@@ -3384,6 +3384,56 @@ def generate_player_card_png(
 
     return output.getvalue()
 
+@st.cache_data(
+    ttl=300,
+    show_spinner=False
+)
+def get_cached_player_card_png(
+    player_id,
+    player_name,
+    player_nickname,
+    photo_url,
+    logo_path,
+    overall_rating,
+    played,
+    wins,
+    draws,
+    losses,
+    avg,
+    win_pct,
+    recent_form,
+    league_position,
+    total_maximums,
+    highest_checkout
+):
+
+    class CardPlayer:
+
+        pass
+
+    card_player = CardPlayer()
+
+    card_player.id = player_id
+    card_player.name = player_name
+    card_player.nickname = player_nickname
+    card_player.photo_url = photo_url
+    card_player.logo_path = logo_path
+
+    return generate_player_card_png(
+        player=card_player,
+        overall_rating=overall_rating,
+        played=played,
+        wins=wins,
+        draws=draws,
+        losses=losses,
+        avg=avg,
+        win_pct=win_pct,
+        recent_form=list(recent_form),
+        league_position=league_position,
+        total_maximums=total_maximums,
+        highest_checkout=highest_checkout
+    )    
+
 def render_player_profile_details(player):
 
     has_profile_details = any(
@@ -9898,8 +9948,12 @@ if page == "My Profile":
                 )
 
                 player_card_png = (
-                    generate_player_card_png(
-                        player=player,
+                    get_cached_player_card_png(
+                        player_id=player.id,
+                        player_name=player.name or "",
+                        player_nickname=player.nickname or "",
+                        photo_url=player.photo_url or "",
+                        logo_path=player.logo_path or "",
                         overall_rating=overall_rating,
                         played=played,
                         wins=wins,
@@ -9907,9 +9961,11 @@ if page == "My Profile":
                         losses=losses,
                         avg=avg,
                         win_pct=win_pct,
-                        recent_form=recent_form,
+                        recent_form=tuple(
+                            recent_form
+                        ),
                         league_position=league_position,
-                        total_Maximums=total_Maximums,
+                        total_maximums=total_Maximums,
                         highest_checkout=highest_checkout
                     )
                 )
@@ -14808,8 +14864,12 @@ if page == "View Player":
                 )
 
                 player_card_png = (
-                    generate_player_card_png(
-                        player=player,
+                    get_cached_player_card_png(
+                        player_id=player.id,
+                        player_name=player.name or "",
+                        player_nickname=player.nickname or "",
+                        photo_url=player.photo_url or "",
+                        logo_path=player.logo_path or "",
                         overall_rating=overall_rating,
                         played=played,
                         wins=wins,
@@ -14817,7 +14877,9 @@ if page == "View Player":
                         losses=losses,
                         avg=avg,
                         win_pct=win_pct,
-                        recent_form=recent_form,
+                        recent_form=tuple(
+                            recent_form
+                        ),
                         league_position=league_position,
                         total_maximums=total_maximums,
                         highest_checkout=highest_checkout
