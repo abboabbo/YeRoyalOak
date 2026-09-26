@@ -1523,6 +1523,131 @@ def get_sidebar_dashboard():
 
     }
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_home_dashboard():
+
+    db = SessionLocal()
+
+    try:
+
+        players_count = db.query(
+            Player
+        ).count()
+
+        fixtures_played = db.query(
+            Fixture
+        ).filter(
+            Fixture.played == 1
+        ).count()
+
+        fixtures_remaining = db.query(
+            Fixture
+        ).filter(
+            Fixture.played == 0
+        ).count()
+
+        latest_announcement = db.query(
+            Announcement
+        ).order_by(
+            Announcement.id.desc()
+        ).first()
+
+        latest_result = db.query(
+            Fixture
+        ).filter(
+            Fixture.played == 1
+        ).order_by(
+            Fixture.id.desc()
+        ).first()
+
+        next_fixture = db.query(
+            Fixture
+        ).filter(
+            Fixture.played == 0
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
+        ).first()
+
+        players = db.query(
+            Player
+        ).all()
+
+        player_lookup = {
+            player.id: display_player_name(
+                player
+            )
+            for player in players
+        }
+
+        next_fixture_data = None
+
+        if next_fixture:
+
+            next_fixture_data = {
+                "player1": player_lookup.get(
+                    next_fixture.player1_id,
+                    "Unknown"
+                ),
+                "player2": player_lookup.get(
+                    next_fixture.player2_id,
+                    "Unknown"
+                ),
+                "round_number": (
+                    next_fixture.round_number
+                )
+            }
+
+        latest_result_data = None
+
+        if latest_result:
+
+            latest_result_data = {
+                "player1": player_lookup.get(
+                    latest_result.player1_id,
+                    "Unknown"
+                ),
+                "player2": player_lookup.get(
+                    latest_result.player2_id,
+                    "Unknown"
+                ),
+                "player1_legs": (
+                    latest_result.player1_legs
+                ),
+                "player2_legs": (
+                    latest_result.player2_legs
+                )
+            }
+
+        announcement_data = None
+
+        if latest_announcement:
+
+            announcement_data = {
+                "title": (
+                    latest_announcement.title
+                ),
+                "message": (
+                    latest_announcement.message
+                )
+            }
+
+        return {
+            "players_count": players_count,
+            "fixtures_played": fixtures_played,
+            "fixtures_remaining": fixtures_remaining,
+            "next_fixture": next_fixture_data,
+            "latest_result": latest_result_data,
+            "announcement": announcement_data
+        }
+
+    finally:
+
+        db.close()
+
 @st.cache_data(ttl=900)
 def get_youtube_subscriber_count():
 
@@ -7426,41 +7551,31 @@ if page == "Home":
         unsafe_allow_html=True
     )
 
-    db = SessionLocal()
+    home_data = get_home_dashboard()
 
-    players_count = db.query(Player).count()
+    players_count = (
+        home_data["players_count"]
+    )
 
-    fixtures_played = db.query(Fixture).filter(
-        Fixture.played == 1
-    ).count()
+    fixtures_played = (
+        home_data["fixtures_played"]
+    )
 
-    fixtures_remaining = db.query(Fixture).filter(
-        Fixture.played == 0
-    ).count()
+    fixtures_remaining = (
+        home_data["fixtures_remaining"]
+    )
 
-    latest_announcement = db.query(Announcement).order_by(
-        Announcement.id.desc()
-    ).first()
+    next_fixture = (
+        home_data["next_fixture"]
+    )
 
-    latest_result = db.query(Fixture).filter(
-        Fixture.played == 1
-    ).order_by(
-        Fixture.id.desc()
-    ).first()
+    latest_result = (
+        home_data["latest_result"]
+    )
 
-    next_fixture = db.query(Fixture).filter(
-        Fixture.played == 0
-    ).order_by(
-        Fixture.round_number,
-        Fixture.id
-    ).first()
-
-    players = db.query(Player).all()
-
-    player_lookup = {
-        p.id: display_player_name(p)
-        for p in players
-    }
+    latest_announcement = (
+        home_data["announcement"]
+    )
 
     col1, col2, col3 = st.columns(3)
 
@@ -7481,21 +7596,14 @@ if page == "Home":
 
         if next_fixture:
 
-            p1 = player_lookup.get(
-                next_fixture.player1_id,
-                "Unknown"
-            )
-
-            p2 = player_lookup.get(
-                next_fixture.player2_id,
-                "Unknown"
-            )
-
             match_card(
                 "📅 Next Fixture",
-                p1,
-                f"Round {next_fixture.round_number}",
-                p2
+                next_fixture["player1"],
+                (
+                    f"Round "
+                    f"{next_fixture['round_number']}"
+                ),
+                next_fixture["player2"]
             )
 
         else:
@@ -7510,14 +7618,15 @@ if page == "Home":
 
         if latest_result:
 
-            p1 = player_lookup.get(
-                latest_result.player1_id,
-                "Unknown"
-            )
-
-            p2 = player_lookup.get(
-                latest_result.player2_id,
-                "Unknown"
+            match_card(
+                "🔥 Latest Result",
+                latest_result["player1"],
+                (
+                    f"{latest_result['player1_legs']} "
+                    f"- "
+                    f"{latest_result['player2_legs']}"
+                ),
+                latest_result["player2"]
             )
 
             match_card(
@@ -7541,8 +7650,8 @@ if page == "Home":
 
         dashboard_card(
             "📢 Latest Announcement",
-            latest_announcement.title,
-            latest_announcement.message
+            latest_announcement["title"],
+            latest_announcement["message"]
         )
 
     else:
@@ -7553,7 +7662,6 @@ if page == "Home":
             "Check back soon"
         )
 
-    db.close()
 
 # =========================================================
 # ADMIN: AI MATCH REPORT
@@ -11385,7 +11493,8 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
-                                                    get_sidebar_dahsboard.clear()    
+                                                    get_sidebar_dashboard.clear()
+                                                    get_home_dashboard.clear()    
 
                                                     st.success("Result updated.")
 
@@ -11713,9 +11822,10 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
-                                                    get_sidebar_dahsboard.clear()
-                                                    
-                                                    st.success("Result saved.")
+                                                    get_sidebar_dashboard.clear()
+                                                    get_home_dashboard.clear()
+
+                                                    st.success("Result updated.")
                                                     st.rerun()
 
         db.close()
