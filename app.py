@@ -6903,6 +6903,11 @@ if page == "Users":
             for user in admin_users_data["users"]
         ]
 
+        player_lookup = {
+            player.id: player
+            for player in players
+        }
+
         player_options = {
             display_player_name(player): player.id
             for player in players
