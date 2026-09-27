@@ -17,6 +17,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from textwrap import dedent
 from supabase import create_client
 from openai import OpenAI
+from types import SimpleNamespace
 
 from PIL import Image
 from itertools import combinations
@@ -3727,6 +3728,13 @@ if not st.session_state.logged_in:
 
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
+
+    cached_public_feed_posts = get_public_feed_posts()
+
+    public_feed_posts = [
+        SimpleNamespace(**post)
+        for post in cached_public_feed_posts
+    ]        
 
 
     # ---------------------------------------------------------
@@ -7527,6 +7535,8 @@ if page == "Feed Manager":
 
                                     edit_db.commit()
 
+                                    get_public_feed_posts.clear()                                    
+
                                     st.success(
                                         "Feed post updated."
                                     )
@@ -7574,6 +7584,8 @@ if page == "Feed Manager":
                                     delete_db.commit()
 
                                 delete_db.close()
+
+                                get_public_feed_posts.clear()
 
                                 st.success(
                                     "Feed post deleted."
@@ -8873,6 +8885,8 @@ Return only the finished article.
                                     )
 
                                     publish_db.commit()
+
+                                    get_public_feed_posts.clear()
 
                                     st.success(
                                         "Match report published "
