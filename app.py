@@ -2029,14 +2029,6 @@ def get_awards_page_data(tournament_id):
     show_spinner=False
 )
 
-@st.cache_data(
-    ttl=30,
-    show_spinner=False
-)
-@st.cache_data(
-    ttl=30,
-    show_spinner=False
-)
 def get_admin_users_data():
 
     db = SessionLocal()
@@ -2123,38 +2115,6 @@ def get_admin_players_data():
     ttl=30,
     show_spinner=False
 )
-def get_available_account_players():
-
-    db = SessionLocal()
-
-    try:
-
-        players = db.query(
-            Player
-        ).order_by(
-            Player.name
-        ).all()
-
-        users = db.query(
-            User
-        ).all()
-
-        used_player_ids = {
-            user.player_id
-            for user in users
-            if user.player_id is not None
-        }
-
-        return {
-            player.name: player.id
-            for player in players
-            if player.id not in used_player_ids
-        }
-
-    finally:
-
-        db.close()
-
 def get_available_account_players():
 
     db = SessionLocal()
@@ -6951,6 +6911,9 @@ if page == "Users":
                 db.commit()
                 db.close()
 
+                get_admin_users_data.clear()
+                get_available_account_players.clear()
+
                 st.success("User account created.")
                 st.rerun()
 
@@ -7140,6 +7103,9 @@ if page == "Users":
                             if target_user:
                                 delete_db.delete(target_user)
                                 delete_db.commit()
+
+                                get_admin_users_data.clear()
+                                get_available_account_players.clear()
 
                             delete_db.close()
 
