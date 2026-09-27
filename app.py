@@ -4917,8 +4917,6 @@ if not st.session_state.logged_in:
 
                 st.markdown("### 🆕 Create Player Account")
 
-                create_db = SessionLocal()
-
                 available_players = get_available_account_players()
 
                 if not available_players:
@@ -4976,135 +4974,79 @@ if not st.session_state.logged_in:
 
                             st.error(
                                 "Password must contain at least 6 characters."
-                        )
+                            )
 
                         elif new_password != confirm_password:
 
                             st.error(
                                 "The passwords do not match."
-                        )
+                            )
 
                         else:
 
                             create_db = SessionLocal()
 
-                            try:
+                            existing_username = create_db.query(
+                                User
+                            ).filter(
+                                User.username == clean_username
+                            ).first()
 
-                                existing_username = create_db.query(
-                                    User
-                                ).filter(
-                                    User.username == clean_username
-                                ).first()
+                            selected_player_id = available_players[
+                                selected_player
+                            ]
 
-                                selected_player_id = available_players[
-                                    selected_player
-                                ]
+                            existing_player_account = create_db.query(
+                                User
+                            ).filter(
+                                User.player_id == selected_player_id
+                            ).first()
 
-                                existing_player_account = create_db.query(
-                                    User
-                                ).filter(
-                                    User.player_id == selected_player_id
-                                ).first()
-
-                                if existing_username:
-
-                                    st.error(
-                                        "That username is already in use."
-                                    )
-
-                    
-                                elif existing_player_account:
-
-                                    st.error(
-                                        "That player profile already has an account."
-                                    )
-
-                                    get_available_account_players.clear()
-
-                                else:
-
-                                    new_user = User(
-                                        username=clean_username,
-                                        password=new_password,
-                                        role="viewer",
-                                        player_id=selected_player_id
-                                    )
-
-                                    create_db.add(
-                                        new_user
-                                    )
-
-                                    create_db.commit()
-
-                                    get_available_account_players.clear()
-
-                                    st.success(
-                                        "Account created successfully. "
-                                        "You can now log in."
-                                    )
-
-                                    st.session_state.login_mode = "login"
+                            if existing_username:
 
                                 create_db.close()
 
+                                st.error(
+                                    "That username is already in use."
+                                )
+
+                            elif existing_player_account:
+
+                                create_db.close()
+
+                                get_available_account_players.clear()
+
+                                st.error(
+                                    "That player profile already has an account."
+                                )
+
+                            else:
+
+                                new_user = User(
+                                    username=clean_username,
+                                    password=new_password,
+                                    role="viewer",
+                                    player_id=selected_player_id
+                                )
+
+                                create_db.add(
+                                    new_user
+                                )
+
+                                create_db.commit()
+                                create_db.close()
+
+                                get_available_account_players.clear()
+
+                                st.success(
+                                    "Account created successfully. "
+                                    "You can now log in."
+                                )
+
+                                st.session_state.login_mode = "login"
+
                                 st.rerun()
 
-                        if not new_username.strip():
-
-                            st.error(
-                                "Please choose a username."
-                            )
-
-                        elif not new_password:
-
-                            st.error(
-                                "Please choose a password."
-                            )
-
-                        elif len(new_password) < 6:
-
-                            st.error(
-                                "Password must contain at least 6 characters."
-                            )
-
-                        elif new_password != confirm_password:
-
-                            st.error(
-                                "The passwords do not match."
-                            )
-
-                        elif existing_username:
-
-                            st.error(
-                                "That username is already in use."
-                            )
-
-                        else:
-
-                            new_user = User(
-                                username=new_username.strip(),
-                                password=new_password,
-                                role="viewer",
-                                player_id=available_players[
-                                    selected_player
-                                ]
-                            )
-
-                            create_db.add(new_user)
-                            create_db.commit()
-
-                            st.success(
-                                "Account created successfully. "
-                                "You can now log in."
-                            )
-
-                            st.session_state.login_mode = "login"
-
-                            create_db.close()
-
-                            st.rerun()
-
-                create_db.close()
 
     elif st.session_state.public_page == "Feed":
 
