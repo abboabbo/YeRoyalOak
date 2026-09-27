@@ -1652,6 +1652,49 @@ def get_home_dashboard():
 
         db.close()
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_public_feed_posts():
+
+    db = SessionLocal()
+
+    try:
+
+        posts = (
+            db.query(LeaguePost)
+            .filter(
+                LeaguePost.is_published == 1
+            )
+            .order_by(
+                LeaguePost.is_pinned.desc(),
+                LeaguePost.id.desc()
+            )
+            .limit(30)
+            .all()
+        )
+
+        return [
+            {
+                "id": post.id,
+                "category": post.category,
+                "platform": post.platform,
+                "title": post.title,
+                "message": post.message,
+                "image_url": post.image_url,
+                "external_url": post.external_url,
+                "is_pinned": post.is_pinned,
+                "created_by": post.created_by,
+                "created_at": post.created_at
+            }
+            for post in posts
+        ]
+
+    finally:
+
+        db.close()        
+
 @st.cache_data(ttl=900)
 def get_youtube_subscriber_count():
 
@@ -3685,57 +3728,6 @@ if not st.session_state.logged_in:
     if "login_mode" not in st.session_state:
         st.session_state.login_mode = "login"
 
-    # ---------------------------------------------------------
-    # LOAD PUBLIC DASHBOARD INFORMATION
-    # ---------------------------------------------------------
-
-    public_db = SessionLocal()
-
-    public_players = public_db.query(Player).all()
-
-    public_player_lookup = {
-        player.id: display_player_name(player)
-        for player in public_players
-    }
-
-    public_next_fixture = public_db.query(Fixture).filter(
-        Fixture.played == 0
-    ).order_by(
-        Fixture.round_number,
-        Fixture.id
-    ).first()
-
-    public_latest_result = public_db.query(Fixture).filter(
-        Fixture.played == 1
-    ).order_by(
-        Fixture.id.desc()
-    ).first()
-
-    public_latest_announcement = public_db.query(
-        Announcement
-    ).order_by(
-        Announcement.id.desc()
-    ).first()
-
-    public_feed_posts = (
-        public_db.query(LeaguePost)
-        .filter(
-            LeaguePost.is_published == 1
-        )
-        .order_by(
-            LeaguePost.is_pinned.desc(),
-            LeaguePost.id.desc()
-        )
-        .limit(30)
-        .all()
-    )
-
-    public_players_count = len(public_players)
-
-    public_matches_played = public_db.query(Fixture).filter(
-        Fixture.played == 1
-    ).count()
-
 
     # ---------------------------------------------------------
     # NEXT LEAGUE NIGHT
@@ -3797,147 +3789,8 @@ if not st.session_state.logged_in:
         f"{countdown_minutes}m"
     )
 
-    # ---------------------------------------------------------
-    # CURRENT LEAGUE LEADER
-    # Uses the newest league-compatible tournament
-    # ---------------------------------------------------------
 
-    public_leader_name = "No standings yet"
-    public_leader_points = 0
-
-    public_league_tournament = (
-        public_db.query(Tournament)
-        .filter(
-            Tournament.format_type.in_(
-                [
-                    "League + Knockout",
-                    "League Only"
-                ]
-            )
-        )
-        .order_by(
-            Tournament.id.desc()
-        )
-        .first()
-    )
-
-    if public_league_tournament:
-
-        public_tournament_links = (
-            public_db.query(
-                TournamentPlayer
-            )
-            .filter(
-                TournamentPlayer.tournament_id
-                == public_league_tournament.id
-            )
-            .all()
-        )
-
-        public_tournament_player_ids = {
-            link.player_id
-            for link
-            in public_tournament_links
-        }
-
-        public_league_fixtures = (
-            public_db.query(Fixture)
-            .filter(
-                Fixture.tournament_id
-                == public_league_tournament.id,
-                Fixture.played == 1
-            )
-            .all()
-        )
-
-        public_standings = {
-            player_id: {
-                "points": 0,
-                "wins": 0,
-                "difference": 0
-            }
-            for player_id
-            in public_tournament_player_ids
-        }
-
-        for fixture in public_league_fixtures:
-
-            if (
-                fixture.player1_id
-                not in public_standings
-                or fixture.player2_id
-                not in public_standings
-            ):
-
-                continue
-
-            player1_legs = int(
-                fixture.player1_legs or 0
-            )
-
-            player2_legs = int(
-                fixture.player2_legs or 0
-            )
-
-            player1_data = public_standings[
-                fixture.player1_id
-            ]
-
-            player2_data = public_standings[
-                fixture.player2_id
-            ]
-
-            player1_data["difference"] += (
-                player1_legs
-                - player2_legs
-            )
-
-            player2_data["difference"] += (
-                player2_legs
-                - player1_legs
-            )
-
-            if player1_legs > player2_legs:
-
-                player1_data["wins"] += 1
-                player1_data["points"] += 3
-
-            elif player2_legs > player1_legs:
-
-                player2_data["wins"] += 1
-                player2_data["points"] += 3
-
-            else:
-
-                player1_data["points"] += 1
-                player2_data["points"] += 1
-
-        if public_standings:
-
-            leader_id, leader_data = max(
-                public_standings.items(),
-                key=lambda item: (
-                    item[1]["points"],
-                    item[1]["difference"],
-                    item[1]["wins"]
-                )
-            )
-
-            public_leader_name = (
-                public_player_lookup.get(
-                    leader_id,
-                    "Unknown"
-                )
-            )
-
-            public_leader_points = (
-                leader_data["points"]
-            )
-
-    public_db.close()
-
-
-       # =========================================================
+    # =========================================================
     # PREMIUM PUBLIC LANDING PAGE
     # =========================================================
 
