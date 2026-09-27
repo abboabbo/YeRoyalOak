@@ -14019,6 +14019,10 @@ if page == "Statistics":
             key="statistics_tournament_selector"
         )
 
+        selected_tournament_id = tournament_options[
+            selected_tournament_name
+        ]
+
         statistics_page_data = get_statistics_page_data(
             selected_tournament_id
         )
