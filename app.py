@@ -1956,6 +1956,74 @@ def get_view_player_data(player_id):
 
         db.close()
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_awards_page_data(tournament_id):
+
+    db = SessionLocal()
+
+    try:
+
+        fixtures = db.query(Fixture).filter(
+            Fixture.tournament_id
+            == tournament_id,
+            Fixture.played == 1
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
+        ).all()
+
+        fixture_player_ids = {
+            player_id
+            for fixture in fixtures
+            for player_id in (
+                fixture.player1_id,
+                fixture.player2_id
+            )
+            if player_id is not None
+        }
+
+        players = []
+
+        if fixture_player_ids:
+
+            players = db.query(Player).filter(
+                Player.id.in_(
+                    fixture_player_ids
+                )
+            ).all()
+
+        fixture_data = [
+            {
+                column.name: getattr(
+                    fixture,
+                    column.name
+                )
+                for column in Fixture.__table__.columns
+            }
+            for fixture in fixtures
+        ]
+
+        player_data = [
+            {
+                "id": player.id,
+                "name": player.name,
+                "nickname": player.nickname
+            }
+            for player in players
+        ]
+
+        return {
+            "fixtures": fixture_data,
+            "players": player_data
+        }
+
+    finally:
+
+        db.close()
+
 def get_public_feed_posts():
 
     db = SessionLocal()
@@ -9947,7 +10015,7 @@ if page == "Awards":
                         season_most_maximums = max(
                             season_rows,
                             key=lambda item: (
-                                item["maximums"],
+                                item["Maximums"],
                                 item["average"]
                             )
                         )
