@@ -10711,14 +10711,16 @@ if page == "Fixtures":
             selected_tournament
         ]
 
-        selected_tournament_object = db.get(
-            Tournament,
-            selected_tournament_id
+        selected_tournament_object = next(
+            tournament
+            for tournament in tournaments
+            if tournament.id == selected_tournament_id
         )
 
         winning_legs = get_winning_legs(
             selected_tournament_object.legs_format
-    )
+        )
+
 
     if winning_legs:
 
