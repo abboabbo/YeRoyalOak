@@ -15030,26 +15030,33 @@ if page == "View Player":
 
         db = SessionLocal()
 
-        player = db.get(
-            Player,
+        view_player_data = get_view_player_data(
             player_id
         )
 
-        if not player:
+        if not view_player_data:
 
             st.error("Player not found.")
 
         else:
 
-            fixtures = db.query(Fixture).filter(
-                (
-                    Fixture.player1_id == player_id
-                )
-                |
-                (
-                    Fixture.player2_id == player_id
-                )
-            ).all()
+            player = SimpleNamespace(
+                **view_player_data["player"]
+            )
+
+            fixtures = [
+                SimpleNamespace(**fixture)
+                for fixture in view_player_data[
+                    "fixtures"
+                ]
+            ]
+
+            opponents = [
+                SimpleNamespace(**opponent)
+                for opponent in view_player_data[
+                    "opponents"
+                ]
+            ]
 
             played = 0
             wins = 0
@@ -15063,11 +15070,11 @@ if page == "View Player":
             total_maximums = 0
             highest_checkout = 0
 
-            players = db.query(Player).all()
-
             player_lookup = {
-                p.id: display_player_name(p)
-                for p in players
+                opponent.id: display_player_name(
+                    opponent
+                )
+                for opponent in opponents
             }
 
             for fixture in fixtures:
