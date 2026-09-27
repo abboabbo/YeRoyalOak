@@ -11687,6 +11687,7 @@ if page == "Fixtures":
 
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()    
+                                                    get_news_ticker_text.clear()
 
                                                     st.success("Result updated.")
 
@@ -12016,6 +12017,7 @@ if page == "Fixtures":
 
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()
+                                                    get_news_ticker_text.clear()
 
                                                     st.success("Result updated.")
                                                     st.rerun()
