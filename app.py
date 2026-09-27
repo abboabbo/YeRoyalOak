@@ -7577,6 +7577,8 @@ if page == "Tournaments":
                                     withdraw_db.commit()
                                     withdraw_db.close()
 
+                                    get_admin_tournaments_data.clear()
+
                                     if (
                                         "league_standings"
                                         in st.session_state
