@@ -6889,8 +6889,6 @@ if page == "Users":
     else:
         st.header("👥 User Account Management")
 
-        db = SessionLocal()
-
         admin_users_data = get_admin_users_data()
 
         players = [
@@ -7215,8 +7213,6 @@ if page == "Users":
 
                             st.success("User account deleted.")
                             st.rerun()
-
-        db.close()
 
 # =========================================================
 # ADMIN: TOURNAMENTS
