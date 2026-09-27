@@ -6951,59 +6951,76 @@ if page == "Users":
 
             create_db = SessionLocal()
 
-            username_clean = new_username.strip()
+            try:
 
-            existing_user = db.query(User).filter(
-                User.username == username_clean
-            ).first()
+                username_clean = new_username.strip()
 
-            selected_player_id = linked_player_options[
-                selected_player_name
-            ]
-
-            player_already_linked = None
-
-            if selected_player_id is not None:
-                player_already_linked = create_db.query(User).filter(
-                    User.player_id == selected_player_id
+                existing_user = create_db.query(User).filter(
+                    User.username == username_clean
                 ).first()
 
-            if not username_clean:
-                st.error("Please enter a username.")
+                selected_player_id = linked_player_options[
+                    selected_player_name
+                ]
 
-            elif not new_password:
-                st.error("Please enter a password.")
+                player_already_linked = None
 
-            elif len(new_password) < 6:
-                st.error(
-                    "Password must contain at least six characters."
-                )
+                if selected_player_id is not None:
+                    player_already_linked = create_db.query(
+                        User
+                    ).filter(
+                        User.player_id == selected_player_id
+                    ).first()
 
-            elif existing_user:
-                st.error("That username already exists.")
+                if not username_clean:
+                    st.error(
+                        "Please enter a username."
+                    )
 
-            elif player_already_linked:
-                st.error(
-                    "That player is already linked to another account."
-                )
+                elif not new_password:
+                    st.error(
+                        "Please enter a password."
+                    )
 
-            else:
-                new_user = User(
-                    username=username_clean,
-                    password=new_password,
-                    role=new_role,
-                    player_id=selected_player_id
-                )
+                elif len(new_password) < 6:
+                    st.error(
+                        "Password must contain at least six characters."
+                    )
 
-                create_db.add(new_user)
-                create_db.commit()
+                elif existing_user:
+                    st.error(
+                        "That username already exists."
+                    )
+
+                elif player_already_linked:
+                    st.error(
+                        "That player is already linked to another account."
+                    )
+
+                else:
+
+                    new_user = User(
+                        username=username_clean,
+                        password=new_password,
+                        role=new_role,
+                        player_id=selected_player_id
+                    )
+
+                    create_db.add(new_user)
+                    create_db.commit()
+
+                    get_admin_users_data.clear()
+                    get_available_account_players.clear()
+
+                    st.success(
+                        "User account created."
+                    )
+
+                    st.rerun()
+
+            finally:
+
                 create_db.close()
-
-                get_admin_users_data.clear()
-                get_available_account_players.clear()
-
-                st.success("User account created.")
-                st.rerun()
 
         st.divider()
         st.subheader("Current Users")
