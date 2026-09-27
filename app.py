@@ -5045,11 +5045,9 @@ if not st.session_state.logged_in:
 
                                     st.session_state.login_mode = "login"
 
-                                    st.rerun()
+                                create_db.close()
 
-                                finally:
-
-                                    create_db.close()
+                                st.rerun()
 
                         if not new_username.strip():
 
