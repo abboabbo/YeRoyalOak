@@ -7209,9 +7209,27 @@ if page == "Tournaments":
 
         db = SessionLocal()
 
-        all_players = db.query(Player).order_by(
-            Player.name
-        ).all()
+        admin_tournaments_data = get_admin_tournaments_data()
+
+        all_players = [
+            SimpleNamespace(**player)
+            for player in admin_tournaments_data["players"]
+        ]
+
+        tournaments = [
+            SimpleNamespace(**tournament)
+            for tournament in admin_tournaments_data["tournaments"]
+        ]
+
+        cached_tournament_links = [
+            SimpleNamespace(**link)
+            for link in admin_tournaments_data["links"]
+        ]
+
+        cached_tournament_fixtures = [
+            SimpleNamespace(**fixture)
+            for fixture in admin_tournaments_data["fixtures"]
+        ]
 
         player_options = {
             display_player_name(player): player.id
@@ -7316,10 +7334,6 @@ if page == "Tournaments":
         # -----------------------------------------------------
 
         st.subheader("Existing Tournaments")
-
-        tournaments = db.query(Tournament).order_by(
-            Tournament.id.desc()
-        ).all()
 
         if not tournaments:
             st.info("No tournaments have been created yet.")
