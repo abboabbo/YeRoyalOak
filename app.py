@@ -5661,6 +5661,174 @@ with st.sidebar:
             TIKTOK_URL,
             use_container_width=True
         )
+
+# =========================================================
+# MOBILE BOTTOM NAVIGATION
+# =========================================================
+
+st.markdown(
+    """
+    <style>
+
+    /* Hidden on desktop */
+    .st-key-mobile_bottom_nav {
+        display: none;
+    }
+
+    /* Visible on mobile only */
+    @media (max-width: 800px) {
+
+        .st-key-mobile_bottom_nav {
+            display: block !important;
+            position: fixed !important;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 999;
+            background: #101827;
+            border-top: 2px solid #f5c542;
+            padding: 8px 6px max(8px, env(safe-area-inset-bottom));
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+        }
+
+        .st-key-mobile_bottom_nav [data-testid="stHorizontalBlock"] {
+            gap: 4px;
+        }
+
+        .st-key-mobile_bottom_nav .stButton button,
+        .st-key-mobile_bottom_nav .stPopover button {
+            width: 100%;
+            min-height: 46px;
+            padding: 5px 1px;
+            border-radius: 10px;
+            background: #192536;
+            border: 1px solid rgba(245,197,66,0.25);
+            color: #f5c542;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .st-key-mobile_bottom_nav .stButton button p,
+        .st-key-mobile_bottom_nav .stPopover button p {
+            font-size: 11px;
+        }
+
+        /* Leave room so content isn't hidden by the bar */
+        [data-testid="stMainBlockContainer"] {
+            padding-bottom: 110px !important;
+        }
+
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+def mobile_navigate(destination):
+    st.session_state.page = destination
+    st.rerun()
+
+
+with st.container(key="mobile_bottom_nav"):
+
+    mobile_col1, mobile_col2, mobile_col3, mobile_col4, mobile_col5 = (
+        st.columns(5, gap="small")
+    )
+
+    with mobile_col1:
+        if st.button(
+            "🏠 Home",
+            key="mobile_home",
+            use_container_width=True
+        ):
+            mobile_navigate("Home")
+
+    with mobile_col2:
+        if st.button(
+            "📅 Fixtures",
+            key="mobile_fixtures",
+            use_container_width=True
+        ):
+            mobile_navigate("Fixtures")
+
+    with mobile_col3:
+        if st.button(
+            "🏆 League",
+            key="mobile_league",
+            use_container_width=True
+        ):
+            mobile_navigate("League")
+
+    with mobile_col4:
+        if st.button(
+            "👤 Profile",
+            key="mobile_profile",
+            use_container_width=True
+        ):
+            mobile_navigate("My Profile")
+
+    with mobile_col5:
+
+        with st.popover(
+            "☰ More",
+            use_container_width=True
+        ):
+
+            st.markdown("### 🎯 More Pages")
+
+            if st.button(
+                "🎯 Knockout",
+                key="mobile_knockout",
+                use_container_width=True
+            ):
+                mobile_navigate("Knockout")
+
+            if st.button(
+                "📊 Statistics",
+                key="mobile_statistics",
+                use_container_width=True
+            ):
+                mobile_navigate("Statistics")
+
+            if st.button(
+                "🏅 Awards",
+                key="mobile_awards",
+                use_container_width=True
+            ):
+                mobile_navigate("Awards")
+
+            if st.button(
+                "📢 Announcements",
+                key="mobile_announcements",
+                use_container_width=True
+            ):
+                mobile_navigate("Announcements")
+
+            if is_admin:
+
+                st.markdown("---")
+                st.markdown("### 🔐 Admin")
+
+                admin_mobile_pages = [
+                    ("➕ Players", "Players"),
+                    ("👥 Users", "Users"),
+                    ("🏆 Tournaments", "Tournaments"),
+                    ("📰 Feed Manager", "Feed Manager"),
+                    ("✨ AI Match Report", "AI Match Report"),
+                ]
+
+                for label, destination in admin_mobile_pages:
+
+                    if st.button(
+                        label,
+                        key=f"mobile_admin_{destination}",
+                        use_container_width=True
+                    ):
+                        mobile_navigate(destination)
+
 # =========================================================
 # ADMIN: PLAYERS
 # =========================================================
