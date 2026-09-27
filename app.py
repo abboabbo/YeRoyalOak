@@ -10806,35 +10806,28 @@ if page == "Fixtures":
             st.stop()
 
 
-            fixtures_page_data = get_fixtures_page_data(
-                selected_tournament_id  
-            )
+        fixtures_page_data = get_fixtures_page_data(
+            selected_tournament_id
+        )
 
-            fixtures = [
-                SimpleNamespace(**fixture)
-                for fixture in fixtures_page_data[
-                    "fixtures"
-                ]
+        fixtures = [
+            SimpleNamespace(**fixture)
+            for fixture in fixtures_page_data[
+                "fixtures"
             ]
-            
+        ]
 
-            players = [
-                SimpleNamespace(**player)
-                for player in fixtures_page_data[
-                    "players"
-                ]
+        players = [
+            SimpleNamespace(**player)
+            for player in fixtures_page_data[
+                "players"
             ]
+        ]
 
-            player_lookup = {
-                player.id: display_player_name(player)
-                for player in players
-            }
-
-# -----------------------------------------------------
-# FIXTURE SUMMARY
-# -----------------------------------------------------
-
-        total_fixtures = len(fixtures)
+        player_lookup = {
+            player.id: display_player_name(player)
+            for player in players
+        }
 
         # -----------------------------------------------------
         # FIXTURE SUMMARY
@@ -10843,7 +10836,8 @@ if page == "Fixtures":
         total_fixtures = len(fixtures)
 
         played_fixtures = len(
-            [
+
+        [   
                 fixture
                 for fixture in fixtures
                 if fixture.played == 1
