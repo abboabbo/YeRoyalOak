@@ -2028,6 +2028,69 @@ def get_awards_page_data(tournament_id):
     ttl=30,
     show_spinner=False
 )
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_admin_users_data():
+
+    db = SessionLocal()
+
+    try:
+
+        players = db.query(
+            Player
+        ).order_by(
+            Player.name
+        ).all()
+
+        users = db.query(
+            User
+        ).order_by(
+            User.username
+        ).all()
+
+        player_data = [
+            {
+                column.name: getattr(
+                    player,
+                    column.name
+                )
+                for column in Player.__table__.columns
+            }
+            for player in players
+        ]
+
+        user_data = [
+            {
+                column.name: getattr(
+                    user,
+                    column.name
+                )
+                for column in User.__table__.columns
+            }
+            for user in users
+        ]
+
+        return {
+            "players": player_data,
+            "users": user_data
+        }
+
+    finally:
+
+        db.close()
+
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
 def get_admin_players_data():
 
     db = SessionLocal()
@@ -2050,6 +2113,43 @@ def get_admin_players_data():
             }
             for player in players
         ]
+
+    finally:
+
+        db.close()
+
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_available_account_players():
+
+    db = SessionLocal()
+
+    try:
+
+        players = db.query(
+            Player
+        ).order_by(
+            Player.name
+        ).all()
+
+        users = db.query(
+            User
+        ).all()
+
+        used_player_ids = {
+            user.player_id
+            for user in users
+            if user.player_id is not None
+        }
+
+        return {
+            player.name: player.id
+            for player in players
+            if player.id not in used_player_ids
+        }
 
     finally:
 
