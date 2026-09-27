@@ -165,6 +165,10 @@ def image_to_base64(path):
 
     return f"data:image/png;base64,{encoded}"
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
 def get_news_ticker_text():
 
     db = SessionLocal()
