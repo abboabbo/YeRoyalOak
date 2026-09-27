@@ -7466,25 +7466,19 @@ if page == "Tournaments":
                             )
                         )
 
-                        remaining_player_matches = (
-                            db.query(Fixture)
-                            .filter(
-                                Fixture.tournament_id
-                                == tournament.id,
-                                Fixture.played == 0,
-                                (
-                                    (
-                                        Fixture.player1_id
-                                        == withdraw_player_id
-                                    )
-                                    |
-                                    (
-                                        Fixture.player2_id
-                                        == withdraw_player_id
-                                    )
+                        remaining_player_matches = sum(
+                            1
+                            for fixture in cached_tournament_fixtures
+                            if (
+                                fixture.tournament_id == tournament.id
+                                and fixture.played == 0
+                                and (
+                                    fixture.player1_id
+                                    == withdraw_player_id
+                                    or fixture.player2_id
+                                    == withdraw_player_id
                                 )
                             )
-                            .count()
                         )
 
                         st.write(
