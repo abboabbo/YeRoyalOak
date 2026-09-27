@@ -2028,6 +2028,87 @@ def get_awards_page_data(tournament_id):
     ttl=30,
     show_spinner=False
 )
+def get_admin_tournaments_data():
+
+    db = SessionLocal()
+
+    try:
+
+        players = db.query(
+            Player
+        ).order_by(
+            Player.name
+        ).all()
+
+        tournaments = db.query(
+            Tournament
+        ).order_by(
+            Tournament.id.desc()
+        ).all()
+
+        tournament_links = db.query(
+            TournamentPlayer
+        ).all()
+
+        fixtures = db.query(
+            Fixture
+        ).all()
+
+        player_data = [
+            {
+                column.name: getattr(
+                    player,
+                    column.name
+                )
+                for column in Player.__table__.columns
+            }
+            for player in players
+        ]
+
+        tournament_data = [
+            {
+                column.name: getattr(
+                    tournament,
+                    column.name
+                )
+                for column in Tournament.__table__.columns
+            }
+            for tournament in tournaments
+        ]
+
+        link_data = [
+            {
+                "tournament_id": link.tournament_id,
+                "player_id": link.player_id
+            }
+            for link in tournament_links
+        ]
+
+        fixture_data = [
+            {
+                "tournament_id": fixture.tournament_id,
+                "player1_id": fixture.player1_id,
+                "player2_id": fixture.player2_id,
+                "played": fixture.played
+            }
+            for fixture in fixtures
+        ]
+
+        return {
+            "players": player_data,
+            "tournaments": tournament_data,
+            "links": link_data,
+            "fixtures": fixture_data
+        }
+
+    finally:
+
+        db.close()
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
 
 def get_admin_users_data():
 
