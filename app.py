@@ -1658,10 +1658,7 @@ def get_home_dashboard():
     show_spinner=False
 )
 
-@st.cache_data(
-    ttl=30,
-    show_spinner=False
-)
+
 def get_fixtures_page_data(tournament_id):
 
     db = SessionLocal()
@@ -10798,6 +10795,7 @@ if page == "Fixtures":
             f"The first player to {winning_legs} legs wins."
         )
 
+
         if not selected_tournament_object:
 
             st.error(
@@ -10807,8 +10805,9 @@ if page == "Fixtures":
             db.close()
             st.stop()
 
+
             fixtures_page_data = get_fixtures_page_data(
-                selected_tournament_id
+                selected_tournament_id  
             )
 
             fixtures = [
@@ -10817,6 +10816,7 @@ if page == "Fixtures":
                     "fixtures"
                 ]
             ]
+            
 
             players = [
                 SimpleNamespace(**player)
@@ -10829,6 +10829,12 @@ if page == "Fixtures":
                 player.id: display_player_name(player)
                 for player in players
             }
+
+# -----------------------------------------------------
+# FIXTURE SUMMARY
+# -----------------------------------------------------
+
+        total_fixtures = len(fixtures)
 
         # -----------------------------------------------------
         # FIXTURE SUMMARY
