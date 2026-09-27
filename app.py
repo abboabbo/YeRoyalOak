@@ -9348,20 +9348,23 @@ if page == "Awards":
             selected_tournament_name
         ]
 
-        players = awards_db.query(
-            Player
-        ).all()
+        awards_data = get_awards_page_data(
+            selected_tournament_id
+        )
 
-        completed_fixtures = awards_db.query(
-            Fixture
-        ).filter(
-            Fixture.tournament_id
-            == selected_tournament_id,
-            Fixture.played == 1
-        ).order_by(
-            Fixture.round_number,
-            Fixture.id
-        ).all()
+        players = [
+            SimpleNamespace(**player)
+            for player in awards_data[
+                "players"
+            ]
+        ]
+
+        completed_fixtures = [
+            SimpleNamespace(**fixture)
+            for fixture in awards_data[
+                "fixtures"
+            ]
+        ]
 
         player_lookup = {
             player.id: player
