@@ -7340,11 +7340,11 @@ if page == "Tournaments":
 
         for tournament in tournaments:
 
-            tournament_links = db.query(
-                TournamentPlayer
-            ).filter(
-                TournamentPlayer.tournament_id == tournament.id
-            ).all()
+            tournament_links = [
+                link
+                for link in cached_tournament_links
+                if link.tournament_id == tournament.id
+            ]
 
             tournament_player_ids = [
                 link.player_id
@@ -7362,14 +7362,20 @@ if page == "Tournaments":
                 for player in tournament_players
             ]
 
-            fixtures_count = db.query(Fixture).filter(
-                Fixture.tournament_id == tournament.id
-            ).count()
+            fixtures_count = sum(
+                1
+                for fixture in cached_tournament_fixtures
+                if fixture.tournament_id == tournament.id
+            )
 
-            played_count = db.query(Fixture).filter(
-                Fixture.tournament_id == tournament.id,
-                Fixture.played == 1
-            ).count()
+            played_count = sum(
+                1
+                for fixture in cached_tournament_fixtures
+                if (
+                    fixture.tournament_id == tournament.id
+                    and fixture.played == 1
+                )
+            )
 
             with st.expander(
                 f"🏆 {tournament.name}",
@@ -7414,7 +7420,7 @@ if page == "Tournaments":
                         "No players are linked to this tournament."
                     )
 
-                                # ---------------------------------------------
+                # ---------------------------------------------
                 # WITHDRAW PLAYER
                 # ---------------------------------------------
 
