@@ -12194,36 +12194,23 @@ if page == "League":
                 selected_tournament_name
             ]
 
-            tournament_links = league_db.query(
-                TournamentPlayer
-            ).filter(
-                TournamentPlayer.tournament_id
-                == selected_tournament_id
-            ).all()
+            league_page_data = get_league_page_data(
+                selected_tournament_id
+            )
 
-            tournament_player_ids = {
-                link.player_id
-                for link in tournament_links
-            }
+            players = [
+                SimpleNamespace(**player)
+                for player in league_page_data[
+                    "players"
+                ]
+            ]
 
-            players = league_db.query(
-                Player
-            ).filter(
-                Player.id.in_(
-                    tournament_player_ids
-                )
-            ).all()
-
-            fixtures = league_db.query(
-                Fixture
-            ).filter(
-                Fixture.tournament_id
-                == selected_tournament_id,
-                Fixture.played == 1
-            ).order_by(
-                Fixture.round_number,
-                Fixture.id
-            ).all()
+            fixtures = [
+                SimpleNamespace(**fixture)
+                for fixture in league_page_data[
+                    "fixtures"
+                ]
+            ]
 
             player_objects = {
                 player.id: player
