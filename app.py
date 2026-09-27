@@ -6850,9 +6850,17 @@ if page == "Users":
 
         db = SessionLocal()
 
-        players = db.query(Player).order_by(
-            Player.name
-        ).all()
+        admin_users_data = get_admin_users_data()
+
+        players = [
+            SimpleNamespace(**player)
+            for player in admin_users_data["players"]
+        ]
+
+        users = [
+            SimpleNamespace(**user)
+            for user in admin_users_data["users"]
+        ]
 
         player_options = {
             display_player_name(player): player.id
@@ -6948,10 +6956,6 @@ if page == "Users":
 
         st.divider()
         st.subheader("Current Users")
-
-        users = db.query(User).order_by(
-            User.username
-        ).all()
 
         if not users:
             st.info("No user accounts were found.")
