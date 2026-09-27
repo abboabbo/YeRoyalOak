@@ -10747,7 +10747,25 @@ if page == "Fixtures":
             Fixture.id
         ).all()
 
-        players = db.query(Player).all()
+        fixture_player_ids = {
+            player_id
+            for fixture in fixtures
+            for player_id in (
+                fixture.player1_id,
+                fixture.player2_id
+            )
+            if player_id is not None
+        }
+
+        players = []
+
+        if fixture_player_ids:
+
+            players = db.query(Player).filter(
+                Player.id.in_(
+                fixture_player_ids
+                )
+            ).all()
 
         player_lookup = {
             player.id: display_player_name(player)
