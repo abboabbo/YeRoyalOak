@@ -6949,6 +6949,8 @@ if page == "Users":
             use_container_width=True
         ):
 
+            create_db = SessionLocal()
+
             username_clean = new_username.strip()
 
             existing_user = db.query(User).filter(
@@ -6962,7 +6964,7 @@ if page == "Users":
             player_already_linked = None
 
             if selected_player_id is not None:
-                player_already_linked = db.query(User).filter(
+                player_already_linked = create_db.query(User).filter(
                     User.player_id == selected_player_id
                 ).first()
 
@@ -6993,9 +6995,9 @@ if page == "Users":
                     player_id=selected_player_id
                 )
 
-                db.add(new_user)
-                db.commit()
-                db.close()
+                create_db.add(new_user)
+                create_db.commit()
+                create_db.close()
 
                 get_admin_users_data.clear()
                 get_available_account_players.clear()
