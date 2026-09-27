@@ -7757,6 +7757,16 @@ if page == "Tournaments":
                             delete_db.commit()
                             delete_db.close()
 
+                            get_admin_tournaments_data.clear()  
+                            get_fixtures_page_data.clear()
+                            get_statistics_page_data.clear()
+                            get_league_page_data.clear()
+                            get_view_player_data.clear()
+                            get_awards_page_data.clear()
+                            get_sidebar_dashboard.clear()
+                            get_home_dashboard.clear()
+                            get_news_ticker_text.clear()
+
                             if "league_standings" in st.session_state:
                                 del st.session_state[
                                     "league_standings"
@@ -11559,7 +11569,8 @@ if page == "Fixtures":
                                 db.add(new_fixture)
 
                             db.commit()
-                            
+
+                            get_admin_tournaments_data.clear()
                             get_fixtures_page_data.clear()
                             get_sidebar_dashboard.clear()
                             get_home_dashboard.clear()
