@@ -5678,6 +5678,17 @@ st.markdown(
     /* Visible on mobile only */
     @media (max-width: 800px) {
 
+        /* Hide Streamlit sidebar on mobile */
+        section[data-testid="stSidebar"] {
+            display: none !important;
+        }
+
+        /* Hide Streamlit sidebar open/collapse controls on mobile */
+        [data-testid="stSidebarCollapsedControl"],
+        [data-testid="stSidebarCollapseButton"] {
+            display: none !important;
+        }
+
         .st-key-mobile_bottom_nav {
             display: block !important;
             position: fixed !important;
