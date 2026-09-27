@@ -1870,6 +1870,91 @@ def get_league_page_data(tournament_id):
     ttl=30,
     show_spinner=False
 )
+def get_view_player_data(player_id):
+
+    db = SessionLocal()
+
+    try:
+
+        player = db.get(
+            Player,
+            player_id
+        )
+
+        if not player:
+
+            return None
+
+        fixtures = db.query(Fixture).filter(
+            (
+                Fixture.player1_id == player_id
+            )
+            |
+            (
+                Fixture.player2_id == player_id
+            )
+        ).all()
+
+        opponent_ids = {
+            (
+                fixture.player2_id
+                if fixture.player1_id == player_id
+                else fixture.player1_id
+            )
+            for fixture in fixtures
+            if (
+                fixture.player1_id is not None
+                and fixture.player2_id is not None
+            )
+        }
+
+        opponents = []
+
+        if opponent_ids:
+
+            opponents = db.query(Player).filter(
+                Player.id.in_(
+                    opponent_ids
+                )
+            ).all()
+
+        player_data = {
+            column.name: getattr(
+                player,
+                column.name
+            )
+            for column in Player.__table__.columns
+        }
+
+        fixture_data = [
+            {
+                column.name: getattr(
+                    fixture,
+                    column.name
+                )
+                for column in Fixture.__table__.columns
+            }
+            for fixture in fixtures
+        ]
+
+        opponent_data = [
+            {
+                "id": opponent.id,
+                "name": opponent.name,
+                "nickname": opponent.nickname
+            }
+            for opponent in opponents
+        ]
+
+        return {
+            "player": player_data,
+            "fixtures": fixture_data,
+            "opponents": opponent_data
+        }
+
+    finally:
+
+        db.close()
 
 def get_public_feed_posts():
 
