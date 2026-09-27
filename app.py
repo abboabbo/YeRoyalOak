@@ -11871,6 +11871,7 @@ if page == "Fixtures":
 
                                                     get_fixtures_page_data.clear()
                                                     get_statistics_page_data.clear()
+                                                    get_view_player_data.clear()
                                                     get_league_page_data.clear()
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()    
@@ -12204,6 +12205,7 @@ if page == "Fixtures":
 
                                                     get_fixtures_page_data.clear()
                                                     get_statistics_page_data.clear()
+                                                    get_view_player_data.clear()
                                                     get_league_page_data.clear()
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()
