@@ -7542,6 +7542,41 @@ if page == "Tournaments":
 
                                     withdraw_db = SessionLocal()
 
+                                    live_completed_matches = (
+                                        withdraw_db.query(Fixture)
+                                        .filter(
+                                            Fixture.tournament_id
+                                            == tournament.id,
+                                            Fixture.played == 1,
+                                            (
+                                                (
+                                                    Fixture.player1_id
+                                                    == withdraw_player_id
+                                                )
+                                                |
+                                                (
+                                                    Fixture.player2_id
+                                                    == withdraw_player_id
+                                                )
+                                            )
+                                        )
+                                        .count()
+                                    )
+
+                                    if live_completed_matches > 0:
+
+                                        withdraw_db.close()
+
+                                        st.error(
+                                            "This player has now completed "
+                                            "a league match. Withdrawal has "
+                                            "been blocked to protect existing "
+                                            "results."
+                                        )
+
+                                        st.rerun()
+
+
                                     withdraw_db.query(
                                         Fixture
                                     ).filter(
