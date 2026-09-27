@@ -5710,19 +5710,19 @@ st.markdown(
         .st-key-mobile_bottom_nav .stButton button,
         .st-key-mobile_bottom_nav .stPopover button {
             width: 100%;
-            min-height: 46px;
+            min-height: 52px;
             padding: 5px 1px;
             border-radius: 10px;
             background: #192536;
             border: 1px solid rgba(245,197,66,0.25);
             color: #f5c542;
-            font-size: 11px;
+            font-size: 16px;
             font-weight: 700;
         }
 
         .st-key-mobile_bottom_nav .stButton button p,
         .st-key-mobile_bottom_nav .stPopover button p {
-            font-size: 11px;
+            font-size: 16px;
         }
 
         /* Leave room so content isn't hidden by the bar */
@@ -5745,11 +5745,13 @@ def mobile_navigate(destination):
 
 with st.container(key="mobile_bottom_nav"):
 
-    mobile_col1, mobile_col2, mobile_col3, mobile_col4, mobile_col5 = (
-        st.columns(5, gap="small")
-    )
+    with st.popover(
+        "☰ MENU",
+        use_container_width=True
+    ):
 
-    with mobile_col1:
+        st.markdown("### 🎯 Ye Royal Oak Darts League")
+
         if st.button(
             "🏠 Home",
             key="mobile_home",
@@ -5757,7 +5759,6 @@ with st.container(key="mobile_bottom_nav"):
         ):
             mobile_navigate("Home")
 
-    with mobile_col2:
         if st.button(
             "📅 Fixtures",
             key="mobile_fixtures",
@@ -5765,80 +5766,87 @@ with st.container(key="mobile_bottom_nav"):
         ):
             mobile_navigate("Fixtures")
 
-    with mobile_col3:
         if st.button(
-            "🏆 League",
+            "🏆 League Table",
             key="mobile_league",
             use_container_width=True
         ):
             mobile_navigate("League")
 
-    with mobile_col4:
         if st.button(
-            "👤 Profile",
+            "👤 My Profile",
             key="mobile_profile",
             use_container_width=True
         ):
             mobile_navigate("My Profile")
 
-    with mobile_col5:
-
-        with st.popover(
-            "☰ More",
+        if st.button(
+            "🎯 Knockout",
+            key="mobile_knockout",
             use_container_width=True
         ):
+            mobile_navigate("Knockout")
 
-            st.markdown("### 🎯 More Pages")
+        if st.button(
+            "📊 Statistics",
+            key="mobile_statistics",
+            use_container_width=True
+        ):
+            mobile_navigate("Statistics")
+
+        if st.button(
+            "🏅 Awards",
+            key="mobile_awards",
+            use_container_width=True
+        ):
+            mobile_navigate("Awards")
+
+        if st.button(
+            "📢 Announcements",
+            key="mobile_announcements",
+            use_container_width=True
+        ):
+            mobile_navigate("Announcements")
+
+        if is_admin:
+
+            st.markdown("---")
+            st.markdown("### 🔐 Admin")
 
             if st.button(
-                "🎯 Knockout",
-                key="mobile_knockout",
+                "➕ Players",
+                key="mobile_admin_players",
                 use_container_width=True
             ):
-                mobile_navigate("Knockout")
+                mobile_navigate("Players")
 
             if st.button(
-                "📊 Statistics",
-                key="mobile_statistics",
+                "👥 Users",
+                key="mobile_admin_users",
                 use_container_width=True
             ):
-                mobile_navigate("Statistics")
+                mobile_navigate("Users")
 
             if st.button(
-                "🏅 Awards",
-                key="mobile_awards",
+                "🏆 Tournaments",
+                key="mobile_admin_tournaments",
                 use_container_width=True
             ):
-                mobile_navigate("Awards")
+                mobile_navigate("Tournaments")
 
             if st.button(
-                "📢 Announcements",
-                key="mobile_announcements",
+                "📰 Feed Manager",
+                key="mobile_admin_feed",
                 use_container_width=True
             ):
-                mobile_navigate("Announcements")
+                mobile_navigate("Feed Manager")
 
-            if is_admin:
-
-                st.markdown("---")
-                st.markdown("### 🔐 Admin")
-
-                admin_mobile_pages = [
-                    ("➕ Players", "Players"),
-                    ("👥 Users", "Users"),
-                    ("🏆 Tournaments", "Tournaments"),
-                    ("📰 Feed Manager", "Feed Manager"),
-                    ("✨ AI Match Report", "AI Match Report"),
-                ]
-
-                for label, destination in admin_mobile_pages:
-
-                    if st.button(
-                        label,
-                        key=f"mobile_admin_{destination}",
-                        use_container_width=True
-                    ):
-                        mobile_navigate(destination)
+            if st.button(
+                "✨ AI Match Report",
+                key="mobile_admin_ai_report",
+                use_container_width=True
+            ):
+                mobile_navigate("AI Match Report")
 
 # =========================================================
 # ADMIN: PLAYERS
