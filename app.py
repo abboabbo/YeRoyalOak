@@ -7451,25 +7451,19 @@ if page == "Tournaments":
                             ]
                         )
 
-                        completed_player_matches = (
-                            db.query(Fixture)
-                            .filter(
-                                Fixture.tournament_id
-                                == tournament.id,
-                                Fixture.played == 1,
-                                (
-                                    (
-                                        Fixture.player1_id
-                                        == withdraw_player_id
-                                    )
-                                    |
-                                    (
-                                        Fixture.player2_id
-                                        == withdraw_player_id
-                                    )
+                        completed_player_matches = sum(
+                            1
+                            for fixture in cached_tournament_fixtures
+                            if (
+                                fixture.tournament_id == tournament.id
+                                and fixture.played == 1
+                                and (
+                                    fixture.player1_id
+                                    == withdraw_player_id
+                                    or fixture.player2_id
+                                    == withdraw_player_id
                                 )
                             )
-                            .count()
                         )
 
                         remaining_player_matches = (
