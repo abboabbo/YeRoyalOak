@@ -10083,7 +10083,7 @@ if page == "Awards":
                                     ]
                                 ),
                                 (
-                                    f'{season_most_maximums["maximums"]}'
+                                    f'{season_most_maximums["Maximums"]}'
                                     " total maximums"
                                 )
                             )
