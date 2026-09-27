@@ -1657,6 +1657,74 @@ def get_home_dashboard():
     ttl=30,
     show_spinner=False
 )
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_fixtures_page_data(tournament_id):
+
+    db = SessionLocal()
+
+    try:
+
+        fixtures = db.query(Fixture).filter(
+            Fixture.tournament_id
+            == tournament_id
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
+        ).all()
+
+        fixture_player_ids = {
+            player_id
+            for fixture in fixtures
+            for player_id in (
+                fixture.player1_id,
+                fixture.player2_id
+            )
+            if player_id is not None
+        }
+
+        players = []
+
+        if fixture_player_ids:
+
+            players = db.query(Player).filter(
+                Player.id.in_(
+                    fixture_player_ids
+                )
+            ).all()
+
+        fixture_data = [
+            {
+                column.name: getattr(
+                    fixture,
+                    column.name
+                )
+                for column in Fixture.__table__.columns
+            }
+            for fixture in fixtures
+        ]
+
+        player_data = [
+            {
+                "id": player.id,
+                "name": player.name,
+                "nickname": player.nickname
+            }
+            for player in players
+        ]
+
+        return {
+            "fixtures": fixture_data,
+            "players": player_data
+        }
+
+    finally:
+
+        db.close()
+
 def get_public_feed_posts():
 
     db = SessionLocal()
@@ -10739,38 +10807,28 @@ if page == "Fixtures":
             db.close()
             st.stop()
 
-        fixtures = db.query(Fixture).filter(
-            Fixture.tournament_id
-            == selected_tournament_id
-        ).order_by(
-            Fixture.round_number,
-            Fixture.id
-        ).all()
-
-        fixture_player_ids = {
-            player_id
-            for fixture in fixtures
-            for player_id in (
-                fixture.player1_id,
-                fixture.player2_id
+            fixtures_page_data = get_fixtures_page_data(
+                selected_tournament_id
             )
-            if player_id is not None
-        }
 
-        players = []
+            fixtures = [
+                SimpleNamespace(**fixture)
+                for fixture in fixtures_page_data[
+                    "fixtures"
+                ]
+            ]
 
-        if fixture_player_ids:
+            players = [
+                SimpleNamespace(**player)
+                for player in fixtures_page_data[
+                    "players"
+                ]
+            ]
 
-            players = db.query(Player).filter(
-                Player.id.in_(
-                fixture_player_ids
-                )
-            ).all()
-
-        player_lookup = {
-            player.id: display_player_name(player)
-            for player in players
-        }
+            player_lookup = {
+                player.id: display_player_name(player)
+                for player in players
+            }
 
         # -----------------------------------------------------
         # FIXTURE SUMMARY
@@ -10905,6 +10963,11 @@ if page == "Fixtures":
                                 db.add(new_fixture)
 
                             db.commit()
+                            
+                            get_fixtures_page_data.clear()
+                            get_sidebar_dashboard.clear()
+                            get_home_dashboard.clear()
+                            get_news_ticker_text.clear()
 
                             st.success(
                                 "Fixtures generated successfully."
@@ -11572,6 +11635,7 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
+                                                    get_fixtures_page_data.clear()
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()    
                                                     get_news_ticker_text.clear()
@@ -11902,6 +11966,7 @@ if page == "Fixtures":
                                                     if "league_standings" in st.session_state:
                                                         del st.session_state["league_standings"]
 
+                                                    get_fixtures_page_data.clear()
                                                     get_sidebar_dashboard.clear()
                                                     get_home_dashboard.clear()
                                                     get_news_ticker_text.clear()
