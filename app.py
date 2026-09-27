@@ -2028,6 +2028,33 @@ def get_awards_page_data(tournament_id):
     ttl=30,
     show_spinner=False
 )
+def get_admin_players_data():
+
+    db = SessionLocal()
+
+    try:
+
+        players = db.query(
+            Player
+        ).order_by(
+            Player.name
+        ).all()
+
+        return [
+            {
+                column.name: getattr(
+                    player,
+                    column.name
+                )
+                for column in Player.__table__.columns
+            }
+            for player in players
+        ]
+
+    finally:
+
+        db.close()
+
 def get_available_account_players():
 
     db = SessionLocal()
@@ -6205,6 +6232,9 @@ if page == "Players":
                 db.add(new_player)
                 db.commit()
 
+                get_admin_players_data.clear()
+                get_available_account_players.clear()
+
                 if "league_standings" in st.session_state:
                     del st.session_state["league_standings"]
 
@@ -6216,9 +6246,12 @@ if page == "Players":
         st.divider()
         st.subheader("Current Players")
 
-        players = db.query(Player).order_by(
-            Player.name
-        ).all()
+        player_data = get_admin_players_data()
+
+        players = [
+            SimpleNamespace(**player)
+            for player in player_data
+        ]
 
         if not players:
             st.info("No players have been added yet.")
@@ -6626,6 +6659,9 @@ if page == "Players":
                             edit_db.commit()
                             edit_db.close()
 
+                            get_admin_players_data.clear()
+                            get_available_account_players.clear()
+
                             if "league_standings" in st.session_state:
                                 del st.session_state[
                                     "league_standings"
@@ -6682,6 +6718,9 @@ if page == "Players":
                         if target_player:
                             delete_db.delete(target_player)
                             delete_db.commit()
+
+                            get_admin_players_data.clear()
+                            get_available_account_players.clear()
 
                         if "league_standings" in st.session_state:
                             del st.session_state[
