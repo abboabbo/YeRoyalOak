@@ -1794,6 +1794,78 @@ def get_statistics_page_data(tournament_id):
 
         db.close()        
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
+def get_league_page_data(tournament_id):
+
+    db = SessionLocal()
+
+    try:
+
+        tournament_links = db.query(
+            TournamentPlayer
+        ).filter(
+            TournamentPlayer.tournament_id
+            == tournament_id
+        ).all()
+
+        tournament_player_ids = {
+            link.player_id
+            for link in tournament_links
+        }
+
+        players = []
+
+        if tournament_player_ids:
+
+            players = db.query(Player).filter(
+                Player.id.in_(
+                    tournament_player_ids
+                )
+            ).all()
+
+        fixtures = db.query(Fixture).filter(
+            Fixture.tournament_id
+            == tournament_id,
+            Fixture.played == 1
+        ).order_by(
+            Fixture.round_number,
+            Fixture.id
+        ).all()
+
+        player_data = [
+            {
+                column.name: getattr(
+                    player,
+                    column.name
+                )
+                for column in Player.__table__.columns
+            }
+            for player in players
+        ]
+
+        fixture_data = [
+            {
+                column.name: getattr(
+                    fixture,
+                    column.name
+                )
+                for column in Fixture.__table__.columns
+            }
+            for fixture in fixtures
+        ]
+
+        return {
+            "players": player_data,
+            "fixtures": fixture_data
+        }
+
+    finally:
+
+        db.close()
+
 def get_public_feed_posts():
 
     db = SessionLocal()
