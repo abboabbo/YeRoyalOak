@@ -7324,6 +7324,8 @@ if page == "Tournaments":
                 db.commit()
                 db.close()
 
+                get_admin_tournaments_data.clear()
+
                 st.success("Tournament created successfully.")
                 st.rerun()
 
