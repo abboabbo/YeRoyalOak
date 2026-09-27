@@ -2024,6 +2024,10 @@ def get_awards_page_data(tournament_id):
 
         db.close()
 
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
 def get_public_feed_posts():
 
     db = SessionLocal()
