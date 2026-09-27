@@ -7014,8 +7014,7 @@ if page == "Users":
             linked_player = None
 
             if user.player_id is not None:
-                linked_player = db.get(
-                    Player,
+                linked_player = player_lookup.get(
                     user.player_id
                 )
 
