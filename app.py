@@ -7308,9 +7308,13 @@ if page == "Tournaments":
             use_container_width=True
         ):
 
+            create_tournament_db = SessionLocal()
+
             clean_name = tournament_name.strip()
 
-            existing_tournament = db.query(Tournament).filter(
+            existing_tournament = create_tournament_db.query(
+                Tournament
+            ).filter(
                 Tournament.name == clean_name
             ).first()
 
@@ -7334,9 +7338,9 @@ if page == "Tournaments":
                     legs_format=legs_format
                 )
 
-                db.add(tournament)
-                db.commit()
-                db.refresh(tournament)
+                create_tournament_db.add(tournament)
+                create_tournament_db.commit()
+                create_tournament_db.refresh(tournament)
 
                 for player_name in selected_players:
 
@@ -7345,10 +7349,10 @@ if page == "Tournaments":
                         player_id=player_options[player_name]
                     )
 
-                    db.add(link)
+                    create_tournament_db.add(link)
 
-                db.commit()
-                db.close()
+                create_tournament_db.commit()
+                create_tournament_db.close()
 
                 get_admin_tournaments_data.clear()
 
