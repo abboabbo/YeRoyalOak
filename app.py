@@ -2316,12 +2316,12 @@ def create_results_pdf(
     results_table = Table(
         table_data,
         colWidths=[
-            25 * mm,
-            70 * mm,
-            16 * mm,
-            10 * mm,
-            16 * mm,
-            70 * mm
+            72 * mm,
+            18 * mm,
+            12 * mm,
+            18 * mm,
+            72 * mm
+            
         ],
         hAlign="CENTER"
     )
@@ -2343,7 +2343,7 @@ def create_results_pdf(
             "FONTSIZE",
             (0, 0),
             (-1, -1),
-            12
+            11
         ),
         (
             "TEXTCOLOR",
