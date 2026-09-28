@@ -7162,20 +7162,21 @@ if page == "Users":
                                 )
 
                             edit_db.commit()
+                            edit_db.close()
+
+                            get_admin_users_data.clear()
+                            get_available_account_players.clear()
 
                             if (
                                 user.username
                                 == st.session_state.get("username")
                             ):
-                                st.session_state.role = edited_role
-                                st.session_state.player_id = (
-                                    selected_player_id
+                                st.session_state["username"] = (
+                                    edit_user.username
                                 )
 
                             st.success("User updated.")
                             st.rerun()
-
-                        edit_db.close()
 
                 with action_col2:
 
