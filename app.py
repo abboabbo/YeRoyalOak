@@ -2029,6 +2029,442 @@ def create_league_table_pdf(league_rows):
 
     return buffer
 
+def create_results_pdf(
+    results,
+    result_date,
+    player_lookup
+):
+
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer
+    )
+    from reportlab.lib import colors
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.units import mm
+
+    buffer = BytesIO()
+
+    # =========================================================
+    # COLOURS
+    # =========================================================
+
+    background_colour = colors.HexColor("#070B11")
+    panel_colour = colors.HexColor("#111827")
+    row_colour = colors.HexColor("#141C28")
+    alternate_row_colour = colors.HexColor("#0E1520")
+
+    gold = colors.HexColor("#F5C542")
+    gold_dark = colors.HexColor("#B78B18")
+
+    white = colors.HexColor("#FFFFFF")
+    muted_text = colors.HexColor("#AEB7C4")
+
+    # =========================================================
+    # DOCUMENT
+    # =========================================================
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=12 * mm,
+        bottomMargin=12 * mm
+    )
+
+    page_width, page_height = landscape(A4)
+
+    elements = []
+
+    # =========================================================
+    # PAGE BACKGROUND
+    # =========================================================
+
+    def draw_page(canvas, doc):
+
+        canvas.saveState()
+
+        canvas.setFillColor(
+            background_colour
+        )
+
+        canvas.rect(
+            0,
+            0,
+            page_width,
+            page_height,
+            fill=1,
+            stroke=0
+        )
+
+        # Gold line across top
+
+        canvas.setFillColor(
+            gold
+        )
+
+        canvas.rect(
+            0,
+            page_height - 4,
+            page_width,
+            4,
+            fill=1,
+            stroke=0
+        )
+
+        # Darker gold line across bottom
+
+        canvas.setFillColor(
+            gold_dark
+        )
+
+        canvas.rect(
+            0,
+            0,
+            page_width,
+            2,
+            fill=1,
+            stroke=0
+        )
+
+        canvas.restoreState()
+
+    # =========================================================
+    # TEXT STYLES
+    # =========================================================
+
+    title_style = ParagraphStyle(
+        "ResultsPDFTitle",
+        fontName="Helvetica-Bold",
+        fontSize=18,
+        leading=21,
+        textColor=gold,
+        alignment=TA_CENTER,
+        spaceAfter=1
+    )
+
+    subtitle_style = ParagraphStyle(
+        "ResultsPDFSubtitle",
+        fontName="Helvetica-Bold",
+        fontSize=10,
+        leading=13,
+        textColor=muted_text,
+        alignment=TA_CENTER,
+        spaceAfter=2
+    )
+
+    date_style = ParagraphStyle(
+        "ResultsPDFDate",
+        fontName="Helvetica-Bold",
+        fontSize=13,
+        leading=16,
+        textColor=white,
+        alignment=TA_CENTER,
+        spaceAfter=2
+    )
+
+    home_player_style = ParagraphStyle(
+        "ResultsPDFHomePlayer",
+        fontName="Helvetica-Bold",
+        fontSize=12,
+        leading=14,
+        textColor=white,
+        alignment=TA_RIGHT
+    )
+
+    away_player_style = ParagraphStyle(
+        "ResultsPDFAwayPlayer",
+        fontName="Helvetica-Bold",
+        fontSize=12,
+        leading=14,
+        textColor=white,
+        alignment=TA_LEFT
+    )
+
+    score_style = ParagraphStyle(
+        "ResultsPDFScore",
+        fontName="Helvetica-Bold",
+        fontSize=15,
+        leading=17,
+        textColor=gold,
+        alignment=TA_CENTER
+    )
+
+    dash_style = ParagraphStyle(
+        "ResultsPDFDash",
+        fontName="Helvetica-Bold",
+        fontSize=11,
+        leading=14,
+        textColor=muted_text,
+        alignment=TA_CENTER
+    )
+
+    round_style = ParagraphStyle(
+        "ResultsPDFRound",
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=10,
+        textColor=muted_text,
+        alignment=TA_CENTER
+    )
+
+    # =========================================================
+    # TITLE
+    # =========================================================
+
+    elements.append(
+        Paragraph(
+            "YE ROYAL OAK DARTS LEAGUE",
+            title_style
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            "OFFICIAL RESULTS",
+            subtitle_style
+        )
+    )
+
+    elements.append(
+        Spacer(
+            1,
+            2 * mm
+        )
+    )
+
+    # =========================================================
+    # RESULT DATE
+    # =========================================================
+
+    try:
+
+        date_text = result_date.strftime(
+            "%A %d %B %Y"
+        ).upper()
+
+    except Exception:
+
+        date_text = str(
+            result_date
+        ).upper()
+
+    elements.append(
+        Paragraph(
+            date_text,
+            date_style
+        )
+    )
+
+    elements.append(
+        Spacer(
+            1,
+            4 * mm
+        )
+    )
+
+    # =========================================================
+    # RESULTS
+    # =========================================================
+
+    table_data = []
+
+    for fixture in results:
+
+        player1_name = player_lookup.get(
+            fixture.player1_id,
+            "Unknown"
+        )
+
+        player2_name = player_lookup.get(
+            fixture.player2_id,
+            "Unknown"
+        )
+
+        player1_score = (
+            fixture.player1_legs
+            if fixture.player1_legs is not None
+            else 0
+        )
+
+        player2_score = (
+            fixture.player2_legs
+            if fixture.player2_legs is not None
+            else 0
+        )
+
+        round_number = getattr(
+            fixture,
+            "round_number",
+            None
+        )
+
+        round_text = (
+            f"ROUND {round_number}"
+            if round_number is not None
+            else ""
+        )
+
+        table_data.append(
+            [
+                Paragraph(
+                    round_text,
+                    round_style
+                ),
+                Paragraph(
+                    str(player1_name),
+                    home_player_style
+                ),
+                Paragraph(
+                    str(player1_score),
+                    score_style
+                ),
+                Paragraph(
+                    "—",
+                    dash_style
+                ),
+                Paragraph(
+                    str(player2_score),
+                    score_style
+                ),
+                Paragraph(
+                    str(player2_name),
+                    away_player_style
+                )
+            ]
+        )
+
+    # =========================================================
+    # RESULTS TABLE
+    # =========================================================
+
+    results_table = Table(
+        table_data,
+        colWidths=[
+            25 * mm,
+            70 * mm,
+            16 * mm,
+            10 * mm,
+            16 * mm,
+            70 * mm
+        ],
+        hAlign="CENTER"
+    )
+
+    table_style = [
+        (
+            "VALIGN",
+            (0, 0),
+            (-1, -1),
+            "MIDDLE"
+        ),
+        (
+            "TOPPADDING",
+            (0, 0),
+            (-1, -1),
+            8
+        ),
+        (
+            "BOTTOMPADDING",
+            (0, 0),
+            (-1, -1),
+            8
+        ),
+        (
+            "LINEBELOW",
+            (0, 0),
+            (-1, -1),
+            0.35,
+            colors.HexColor("#303846")
+        )
+    ]
+
+    # =========================================================
+    # ALTERNATING ROWS
+    # =========================================================
+
+    for index in range(
+        len(table_data)
+    ):
+
+        if index % 2 == 0:
+
+            row_background = row_colour
+
+        else:
+
+            row_background = alternate_row_colour
+
+        table_style.append(
+            (
+                "BACKGROUND",
+                (0, index),
+                (-1, index),
+                row_background
+            )
+        )
+
+    results_table.setStyle(
+        TableStyle(
+            table_style
+        )
+    )
+
+    elements.append(
+        results_table
+    )
+
+    # =========================================================
+    # FOOTER
+    # =========================================================
+
+    elements.append(
+        Spacer(
+            1,
+            3 * mm
+        )
+    )
+
+    footer_style = ParagraphStyle(
+        "ResultsPDFFooter",
+        fontName="Helvetica",
+        fontSize=7.5,
+        leading=10,
+        textColor=muted_text,
+        alignment=TA_CENTER
+    )
+
+    elements.append(
+        Paragraph(
+            (
+                "YE ROYAL OAK DARTS LEAGUE"
+                " &nbsp;&nbsp;•&nbsp;&nbsp; "
+                "OFFICIAL RESULTS"
+            ),
+            footer_style
+        )
+    )
+
+    # =========================================================
+    # BUILD PDF
+    # =========================================================
+
+    doc.build(
+        elements,
+        onFirstPage=draw_page,
+        onLaterPages=draw_page
+    )
+
+    buffer.seek(0)
+
+    return buffer    
+
 @st.cache_data(
     ttl=30,
     show_spinner=False
