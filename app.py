@@ -8040,6 +8040,9 @@ if page == "Feed Manager":
                     feed_db.add(new_post)
                     feed_db.commit()
 
+                    get_admin_feed_posts.clear()
+                    get_public_feed_posts.clear()
+
                     st.success(
                         "Feed post created successfully."
                     )
