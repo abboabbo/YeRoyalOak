@@ -8054,12 +8054,12 @@ if page == "Feed Manager":
 
         st.subheader("Existing Feed Posts")
 
-        existing_posts = feed_db.query(
-            LeaguePost
-        ).order_by(
-            LeaguePost.is_pinned.desc(),
-            LeaguePost.id.desc()
-        ).all()
+        admin_feed_posts = get_admin_feed_posts()
+
+        existing_posts = [
+            SimpleNamespace(**post)
+            for post in admin_feed_posts
+        ]
 
         if not existing_posts:
 
