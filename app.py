@@ -2205,15 +2205,6 @@ def create_results_pdf(
         alignment=TA_CENTER
     )
 
-    round_style = ParagraphStyle(
-        "ResultsPDFRound",
-        fontName="Helvetica-Bold",
-        fontSize=8,
-        leading=10,
-        textColor=muted_text,
-        alignment=TA_CENTER
-    )
-
     # =========================================================
     # TITLE
     # =========================================================
@@ -2299,24 +2290,8 @@ def create_results_pdf(
             else 0
         )
 
-        round_number = getattr(
-            fixture,
-            "round_number",
-            None
-        )
-
-        round_text = (
-            f"ROUND {round_number}"
-            if round_number is not None
-            else ""
-        )
-
         table_data.append(
             [
-                Paragraph(
-                    round_text,
-                    round_style
-                ),
                 Paragraph(
                     str(player1_name),
                     home_player_style
