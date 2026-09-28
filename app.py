@@ -1472,11 +1472,11 @@ def create_league_table_pdf(league_rows):
     title_style = ParagraphStyle(
         "LeaguePDFTitle",
         fontName="Helvetica-Bold",
-        fontSize=25,
-        leading=29,
+        fontSize=18,
+        leading=21,
         textColor=gold,
         alignment=TA_CENTER,
-        spaceAfter=2
+        spaceAfter=1
     )
 
     subtitle_style = ParagraphStyle(
