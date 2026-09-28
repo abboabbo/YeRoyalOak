@@ -7131,11 +7131,15 @@ if page == "Users":
                             )
 
                         if not target_user:
+                            edit_db.close()
+
                             st.error(
                                 "The user account could not be found."
                             )
 
                         elif conflicting_user:
+                            edit_db.close()
+
                             st.error(
                                 "That player is already linked to "
                                 "another account."
@@ -7145,6 +7149,8 @@ if page == "Users":
                             new_user_password
                             and len(new_user_password) < 6
                         ):
+                            edit_db.close()
+
                             st.error(
                                 "The new password must contain at "
                                 "least six characters."
