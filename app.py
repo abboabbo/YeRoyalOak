@@ -2232,6 +2232,38 @@ def get_available_account_players():
     ttl=30,
     show_spinner=False
 )
+def get_admin_feed_posts():
+
+    db = SessionLocal()
+
+    try:
+
+        posts = db.query(
+            LeaguePost
+        ).order_by(
+            LeaguePost.is_pinned.desc(),
+            LeaguePost.id.desc()
+        ).all()
+
+        return [
+            {
+                column.name: getattr(
+                    post,
+                    column.name
+                )
+                for column in LeaguePost.__table__.columns
+            }
+            for post in posts
+        ]
+
+    finally:
+
+        db.close()
+
+@st.cache_data(
+    ttl=30,
+    show_spinner=False
+)
 def get_public_feed_posts():
 
     db = SessionLocal()
