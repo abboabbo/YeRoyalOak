@@ -7310,56 +7310,75 @@ if page == "Tournaments":
 
             create_tournament_db = SessionLocal()
 
-            clean_name = tournament_name.strip()
+            try:
 
-            existing_tournament = create_tournament_db.query(
-                Tournament
-            ).filter(
-                Tournament.name == clean_name
-            ).first()
+                clean_name = tournament_name.strip()
 
-            if not clean_name:
-                st.error("Please enter a tournament name.")
+                existing_tournament = create_tournament_db.query(
+                    Tournament
+                ).filter(
+                    Tournament.name == clean_name
+                ).first()
 
-            elif existing_tournament:
-                st.error(
-                    "A tournament with that name already exists."
-                )
-
-            elif len(selected_players) < 2:
-                st.error(
-                    "Please select at least two players."
-                )
-
-            else:
-                tournament = Tournament(
-                    name=clean_name,
-                    format_type=format_type,
-                    legs_format=legs_format
-                )
-
-                create_tournament_db.add(tournament)
-                create_tournament_db.commit()
-                create_tournament_db.refresh(tournament)
-
-                for player_name in selected_players:
-
-                    link = TournamentPlayer(
-                        tournament_id=tournament.id,
-                        player_id=player_options[player_name]
+                if not clean_name:
+                    st.error(
+                        "Please enter a tournament name."
                     )
 
-                    create_tournament_db.add(link)
+                elif existing_tournament:
+                    st.error(
+                        "A tournament with that name already exists."
+                    )
 
-                create_tournament_db.commit()
+                elif len(selected_players) < 2:
+                    st.error(
+                        "Please select at least two players."
+                    )
+
+                else:
+
+                    tournament = Tournament(
+                        name=clean_name,
+                        format_type=format_type,
+                        legs_format=legs_format
+                    )
+
+                    create_tournament_db.add(
+                        tournament
+                    )
+
+                    create_tournament_db.commit()
+
+                    create_tournament_db.refresh(
+                        tournament
+                    )
+
+                    for player_name in selected_players:
+
+                        link = TournamentPlayer(
+                            tournament_id=tournament.id,
+                            player_id=player_options[
+                                player_name
+                            ]
+                        )
+
+                        create_tournament_db.add(
+                            link
+                        )
+
+                    create_tournament_db.commit()
+
+                    get_admin_tournaments_data.clear()
+
+                    st.success(
+                        "Tournament created successfully."
+                    )
+
+                    st.rerun()
+
+            finally:
+
                 create_tournament_db.close()
-
-                get_admin_tournaments_data.clear()
-
-                st.success("Tournament created successfully.")
-                st.rerun()
-
-        st.divider()
 
         # -----------------------------------------------------
         # EXISTING TOURNAMENTS
