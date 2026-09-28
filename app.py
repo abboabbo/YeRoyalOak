@@ -12795,7 +12795,27 @@ if page == "Fixtures":
                 st.caption(
                     f"📅 Showing results from "
                     f"{result_date_filter.strftime('%A %d %B %Y')}"
-                )    
+                )
+
+                if displayed_fixtures:
+
+                    results_pdf = create_results_pdf(
+                        displayed_fixtures,
+                        result_date_filter,
+                        player_lookup
+                    )
+
+                    st.download_button(
+                        "📄 Download Results PDF",
+                        data=results_pdf,
+                        file_name=(
+                            "Ye_Royal_Oak_Results_"
+                            f"{result_date_filter.strftime('%Y-%m-%d')}.pdf"
+                        ),
+                        mime="application/pdf",
+                        key="download_results_pdf",
+                        use_container_width=True
+                    )  
 
             if not displayed_fixtures:
 
