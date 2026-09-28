@@ -1508,41 +1508,6 @@ def create_league_table_pdf(league_rows):
     )
 
     # =========================================================
-    # LOGO
-    # =========================================================
-
-    logo_path = "assets/royal_oak_logo.png"
-
-    if os.path.exists(
-        logo_path
-    ):
-
-        try:
-
-            logo = RLImage(
-                logo_path,
-                width=22 * mm,
-                height=22 * mm
-            )
-
-            logo.hAlign = "CENTER"
-
-            elements.append(
-                logo
-            )
-
-            elements.append(
-                Spacer(
-                    1,
-                    3 * mm
-                )
-            )
-
-        except Exception:
-
-            pass
-
-    # =========================================================
     # TITLE
     # =========================================================
 
