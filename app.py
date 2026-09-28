@@ -1361,84 +1361,704 @@ def validate_match_score(
 
 def create_league_table_pdf(league_rows):
 
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer,
+        Image as RLImage
+    )
+    from reportlab.lib import colors
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.units import mm
+
     buffer = BytesIO()
+
+    # =========================================================
+    # COLOURS
+    # =========================================================
+
+    background_colour = colors.HexColor("#070B11")
+    panel_colour = colors.HexColor("#111827")
+    row_colour = colors.HexColor("#141C28")
+    alternate_row_colour = colors.HexColor("#0E1520")
+
+    gold = colors.HexColor("#F5C542")
+    gold_dark = colors.HexColor("#B78B18")
+
+    white = colors.HexColor("#FFFFFF")
+    muted_text = colors.HexColor("#AEB7C4")
+
+    green = colors.HexColor("#38D981")
+    red = colors.HexColor("#FF6670")
+
+    # =========================================================
+    # DOCUMENT
+    # =========================================================
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=A4,
-        rightMargin=25,
-        leftMargin=25,
-        topMargin=30,
-        bottomMargin=30
+        pagesize=landscape(A4),
+        rightMargin=12 * mm,
+        leftMargin=12 * mm,
+        topMargin=12 * mm,
+        bottomMargin=12 * mm
     )
 
-    styles = getSampleStyleSheet()
+    page_width, page_height = landscape(A4)
 
     elements = []
 
-    title = Paragraph(
-        "Ye Royal Oak Darts League Table",
-        styles["Title"]
+    # =========================================================
+    # PAGE BACKGROUND
+    # =========================================================
+
+    def draw_page(canvas, doc):
+
+        canvas.saveState()
+
+        canvas.setFillColor(
+            background_colour
+        )
+
+        canvas.rect(
+            0,
+            0,
+            page_width,
+            page_height,
+            fill=1,
+            stroke=0
+        )
+
+        # Top gold accent line
+
+        canvas.setFillColor(
+            gold
+        )
+
+        canvas.rect(
+            0,
+            page_height - 4,
+            page_width,
+            4,
+            fill=1,
+            stroke=0
+        )
+
+        # Bottom accent line
+
+        canvas.setFillColor(
+            gold_dark
+        )
+
+        canvas.rect(
+            0,
+            0,
+            page_width,
+            2,
+            fill=1,
+            stroke=0
+        )
+
+        canvas.restoreState()
+
+    # =========================================================
+    # TEXT STYLES
+    # =========================================================
+
+    title_style = ParagraphStyle(
+        "LeaguePDFTitle",
+        fontName="Helvetica-Bold",
+        fontSize=25,
+        leading=29,
+        textColor=gold,
+        alignment=TA_CENTER,
+        spaceAfter=2
     )
 
-    elements.append(title)
-    elements.append(Spacer(1, 16))
+    subtitle_style = ParagraphStyle(
+        "LeaguePDFSubtitle",
+        fontName="Helvetica-Bold",
+        fontSize=10,
+        leading=13,
+        textColor=muted_text,
+        alignment=TA_CENTER,
+        spaceAfter=4
+    )
+
+    player_style = ParagraphStyle(
+        "LeaguePDFPlayer",
+        fontName="Helvetica-Bold",
+        fontSize=9.5,
+        leading=11,
+        textColor=white,
+        alignment=TA_LEFT
+    )
+
+    cell_style = ParagraphStyle(
+        "LeaguePDFCell",
+        fontName="Helvetica-Bold",
+        fontSize=9,
+        leading=11,
+        textColor=white,
+        alignment=TA_CENTER
+    )
+
+    # =========================================================
+    # LOGO
+    # =========================================================
+
+    logo_path = "assets/royal_oak_logo.png"
+
+    if os.path.exists(
+        logo_path
+    ):
+
+        try:
+
+            logo = RLImage(
+                logo_path,
+                width=22 * mm,
+                height=22 * mm
+            )
+
+            logo.hAlign = "CENTER"
+
+            elements.append(
+                logo
+            )
+
+            elements.append(
+                Spacer(
+                    1,
+                    3 * mm
+                )
+            )
+
+        except Exception:
+
+            pass
+
+    # =========================================================
+    # TITLE
+    # =========================================================
+
+    elements.append(
+        Paragraph(
+            "YE ROYAL OAK DARTS LEAGUE",
+            title_style
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            "OFFICIAL LEAGUE STANDINGS",
+            subtitle_style
+        )
+    )
+
+    elements.append(
+        Spacer(
+            1,
+            5 * mm
+        )
+    )
+
+    # =========================================================
+    # TABLE DATA
+    # =========================================================
 
     table_data = [
         [
-            "Pos",
-            "Player",
+            "POS",
+            "PLAYER",
             "P",
             "W",
             "D",
             "L",
             "LF",
             "LA",
-            "Diff",
-            "Avg",
-            "Pts"
+            "DIFF",
+            "AVG",
+            "PTS"
         ]
     ]
 
     for row in league_rows:
 
+        position = row.get(
+            "Pos",
+            ""
+        )
+
+        player_name = row.get(
+            "Player",
+            ""
+        )
+
+        difference = row.get(
+            "Difference",
+            0
+        )
+
+        average = row.get(
+            "3 Dart Average",
+            0
+        )
+
+        try:
+
+            average_text = (
+                f"{float(average):.2f}"
+            )
+
+        except (TypeError, ValueError):
+
+            average_text = str(
+                average
+            )
+
+        try:
+
+            difference_number = int(
+                difference
+            )
+
+            if difference_number > 0:
+
+                difference_text = (
+                    f"+{difference_number}"
+                )
+
+            else:
+
+                difference_text = str(
+                    difference_number
+                )
+
+        except (TypeError, ValueError):
+
+            difference_number = 0
+
+            difference_text = str(
+                difference
+            )
+
         table_data.append(
             [
-                row.get("Pos", ""),
-                row.get("Player", ""),
-                row.get("Played", ""),
-                row.get("Won", ""),
-                row.get("Drawn", ""),
-                row.get("Lost", ""),
-                row.get("Legs For", ""),
-                row.get("Legs Against", ""),
-                row.get("Difference", ""),
-                row.get("3 Dart Average", ""),
-                row.get("Points", "")
+                Paragraph(
+                    str(position),
+                    cell_style
+                ),
+                Paragraph(
+                    str(player_name),
+                    player_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Played",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Won",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Drawn",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Lost",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Legs For",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Legs Against",
+                            ""
+                        )
+                    ),
+                    cell_style
+                ),
+                Paragraph(
+                    difference_text,
+                    cell_style
+                ),
+                Paragraph(
+                    average_text,
+                    cell_style
+                ),
+                Paragraph(
+                    str(
+                        row.get(
+                            "Points",
+                            ""
+                        )
+                    ),
+                    cell_style
+                )
             ]
         )
+
+    # =========================================================
+    # TABLE
+    # =========================================================
 
     table = Table(
         table_data,
-        repeatRows=1
+        colWidths=[
+            17 * mm,   # POS
+            63 * mm,   # PLAYER
+            17 * mm,   # P
+            17 * mm,   # W
+            17 * mm,   # D
+            17 * mm,   # L
+            19 * mm,   # LF
+            19 * mm,   # LA
+            22 * mm,   # DIFF
+            26 * mm,   # AVG
+            20 * mm    # PTS
+        ],
+        repeatRows=1,
+        hAlign="CENTER"
     )
+
+    table_style = [
+
+        # Header
+
+        (
+            "BACKGROUND",
+            (0, 0),
+            (-1, 0),
+            panel_colour
+        ),
+
+        (
+            "TEXTCOLOR",
+            (0, 0),
+            (-1, 0),
+            gold
+        ),
+
+        (
+            "FONTNAME",
+            (0, 0),
+            (-1, 0),
+            "Helvetica-Bold"
+        ),
+
+        (
+            "FONTSIZE",
+            (0, 0),
+            (-1, 0),
+            9
+        ),
+
+        (
+            "ALIGN",
+            (0, 0),
+            (-1, 0),
+            "CENTER"
+        ),
+
+        (
+            "VALIGN",
+            (0, 0),
+            (-1, -1),
+            "MIDDLE"
+        ),
+
+        (
+            "TOPPADDING",
+            (0, 0),
+            (-1, 0),
+            9
+        ),
+
+        (
+            "BOTTOMPADDING",
+            (0, 0),
+            (-1, 0),
+            9
+        ),
+
+        # Gold line under header
+
+        (
+            "LINEBELOW",
+            (0, 0),
+            (-1, 0),
+            1.2,
+            gold
+        ),
+
+        # Player heading left aligned
+
+        (
+            "ALIGN",
+            (1, 0),
+            (1, 0),
+            "LEFT"
+        ),
+
+        # Body spacing
+
+        (
+            "TOPPADDING",
+            (0, 1),
+            (-1, -1),
+            8
+        ),
+
+        (
+            "BOTTOMPADDING",
+            (0, 1),
+            (-1, -1),
+            8
+        ),
+
+        # Subtle separators
+
+        (
+            "LINEBELOW",
+            (0, 1),
+            (-1, -1),
+            0.3,
+            colors.HexColor(
+                "#303846"
+            )
+        )
+    ]
+
+    # =========================================================
+    # INDIVIDUAL ROW STYLING
+    # =========================================================
+
+    for index, row in enumerate(
+        league_rows,
+        start=1
+    ):
+
+        if index == 1:
+
+            # League leader
+
+            table_style.extend(
+                [
+                    (
+                        "BACKGROUND",
+                        (0, index),
+                        (-1, index),
+                        colors.HexColor(
+                            "#3A3015"
+                        )
+                    ),
+
+                    (
+                        "BOX",
+                        (0, index),
+                        (-1, index),
+                        0.8,
+                        gold
+                    ),
+
+                    (
+                        "TEXTCOLOR",
+                        (0, index),
+                        (0, index),
+                        gold
+                    ),
+
+                    (
+                        "TEXTCOLOR",
+                        (-1, index),
+                        (-1, index),
+                        gold
+                    ),
+
+                    (
+                        "FONTNAME",
+                        (0, index),
+                        (-1, index),
+                        "Helvetica-Bold"
+                    )
+                ]
+            )
+
+        elif index % 2 == 0:
+
+            table_style.append(
+                (
+                    "BACKGROUND",
+                    (0, index),
+                    (-1, index),
+                    alternate_row_colour
+                )
+            )
+
+        else:
+
+            table_style.append(
+                (
+                    "BACKGROUND",
+                    (0, index),
+                    (-1, index),
+                    row_colour
+                )
+            )
+
+        # Difference colour
+
+        try:
+
+            difference = int(
+                row.get(
+                    "Difference",
+                    0
+                )
+            )
+
+        except (TypeError, ValueError):
+
+            difference = 0
+
+        if difference > 0:
+
+            table_style.append(
+                (
+                    "TEXTCOLOR",
+                    (8, index),
+                    (8, index),
+                    green
+                )
+            )
+
+        elif difference < 0:
+
+            table_style.append(
+                (
+                    "TEXTCOLOR",
+                    (8, index),
+                    (8, index),
+                    red
+                )
+            )
+
+        # Points highlighted
+
+        table_style.extend(
+            [
+                (
+                    "TEXTCOLOR",
+                    (10, index),
+                    (10, index),
+                    gold
+                ),
+
+                (
+                    "FONTNAME",
+                    (10, index),
+                    (10, index),
+                    "Helvetica-Bold"
+                ),
+
+                (
+                    "FONTSIZE",
+                    (10, index),
+                    (10, index),
+                    10
+                )
+            ]
+        )
 
     table.setStyle(
         TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTNAME", (0, 1), (-1, -1), "Helvetica-Bold"),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
-            ]
+            table_style
         )
     )
 
-    elements.append(table)
+    elements.append(
+        table
+    )
 
-    doc.build(elements)
+    # =========================================================
+    # FOOTER
+    # =========================================================
+
+    elements.append(
+        Spacer(
+            1,
+            5 * mm
+        )
+    )
+
+    footer_style = ParagraphStyle(
+        "LeaguePDFFooter",
+        fontName="Helvetica",
+        fontSize=7.5,
+        leading=10,
+        textColor=muted_text,
+        alignment=TA_CENTER
+    )
+
+    generated_date = datetime.now().strftime(
+        "%d %B %Y"
+    )
+
+    elements.append(
+        Paragraph(
+            (
+                "YE ROYAL OAK DARTS LEAGUE"
+                " &nbsp;&nbsp;•&nbsp;&nbsp; "
+                "OFFICIAL LEAGUE TABLE"
+                " &nbsp;&nbsp;•&nbsp;&nbsp; "
+                f"{generated_date}"
+            ),
+            footer_style
+        )
+    )
+
+    # =========================================================
+    # BUILD PDF
+    # =========================================================
+
+    doc.build(
+        elements,
+        onFirstPage=draw_page,
+        onLaterPages=draw_page
+    )
 
     buffer.seek(0)
 
@@ -7888,7 +8508,6 @@ if page == "Feed Manager":
             unsafe_allow_html=True
         )
 
-        feed_db = SessionLocal()
 
         # -----------------------------------------------------
         # CREATE NEW POST
@@ -8353,8 +8972,6 @@ if page == "Feed Manager":
                                 )
 
                                 st.rerun()
-
-        feed_db.close()
 
 if page == "Home":
 
