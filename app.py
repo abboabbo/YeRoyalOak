@@ -7233,8 +7233,6 @@ if page == "Tournaments":
     else:
         st.header("🏆 Tournament Management")
 
-        db = SessionLocal()
-
         admin_tournaments_data = get_admin_tournaments_data()
 
         all_players = [
@@ -7826,8 +7824,6 @@ if page == "Tournaments":
                             )
 
                             st.rerun()
-
-        db.close()
 
 # =========================================================
 # ADMIN: LEAGUE FEED MANAGER
