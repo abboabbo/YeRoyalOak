@@ -2292,10 +2292,7 @@ def create_results_pdf(
 
         table_data.append(
             [
-                Paragraph(
-                    str(player1_name),
-                    home_player_style
-                ),
+                str(player1_name),
                 Paragraph(
                     str(player1_score),
                     score_style
@@ -2308,10 +2305,7 @@ def create_results_pdf(
                     str(player2_score),
                     score_style
                 ),
-                Paragraph(
-                    str(player2_name),
-                    away_player_style
-                )
+                str(player2_name)
             ]
         )
 
@@ -2338,6 +2332,36 @@ def create_results_pdf(
             (0, 0),
             (-1, -1),
             "MIDDLE"
+        ),
+        (
+            "FONTNAME",
+            (0, 0),
+            (-1, -1),
+            "Helvetica-Bold"
+        ),
+        (
+            "FONTSIZE",
+            (0, 0),
+            (-1, -1),
+            12
+        ),
+        (
+            "TEXTCOLOR",
+            (0, 0),
+            (-1, -1),
+            white
+        ),
+        (
+            "ALIGN",
+            (0, 0),
+            (0, -1),
+            "RIGHT"
+        ),
+        (
+            "ALIGN",
+            (4, 0),
+            (4, -1),
+            "LEFT"
         ),
         (
             "TOPPADDING",
