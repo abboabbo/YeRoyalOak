@@ -8037,17 +8037,28 @@ if page == "Feed Manager":
                         created_at=created_time
                     )
 
-                    feed_db.add(new_post)
-                    feed_db.commit()
+                    create_feed_db = SessionLocal()
 
-                    get_admin_feed_posts.clear()
-                    get_public_feed_posts.clear()
+                    try:
 
-                    st.success(
-                        "Feed post created successfully."
-                    )
+                        create_feed_db.add(
+                            new_post
+                        )
 
-                    st.rerun()
+                        create_feed_db.commit()
+
+                        get_admin_feed_posts.clear()
+                        get_public_feed_posts.clear()
+
+                        st.success(
+                            "Feed post created successfully."
+    )
+
+                        st.rerun()
+
+                    finally:
+
+                        create_feed_db.close()
 
         st.divider()
 
@@ -8283,6 +8294,7 @@ if page == "Feed Manager":
 
                                     edit_db.commit()
 
+                                    get_admin_feed_posts.clear()
                                     get_public_feed_posts.clear()                                    
 
                                     st.success(
@@ -8333,6 +8345,7 @@ if page == "Feed Manager":
 
                                 delete_db.close()
 
+                                get_admin_feed_posts.clear()
                                 get_public_feed_posts.clear()
 
                                 st.success(
