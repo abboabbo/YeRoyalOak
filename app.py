@@ -10733,6 +10733,9 @@ Return only the finished article.
 
 if page == "Training":
 
+    if "training_game" not in st.session_state:
+        st.session_state.training_game = None    
+
     st.markdown(
         """
         <h1 style="text-align:center;">
@@ -10753,6 +10756,29 @@ if page == "Training":
 
     st.markdown("---")
 
+if st.session_state.training_game == "bobs27":
+
+    st.subheader("🎯 Bob's 27")
+
+    st.caption(
+        "Doubles practice from D1 through D20 and Bull."
+    )
+
+    st.info(
+        "Bob's 27 game screen is ready. "
+        "Scoring will be added in the next step."
+    )
+
+    if st.button(
+        "← Back to Training Centre",
+        key="bobs27_back",
+        use_container_width=True
+    ):
+        st.session_state.training_game = None
+        st.rerun()
+
+    st.stop()
+
     training_col1, training_col2, training_col3 = (
         st.columns(3)
     )
@@ -10772,12 +10798,13 @@ if page == "Training":
                 "Leaderboard: Highest Score"
             )
 
-            st.button(
-                "Coming Soon",
-                key="training_bobs27_coming_soon",
-                use_container_width=True,
-                disabled=True
-            )
+            if st.button(
+                "▶ Play Bob's 27",
+                key="training_bobs27_play",
+                use_container_width=True
+            ):
+                st.session_state.training_game = "bobs27"
+                st.rerun()
 
     with training_col2:
 
