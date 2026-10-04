@@ -7044,6 +7044,13 @@ with st.sidebar:
         st.session_state.page = "Awards"
 
     if st.button(
+        "🎯 Training",
+        key="sidebar_training",
+        use_container_width=True
+    ):
+        st.session_state.page = "Training"
+
+    if st.button(
         "📢 Announcements",
         key="sidebar_announcements",
         use_container_width=True
@@ -7306,6 +7313,13 @@ with st.container(key="mobile_bottom_nav"):
             use_container_width=True
         ):
             mobile_navigate("Awards")
+
+        if st.button(
+            "🎯 Training",
+            key="mobile_training",
+            use_container_width=True
+        ):
+            mobile_navigate("Training")
 
         if st.button(
             "📢 Announcements",
@@ -10711,6 +10725,111 @@ Return only the finished article.
 
             report_db.close()
 
+
+# =========================================================
+# TRAINING CENTRE
+# =========================================================
+
+if page == "Training":
+
+    st.markdown(
+        """
+        <h1 style="text-align:center;">
+            🎯 Training Centre
+        </h1>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+            font-size:17px;
+        ">
+            Practice your game, beat your personal bests
+            and climb the training leaderboards.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("---")
+
+    training_col1, training_col2, training_col3 = (
+        st.columns(3)
+    )
+
+    with training_col1:
+
+        with st.container(border=True):
+
+            st.subheader("🎯 Bob's 27")
+
+            st.write(
+                "Test your doubles from D1 "
+                "all the way through to Bull."
+            )
+
+            st.caption(
+                "Leaderboard: Highest Score"
+            )
+
+            st.button(
+                "Coming Soon",
+                key="training_bobs27_coming_soon",
+                use_container_width=True,
+                disabled=True
+            )
+
+    with training_col2:
+
+        with st.container(border=True):
+
+            st.subheader("🎯 301 Practice")
+
+            st.write(
+                "Practice scoring and finishing "
+                "with a complete 301 leg."
+            )
+
+            st.caption(
+                "Leaderboard: Fewest Darts"
+            )
+
+            st.button(
+                "Coming Soon",
+                key="training_301_coming_soon",
+                use_container_width=True,
+                disabled=True
+            )
+
+    with training_col3:
+
+        with st.container(border=True):
+
+            st.subheader("🎯 Around the Clock")
+
+            st.write(
+                "Work through the board from "
+                "1 to 20 as efficiently as possible."
+            )
+
+            st.caption(
+                "Leaderboard: Fewest Darts"
+            )
+
+            st.button(
+                "Coming Soon",
+                key="training_clock_coming_soon",
+                use_container_width=True,
+                disabled=True
+            )
+
+    st.markdown("---")
+
+    st.subheader("🏆 Training Leaderboards")
+
+    st.info(
+        "Your training results and leaderboards "
+        "will appear here as we activate each game."
+    )
 
 
 # =========================================================
