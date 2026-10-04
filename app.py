@@ -10760,25 +10760,472 @@ if page == "Training":
     # BOB'S 27 GAME SCREEN
     # =====================================================
 
-    if st.session_state.training_game == "bobs27":
+if st.session_state.training_game == "bobs27":
 
-        st.subheader("🎯 Bob's 27")
+    # =====================================================
+    # INITIALISE BOB'S 27
+    # =====================================================
 
-        st.caption(
-            "Doubles practice from D1 through D20 and Bull."
+    if "bobs27_score" not in st.session_state:
+        st.session_state.bobs27_score = 27
+
+    if "bobs27_target_index" not in st.session_state:
+        st.session_state.bobs27_target_index = 0
+
+    if "bobs27_history" not in st.session_state:
+        st.session_state.bobs27_history = []
+
+    if "bobs27_finished" not in st.session_state:
+        st.session_state.bobs27_finished = False
+
+    bobs27_targets = [
+        {
+            "name": f"D{number}",
+            "value": number * 2
+        }
+        for number in range(1, 21)
+    ]
+
+    bobs27_targets.append(
+        {
+            "name": "Bull",
+            "value": 50
+        }
+    )
+
+    # =====================================================
+    # HEADER
+    # =====================================================
+
+    st.markdown(
+        """
+        <h2 style="
+            text-align:center;
+            color:#f5c542;
+        ">
+            🎯 Bob's 27
+        </h2>
+
+        <p style="
+            text-align:center;
+            color:#bfc5d2;
+        ">
+            Hit the doubles. Build your score.
+            Survive all the way to Bull.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # =====================================================
+    # ACTIVE GAME
+    # =====================================================
+
+    if not st.session_state.bobs27_finished:
+
+        target = bobs27_targets[
+            st.session_state.bobs27_target_index
+        ]
+
+        target_number = (
+            st.session_state.bobs27_target_index + 1
         )
 
-        st.info(
-            "Bob's 27 game screen is ready. "
-            "Scoring will be added in the next step."
+        # -------------------------------------------------
+        # SCORE / TARGET DISPLAY
+        # -------------------------------------------------
+
+        score_col, target_col, round_col = (
+            st.columns(3)
         )
+
+        with score_col:
+
+            with st.container(border=True):
+
+                st.metric(
+                    "CURRENT SCORE",
+                    st.session_state.bobs27_score
+                )
+
+        with target_col:
+
+            with st.container(border=True):
+
+                st.metric(
+                    "CURRENT TARGET",
+                    target["name"]
+                )
+
+        with round_col:
+
+            with st.container(border=True):
+
+                st.metric(
+                    "ROUND",
+                    f"{target_number} / 21"
+                )
+
+        st.markdown("---")
+
+        # -------------------------------------------------
+        # INSTRUCTIONS
+        # -------------------------------------------------
+
+        st.markdown(
+            f"""
+            <div style="
+                text-align:center;
+                padding:18px;
+                background:#111827;
+                border:1px solid rgba(245,197,66,0.45);
+                border-radius:16px;
+                margin-bottom:20px;
+            ">
+
+                <div style="
+                    color:#bfc5d2;
+                    font-size:14px;
+                    font-weight:700;
+                ">
+                    THROW 3 DARTS AT
+                </div>
+
+                <div style="
+                    color:#f5c542;
+                    font-size:42px;
+                    font-weight:900;
+                    margin-top:4px;
+                ">
+                    {target["name"]}
+                </div>
+
+                <div style="
+                    color:#ffffff;
+                    margin-top:8px;
+                ">
+                    How many doubles did you hit?
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # -------------------------------------------------
+        # HIT BUTTONS
+        # -------------------------------------------------
+
+        hit_col0, hit_col1, hit_col2, hit_col3 = (
+            st.columns(4)
+        )
+
+        selected_hits = None
+
+        with hit_col0:
+
+            if st.button(
+                "❌ 0 HITS",
+                key="bobs27_hit_0",
+                use_container_width=True
+            ):
+                selected_hits = 0
+
+        with hit_col1:
+
+            if st.button(
+                "🎯 1 HIT",
+                key="bobs27_hit_1",
+                use_container_width=True
+            ):
+                selected_hits = 1
+
+        with hit_col2:
+
+            if st.button(
+                "🎯🎯 2 HITS",
+                key="bobs27_hit_2",
+                use_container_width=True
+            ):
+                selected_hits = 2
+
+        with hit_col3:
+
+            if st.button(
+                "🔥 3 HITS",
+                key="bobs27_hit_3",
+                use_container_width=True
+            ):
+                selected_hits = 3
+
+        # -------------------------------------------------
+        # PROCESS ROUND
+        # -------------------------------------------------
+
+        if selected_hits is not None:
+
+            score_before = (
+                st.session_state.bobs27_score
+            )
+
+            if selected_hits == 0:
+
+                score_change = -target["value"]
+
+            else:
+
+                score_change = (
+                    target["value"]
+                    * selected_hits
+                )
+
+            new_score = (
+                score_before
+                + score_change
+            )
+
+            st.session_state.bobs27_history.append(
+                {
+                    "target": target["name"],
+                    "hits": selected_hits,
+                    "change": score_change,
+                    "score": new_score
+                }
+            )
+
+            st.session_state.bobs27_score = (
+                new_score
+            )
+
+            # ---------------------------------------------
+            # STANDARD BOB'S 27 ELIMINATION
+            # ---------------------------------------------
+
+            if new_score < 0:
+
+                st.session_state.bobs27_finished = True
+
+            else:
+
+                st.session_state.bobs27_target_index += 1
+
+                if (
+                    st.session_state.bobs27_target_index
+                    >= len(bobs27_targets)
+                ):
+
+                    st.session_state.bobs27_finished = True
+
+            st.rerun()
+
+        # -------------------------------------------------
+        # RECENT ROUNDS
+        # -------------------------------------------------
+
+        if st.session_state.bobs27_history:
+
+            st.markdown("---")
+
+            st.subheader("📋 Recent Throws")
+
+            recent_rounds = (
+                st.session_state.bobs27_history[-5:]
+            )
+
+            for round_data in reversed(
+                recent_rounds
+            ):
+
+                change = round_data["change"]
+
+                if change > 0:
+                    change_text = f"+{change}"
+                else:
+                    change_text = str(change)
+
+                st.write(
+                    f"**{round_data['target']}** — "
+                    f"{round_data['hits']} hit(s) — "
+                    f"{change_text} — "
+                    f"Score: **{round_data['score']}**"
+                )
+
+    # =====================================================
+    # GAME FINISHED
+    # =====================================================
+
+    else:
+
+        final_score = (
+            st.session_state.bobs27_score
+        )
+
+        completed_all_targets = (
+            st.session_state.bobs27_target_index
+            >= len(bobs27_targets)
+        )
+
+        if completed_all_targets:
+
+            st.success(
+                "🏁 Bob's 27 Complete!"
+            )
+
+        else:
+
+            st.error(
+                "💀 Game Over — your score "
+                "dropped below zero."
+            )
+
+        st.markdown(
+            f"""
+            <div style="
+                text-align:center;
+                padding:25px;
+                background:#111827;
+                border:2px solid #f5c542;
+                border-radius:18px;
+                margin:20px 0;
+            ">
+
+                <div style="
+                    color:#bfc5d2;
+                    font-size:15px;
+                    font-weight:700;
+                ">
+                    FINAL SCORE
+                </div>
+
+                <div style="
+                    color:#f5c542;
+                    font-size:54px;
+                    font-weight:900;
+                ">
+                    {final_score}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        rounds_completed = len(
+            st.session_state.bobs27_history
+        )
+
+        total_hits = sum(
+            round_data["hits"]
+            for round_data
+            in st.session_state.bobs27_history
+        )
+
+        darts_thrown = (
+            rounds_completed * 3
+        )
+
+        stat_col1, stat_col2, stat_col3 = (
+            st.columns(3)
+        )
+
+        with stat_col1:
+
+            st.metric(
+                "Rounds",
+                rounds_completed
+            )
+
+        with stat_col2:
+
+            st.metric(
+                "Double Hits",
+                total_hits
+            )
+
+        with stat_col3:
+
+            st.metric(
+                "Darts Thrown",
+                darts_thrown
+            )
+
+        st.markdown("---")
+
+        st.subheader("📋 Game Summary")
+
+        for round_data in (
+            st.session_state.bobs27_history
+        ):
+
+            change = round_data["change"]
+
+            if change > 0:
+                change_text = f"+{change}"
+            else:
+                change_text = str(change)
+
+            st.write(
+                f"**{round_data['target']}** — "
+                f"{round_data['hits']} hit(s) — "
+                f"{change_text} — "
+                f"Score: **{round_data['score']}**"
+            )
+
+    # =====================================================
+    # GAME CONTROLS
+    # =====================================================
+
+    st.markdown("---")
+
+    control_col1, control_col2 = (
+        st.columns(2)
+    )
+
+    with control_col1:
+
+        if st.button(
+            "🔄 Restart Bob's 27",
+            key="bobs27_restart",
+            use_container_width=True
+        ):
+
+            st.session_state.bobs27_score = 27
+            st.session_state.bobs27_target_index = 0
+            st.session_state.bobs27_history = []
+            st.session_state.bobs27_finished = False
+
+            st.rerun()
+
+    with control_col2:
 
         if st.button(
             "← Back to Training Centre",
             key="bobs27_back",
             use_container_width=True
         ):
+
             st.session_state.training_game = None
+
+            st.session_state.pop(
+                "bobs27_score",
+                None
+            )
+
+            st.session_state.pop(
+                "bobs27_target_index",
+                None
+            )
+
+            st.session_state.pop(
+                "bobs27_history",
+                None
+            )
+
+            st.session_state.pop(
+                "bobs27_finished",
+                None
+            )
+
             st.rerun()
 
     # =====================================================
