@@ -11068,32 +11068,14 @@ if page == "Training":
 
             st.markdown(
                 f"""
-                <div style="
-                    text-align:center;
-                    padding:25px;
-                    background:#111827;
-                    border:2px solid #f5c542;
-                    border-radius:18px;
-                    margin:20px 0;
-                ">
-
-                    <div style="
-                        color:#bfc5d2;
-                        font-size:15px;
-                        font-weight:700;
-                    ">
-                        FINAL SCORE
-                    </div>
-
-                    <div style="
-                        color:#f5c542;
-                        font-size:54px;
-                        font-weight:900;
-                    ">
-                        {final_score}
-                    </div>
-
-                </div>
+<div style="text-align:center; padding:25px; background:#111827; border:2px solid #f5c542; border-radius:18px; margin:20px 0;">
+    <div style="color:#bfc5d2; font-size:15px; font-weight:700;">
+        FINAL SCORE
+    </div>
+    <div style="color:#f5c542; font-size:54px; font-weight:900;">
+        {final_score}
+    </div>
+</div>
                 """,
                 unsafe_allow_html=True
             )
