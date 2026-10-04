@@ -11232,7 +11232,7 @@ if st.session_state.training_game == "bobs27":
     # TRAINING CENTRE HOME
     # =====================================================
 
-    else:
+    if st.session_state.training_game != "bobs27":
 
         training_col1, training_col2, training_col3 = (
             st.columns(3)
