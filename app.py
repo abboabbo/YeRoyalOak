@@ -11137,6 +11137,88 @@ if page == "Training":
                     darts_thrown
                 )
 
+                        # =============================================
+            # SAVE TRAINING RESULT
+            # =============================================
+
+            if "bobs27_saved" not in st.session_state:
+                st.session_state.bobs27_saved = False
+
+            st.markdown("---")
+
+            player_id = st.session_state.get(
+                "player_id"
+            )
+
+            if not player_id:
+
+                st.warning(
+                    "This account is not linked to a player "
+                    "profile, so this training result cannot "
+                    "be saved."
+                )
+
+            elif st.session_state.bobs27_saved:
+
+                st.success(
+                    "✅ This Bob's 27 result has been saved."
+                )
+
+            else:
+
+                if st.button(
+                    "💾 Save Bob's 27 Result",
+                    key="bobs27_save_result",
+                    type="primary",
+                    use_container_width=True
+                ):
+
+                    training_db = SessionLocal()
+
+                    try:
+
+                        training_result = TrainingSession(
+                            player_id=player_id,
+                            game_type="bobs27",
+                            score=final_score,
+                            darts_thrown=darts_thrown,
+                            average=None,
+                            completed=(
+                                1
+                                if completed_all_targets
+                                else 0
+                            )
+                        )
+
+                        training_db.add(
+                            training_result
+                        )
+
+                        training_db.commit()
+
+                        st.session_state.bobs27_saved = True
+
+                        st.success(
+                            "🎯 Bob's 27 result saved!"
+                        )
+
+                        st.rerun()
+
+                    except Exception as error:
+
+                        training_db.rollback()
+
+                        st.error(
+                            "The training result could not "
+                            "be saved."
+                        )
+
+                        st.exception(error)
+
+                    finally:
+
+                        training_db.close()    
+
             st.markdown("---")
 
             st.subheader("📋 Game Summary")
@@ -11181,6 +11263,7 @@ if page == "Training":
                 st.session_state.bobs27_target_index = 0
                 st.session_state.bobs27_history = []
                 st.session_state.bobs27_finished = False
+                st.session_state.bobs27_saved = False
 
                 st.rerun()
 
@@ -11213,6 +11296,11 @@ if page == "Training":
                     "bobs27_finished",
                     None
                 )
+
+                st.session_state.pop(
+                    "bobs27_saved",
+                    None
+                )                
 
                 st.rerun()
 
