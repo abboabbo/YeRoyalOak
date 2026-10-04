@@ -10886,40 +10886,17 @@ if page == "Training":
 
             st.markdown(
                 f"""
-                <div style="
-                    text-align:center;
-                    padding:18px;
-                    background:#111827;
-                    border:1px solid rgba(245,197,66,0.45);
-                    border-radius:16px;
-                    margin-bottom:20px;
-                ">
-
-                    <div style="
-                        color:#bfc5d2;
-                        font-size:14px;
-                        font-weight:700;
-                    ">
-                        THROW 3 DARTS AT
-                    </div>
-
-                    <div style="
-                        color:#f5c542;
-                        font-size:42px;
-                        font-weight:900;
-                        margin-top:4px;
-                    ">
-                        {target["name"]}
-                    </div>
-
-                    <div style="
-                        color:#ffffff;
-                        margin-top:8px;
-                    ">
-                        How many doubles did you hit?
-                    </div>
-
-                </div>
+<div style="text-align:center; padding:18px; background:#111827; border:1px solid rgba(245,197,66,0.45); border-radius:16px; margin-bottom:20px;">
+    <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
+        THROW 3 DARTS AT
+    </div>
+    <div style="color:#f5c542; font-size:42px; font-weight:900; margin-top:4px;">
+        {target["name"]}
+    </div>
+    <div style="color:#ffffff; margin-top:8px;">
+        How many doubles did you hit?
+    </div>
+</div>
                 """,
                 unsafe_allow_html=True
             )
