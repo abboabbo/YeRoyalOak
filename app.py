@@ -10734,7 +10734,7 @@ Return only the finished article.
 if page == "Training":
 
     if "training_game" not in st.session_state:
-        st.session_state.training_game = None    
+        st.session_state.training_game = None
 
     st.markdown(
         """
@@ -10756,109 +10756,128 @@ if page == "Training":
 
     st.markdown("---")
 
-if st.session_state.training_game == "bobs27":
+    # =====================================================
+    # BOB'S 27 GAME SCREEN
+    # =====================================================
 
-    st.subheader("🎯 Bob's 27")
+    if st.session_state.training_game == "bobs27":
 
-    st.caption(
-        "Doubles practice from D1 through D20 and Bull."
-    )
+        st.subheader("🎯 Bob's 27")
 
-    st.info(
-        "Bob's 27 game screen is ready. "
-        "Scoring will be added in the next step."
-    )
+        st.caption(
+            "Doubles practice from D1 through D20 and Bull."
+        )
 
-    if st.button(
-        "← Back to Training Centre",
-        key="bobs27_back",
-        use_container_width=True
-    ):
-        st.session_state.training_game = None
-        st.rerun()
+        st.info(
+            "Bob's 27 game screen is ready. "
+            "Scoring will be added in the next step."
+        )
 
-    st.stop()
+        if st.button(
+            "← Back to Training Centre",
+            key="bobs27_back",
+            use_container_width=True
+        ):
+            st.session_state.training_game = None
+            st.rerun()
 
-    training_col1, training_col2, training_col3 = (
-        st.columns(3)
-    )
+    # =====================================================
+    # TRAINING CENTRE HOME
+    # =====================================================
 
-    with training_col1:
+    else:
 
-        with st.container(border=True):
+        training_col1, training_col2, training_col3 = (
+            st.columns(3)
+        )
 
-            st.subheader("🎯 Bob's 27")
+        # -------------------------------------------------
+        # BOB'S 27
+        # -------------------------------------------------
 
-            st.write(
-                "Test your doubles from D1 "
-                "all the way through to Bull."
-            )
+        with training_col1:
 
-            st.caption(
-                "Leaderboard: Highest Score"
-            )
+            with st.container(border=True):
 
-            if st.button(
-                "▶ Play Bob's 27",
-                key="training_bobs27_play",
-                use_container_width=True
-            ):
-                st.session_state.training_game = "bobs27"
-                st.rerun()
+                st.subheader("🎯 Bob's 27")
 
-    with training_col2:
+                st.write(
+                    "Test your doubles from D1 "
+                    "all the way through to Bull."
+                )
 
-        with st.container(border=True):
+                st.caption(
+                    "Leaderboard: Highest Score"
+                )
 
-            st.subheader("🎯 301 Practice")
+                if st.button(
+                    "▶ Play Bob's 27",
+                    key="training_bobs27_play",
+                    use_container_width=True
+                ):
+                    st.session_state.training_game = "bobs27"
+                    st.rerun()
 
-            st.write(
-                "Practice scoring and finishing "
-                "with a complete 301 leg."
-            )
+        # -------------------------------------------------
+        # 301 PRACTICE
+        # -------------------------------------------------
 
-            st.caption(
-                "Leaderboard: Fewest Darts"
-            )
+        with training_col2:
 
-            st.button(
-                "Coming Soon",
-                key="training_301_coming_soon",
-                use_container_width=True,
-                disabled=True
-            )
+            with st.container(border=True):
 
-    with training_col3:
+                st.subheader("🎯 301 Practice")
 
-        with st.container(border=True):
+                st.write(
+                    "Practice scoring and finishing "
+                    "with a complete 301 leg."
+                )
 
-            st.subheader("🎯 Around the Clock")
+                st.caption(
+                    "Leaderboard: Fewest Darts"
+                )
 
-            st.write(
-                "Work through the board from "
-                "1 to 20 as efficiently as possible."
-            )
+                st.button(
+                    "Coming Soon",
+                    key="training_301_coming_soon",
+                    use_container_width=True,
+                    disabled=True
+                )
 
-            st.caption(
-                "Leaderboard: Fewest Darts"
-            )
+        # -------------------------------------------------
+        # AROUND THE CLOCK
+        # -------------------------------------------------
 
-            st.button(
-                "Coming Soon",
-                key="training_clock_coming_soon",
-                use_container_width=True,
-                disabled=True
-            )
+        with training_col3:
 
-    st.markdown("---")
+            with st.container(border=True):
 
-    st.subheader("🏆 Training Leaderboards")
+                st.subheader("🎯 Around the Clock")
 
-    st.info(
-        "Your training results and leaderboards "
-        "will appear here as we activate each game."
-    )
+                st.write(
+                    "Work through the board from "
+                    "1 to 20 as efficiently as possible."
+                )
 
+                st.caption(
+                    "Leaderboard: Fewest Darts"
+                )
+
+                st.button(
+                    "Coming Soon",
+                    key="training_clock_coming_soon",
+                    use_container_width=True,
+                    disabled=True
+                )
+
+        st.markdown("---")
+
+        st.subheader("🏆 Training Leaderboards")
+
+        st.info(
+            "Your training results and leaderboards "
+            "will appear here as we activate each game."
+        )
 
 # =========================================================
 # AWARDS PAGE
