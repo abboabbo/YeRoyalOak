@@ -4,6 +4,9 @@ from sqlalchemy import String
 from sqlalchemy import ForeignKey
 from sqlalchemy import Date
 from sqlalchemy import Text
+from sqlalchemy import Float
+from sqlalchemy import DateTime
+from datetime import datetime
 
 from sqlalchemy.orm import declarative_base
 
@@ -383,4 +386,48 @@ class LeaguePost(Base):
     created_at = Column(
         String,
         nullable=False
+    )
+
+class TrainingSession(Base):
+    __tablename__ = "training_sessions"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    player_id = Column(
+        Integer,
+        ForeignKey("players.id"),
+        nullable=False
+    )
+
+    game_type = Column(
+        String,
+        nullable=False
+    )
+
+    score = Column(
+        Integer,
+        default=0
+    )
+
+    darts_thrown = Column(
+        Integer,
+        default=0
+    )
+
+    average = Column(
+        Float,
+        nullable=True
+    )
+
+    completed = Column(
+        Integer,
+        default=0
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
     )

@@ -34,7 +34,8 @@ from models import (
     Fixture,
     KnockoutMatch,
     Announcement,
-    LeaguePost
+    LeaguePost,
+    TrainingSession
 )
 
 FACEBOOK_URL = (
