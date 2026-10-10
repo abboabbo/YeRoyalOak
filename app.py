@@ -11414,6 +11414,69 @@ if page == "Training":
                 st.session_state.training_301_darts
             )
 
+            # =============================================
+            # SAVE COMPLETED 301 RESULT
+            # =============================================
+
+            if st.session_state.training_301_saved:
+
+                st.success("✅ This 301 result has been saved.")
+
+            else:
+
+                if st.button(
+                    "💾 Save 301 Result",
+                    key="training_301_save_result",
+                    type="primary",
+                    use_container_width=True
+                ):
+
+                    training_db = SessionLocal()
+
+                    try:
+
+                        total_scored = sum(
+                            turn.get("score", 0)
+                            for turn in st.session_state.training_301_history
+                            if not turn.get("bust", False)
+                        )
+
+                        darts_thrown = st.session_state.training_301_darts
+
+                        average = (
+                            (total_scored / darts_thrown) * 3
+                            if darts_thrown > 0
+                            else 0.0
+                        )
+
+                        training_result = TrainingSession(
+                            player_id=player_id,
+                            game_type="301",
+                            score=301,
+                            darts_thrown=darts_thrown,
+                            average=average,
+                            completed=1
+                        )
+
+                        training_db.add(training_result)
+                        training_db.commit()
+
+                        st.session_state.training_301_saved = True
+
+                        st.rerun()
+
+                    except Exception as error:
+
+                        training_db.rollback()
+
+                        st.error(
+                            f"301 result could not be saved: {error}"
+                        )
+
+                    finally:
+
+                        training_db.close()
+
             if st.button(
                 "🎯 NEW GAME",
                 key="training_301_new_game_top",
