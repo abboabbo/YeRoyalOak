@@ -211,6 +211,20 @@ addElement("circle", {
 let lastDart = null;
 let dartClickId = 0;
 
+
+let dartPositions = [];
+
+// Store the position of every dart thrown
+function recordDartPosition(x, y) {
+
+    dartPositions.push({
+        x: x,
+        y: y
+    });
+
+}
+
+
 function calculateDartScore(x, y) {
 
     const dx = x - cx;
@@ -301,6 +315,7 @@ function registerDartClick(event) {
     );
 
     const result = calculateDartScore(x, y);
+    recordDartPosition(x, y);
 
     dartClickId += 1;
 
