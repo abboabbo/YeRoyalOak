@@ -12295,13 +12295,23 @@ div.st-key-training_301_mode_cards
                         st.session_state.training_301_darts
                     )
 
+
                 # =============================================
-                # TURN HISTORY
+                # PREMIUM 301 TURN HISTORY
                 # =============================================
 
-                st.markdown("---")
-
-                st.subheader("📋 Turn History")
+                st.html(
+                    """
+<div style="
+    color:#f5c542;
+    font-size:20px;
+    font-weight:900;
+    margin:24px 0 14px 0;
+">
+    📋 TURN HISTORY
+</div>
+                    """
+                )
 
                 if not st.session_state.training_301_history:
 
@@ -12309,26 +12319,62 @@ div.st-key-training_301_mode_cards
 
                 else:
 
+                    history_rows = ""
+
                     for turn_number, turn in enumerate(
                         st.session_state.training_301_history,
                         start=1
                     ):
 
-                        if turn["bust"]:
+                        is_bust = turn.get("bust", False)
 
-                            st.write(
-                                f"**Turn {turn_number}:** "
-                                f"{turn['score']} — BUST — "
-                                f"Remaining: {turn['remaining']}"
-                            )
+                        score = turn.get("score", 0)
+                        remaining_score = turn.get("remaining", 301)
 
-                        else:
+                        display_score = (
+                            "BUST" if is_bust else str(score)
+                        )
 
-                            st.write(
-                                f"**Turn {turn_number}:** "
-                                f"{turn['score']} — "
-                                f"Remaining: {turn['remaining']}"
-                            )
+                        score_colour = (
+                            "#ff6670" if is_bust else "#f5c542"
+                        )
+
+                        border_colour = (
+                            "#8b3333" if is_bust else "#685624"
+                        )
+
+                        history_rows += f"""
+<div style="
+    background:#111827;
+    border:1px solid {border_colour};
+    border-radius:13px;
+    padding:15px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+">
+    <div>
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">
+            VISIT {turn_number}
+        </div>
+        <div style="color:{score_colour};font-size:25px;font-weight:900;">
+            {display_score}
+        </div>
+    </div>
+    <div style="text-align:right;">
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">
+            REMAINING
+        </div>
+        <div style="color:white;font-size:25px;font-weight:900;">
+            {remaining_score}
+        </div>
+    </div>
+</div>
+"""
+
+                    st.html(history_rows)
+
 
                 # =============================================
                 # NEW GAME / RESTART 301
