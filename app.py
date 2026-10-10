@@ -11572,7 +11572,21 @@ div.st-key-training_301_mode_cards
                     dart_hit["click_id"]
                 )
 
-                if len(st.session_state.training_301_board_darts) < 3:
+                if (
+                    len(st.session_state.training_301_board_darts) < 3
+                    and not st.session_state.training_301_finished
+                    and not any(
+                        sum(d["score"] for d in st.session_state.training_301_board_darts[:i + 1])
+                        == st.session_state.training_301_remaining
+                        and (
+                            d["multiplier"] == 2
+                            or d["score"] == 50
+                        )
+                        for i, d in enumerate(
+                            st.session_state.training_301_board_darts
+                        )
+                    )
+                ):
 
                     st.session_state.training_301_board_darts.append({
                         "score": dart_hit["score"],
@@ -11606,7 +11620,7 @@ div.st-key-training_301_mode_cards
                 # Reaching zero requires a finishing double
                 if running_score == 0:
 
-                    if dart["multiplier"] == 2:
+                    if dart["multiplier"] == 2 or dart["score"] == 50:
                         board_checkout = True
                     else:
                         board_bust = True
