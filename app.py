@@ -12651,6 +12651,150 @@ div.st-key-training_301_mode_cards
             records_db.close()
 
 
+        # =================================================
+        # 301 PRACTICE - GLOBAL LEADERBOARD
+        # =================================================
+
+        st.markdown("---")
+        st.subheader("🏆 301 Practice — Leaderboard")
+        st.caption("Ranked by fewest darts to complete 301")
+
+        leaderboard_301_db = SessionLocal()
+
+        try:
+            results_301 = leaderboard_301_db.query(
+                TrainingSession
+            ).filter(
+                TrainingSession.game_type == "301",
+                TrainingSession.completed == 1,
+                TrainingSession.darts_thrown > 0
+            ).all()
+
+            all_players_301 = leaderboard_301_db.query(
+                Player
+            ).all()
+
+            player_names_301 = {
+                player.id: display_player_name(player)
+                for player in all_players_301
+            }
+
+            # Keep each player's best completed game
+            best_301_results = {}
+
+            for result in results_301:
+
+                player_id = result.player_id
+
+                if (
+                    player_id not in best_301_results
+                    or result.darts_thrown <
+                    best_301_results[player_id].darts_thrown
+                ):
+                    best_301_results[player_id] = result
+
+            # Sort by fewest darts, then highest average
+            ranked_301 = sorted(
+                best_301_results.items(),
+                key=lambda item: (
+                    item[1].darts_thrown,
+                    -(item[1].average or 0),
+                    item[0]
+                )
+            )
+
+            if not ranked_301:
+
+                st.info(
+                    "No completed 301 games have been saved yet. "
+                    "Be the first on the leaderboard!"
+                )
+
+            else:
+                current_player_id = st.session_state.get(
+                    "player_id"
+                )
+
+                position_icons = {
+                    1: "🥇",
+                    2: "🥈",
+                    3: "🥉"
+                }
+
+                for position, (
+                    player_id,
+                    result
+                ) in enumerate(ranked_301, start=1):
+
+                    player_name = html.escape(
+                        str(
+                            player_names_301.get(
+                                player_id,
+                                "Unknown Player"
+                            )
+                        )
+                    )
+
+                    position_label = position_icons.get(
+                        position,
+                        str(position)
+                    )
+
+                    darts = result.darts_thrown
+                    average = result.average or 0
+
+                    is_my_result = (
+                        player_id == current_player_id
+                    )
+
+                    row_class = (
+                        "bobs-leaderboard-row "
+                        "bobs-leaderboard-mine"
+                        if is_my_result
+                        else "bobs-leaderboard-row"
+                    )
+
+                    my_badge = (
+                        " <span style='color:#f5c542;"
+                        "font-size:11px;'>★ YOU</span>"
+                        if is_my_result
+                        else ""
+                    )
+
+                    st.markdown(
+                        f"""
+<div class="{row_class}">
+    <div class="bobs-leaderboard-position">
+        {position_label}
+    </div>
+    <div class="bobs-leaderboard-name">
+        {player_name}{my_badge}
+        <div class="bobs-leaderboard-caption"
+             style="text-align:left;">
+            3-Dart Average: {average:.2f}
+        </div>
+    </div>
+    <div>
+        <div class="bobs-leaderboard-score">
+            {darts}
+        </div>
+        <div class="bobs-leaderboard-caption">
+            DARTS
+        </div>
+    </div>
+</div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+        except Exception as error:
+            st.error("Unable to load the 301 leaderboard.")
+            st.exception(error)
+
+        finally:
+            leaderboard_301_db.close()
+
+
 # =========================================================
 # AWARDS PAGE
 # =========================================================
