@@ -5411,10 +5411,61 @@ def render_player_profile_details(player):
 
         st.markdown("## 🎯 Personal Training Statistics")
 
-        st.info(
-            "Personal 301 training statistics "
-            "will appear here."
-        )
+
+        st.markdown("## 🎯 Personal Training Statistics")
+
+        # =============================================
+        # LOAD THIS PLAYER'S COMPLETED 301 GAMES
+        # =============================================
+
+        training_db = SessionLocal()
+
+        try:
+
+            player_301_sessions = (
+                training_db.query(TrainingSession)
+                .filter(
+                    TrainingSession.player_id == player.id,
+                    TrainingSession.game_type == "301",
+                    TrainingSession.completed == 1,
+                    TrainingSession.darts_thrown > 0
+                )
+                .order_by(
+                    TrainingSession.created_at.desc(),
+                    TrainingSession.id.desc()
+                )
+                .all()
+            )
+
+            # Extract the saved values before closing
+            # the database session.
+
+            player_301_results = [
+                {
+                    "date": session.created_at,
+                    "darts": session.darts_thrown,
+                    "average": session.average
+                }
+                for session in player_301_sessions
+            ]
+
+        finally:
+
+            training_db.close()
+
+        if not player_301_results:
+
+            st.info(
+                "No completed 301 training games "
+                "have been recorded for this player yet."
+            )
+
+        else:
+
+            st.success(
+                f"Found {len(player_301_results)} "
+                "completed 301 training games."
+            )
 
 
 # LOGIN
