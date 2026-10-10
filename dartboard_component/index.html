@@ -302,18 +302,18 @@ function registerDartClick(event) {
 
     const result = calculateDartScore(x, y);
 
-dartClickId += 1;
+    dartClickId += 1;
 
-lastDart = {
-    ...result,
+    lastDart = {
+        ...result,
 
-    // Unique identifier for each dart click
-    click_id: dartClickId,
+        // Unique identifier for each dart click
+        click_id: dartClickId,
 
-    // Normalised coordinates for future heat maps
-    x: (x - cx) / outerDouble,
-    y: (y - cy) / outerDouble
-};
+        // Normalised coordinates for future heat maps
+        x: (x - cx) / outerDouble,
+        y: (y - cy) / outerDouble
+    };
 
     // Display a marker where the dart landed
     const existingMarker = document.getElementById(
