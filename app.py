@@ -5518,6 +5518,51 @@ def render_player_profile_details(player):
                 )
 
 
+            # =============================================
+            # RECENT 301 TRAINING RESULTS
+            # =============================================
+
+            st.markdown("### 📋 Recent 301 Results")
+
+            recent_results = []
+
+            for result in player_301_results:
+
+                session_date = result["date"]
+
+                if session_date:
+
+                    formatted_date = session_date.strftime(
+                        "%d/%m/%Y %H:%M"
+                    )
+
+                else:
+
+                    formatted_date = "Unknown"
+
+                darts = int(result["darts"])
+
+                game_average = (301 * 3) / darts
+
+                recent_results.append(
+                    {
+                        "Date": formatted_date,
+                        "Darts Thrown": darts,
+                        "3-Dart Average": round(
+                            game_average, 2
+                        )
+                    }
+                )
+
+            results_df = pd.DataFrame(recent_results)
+
+            st.dataframe(
+                results_df,
+                use_container_width=True,
+                hide_index=True
+            )
+
+
 
 # LOGIN
 
