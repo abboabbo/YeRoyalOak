@@ -11536,9 +11536,22 @@ div.st-key-training_301_mode_cards
 
             st.markdown("### 🎯 Interactive Dartboard")
 
-            interactive_dartboard(
+            dart_hit = interactive_dartboard(
                 key="training_301_dartboard"
             )
+
+            if dart_hit is not None:
+
+                st.success(
+                    f"🎯 Last dart: {dart_hit['label']} "
+                    f"— {dart_hit['score']} points"
+                )
+
+                st.caption(
+                    f"Position: "
+                    f"X = {dart_hit['x']:.3f}, "
+                    f"Y = {dart_hit['y']:.3f}"
+                )
 
         # =============================================
         # 301 QUICK SCORE

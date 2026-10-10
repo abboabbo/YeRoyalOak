@@ -203,6 +203,148 @@ addElement("circle", {
     "pointer-events": "none"
 });
 
+
+/* =============================================
+   DARTBOARD CLICK DETECTION AND SCORING
+   ============================================= */
+
+let lastDart = null;
+
+function calculateDartScore(x, y) {
+
+    const dx = x - cx;
+    const dy = y - cy;
+
+    const radius = Math.sqrt(dx * dx + dy * dy);
+
+    // Outside the scoring board
+    if (radius > outerDouble) {
+        return {
+            score: 0,
+            segment: 0,
+            multiplier: 0,
+            label: "MISS"
+        };
+    }
+
+    // Inner bull
+    if (radius <= innerBull) {
+        return {
+            score: 50,
+            segment: 25,
+            multiplier: 2,
+            label: "BULL"
+        };
+    }
+
+    // Outer bull
+    if (radius <= outerBull) {
+        return {
+            score: 25,
+            segment: 25,
+            multiplier: 1,
+            label: "OUTER BULL"
+        };
+    }
+
+    // Determine segment from angle
+    const angle = (
+        Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360
+    ) % 360;
+
+    const index = Math.floor(
+        ((angle + 9) % 360) / 18
+    );
+
+    const segment = numbers[index];
+
+    let multiplier = 1;
+    let prefix = "S";
+
+    if (
+        radius >= innerTreble &&
+        radius <= outerTreble
+    ) {
+        multiplier = 3;
+        prefix = "T";
+    }
+
+    if (
+        radius >= innerDouble &&
+        radius <= outerDouble
+    ) {
+        multiplier = 2;
+        prefix = "D";
+    }
+
+    return {
+        score: segment * multiplier,
+        segment: segment,
+        multiplier: multiplier,
+        label: prefix + segment
+    };
+}
+
+function registerDartClick(event) {
+
+    const rect = svg.getBoundingClientRect();
+
+    const x = (
+        (event.clientX - rect.left) *
+        500 / rect.width
+    );
+
+    const y = (
+        (event.clientY - rect.top) *
+        500 / rect.height
+    );
+
+    const result = calculateDartScore(x, y);
+
+    lastDart = {
+        ...result,
+
+        // Normalised coordinates for future heat maps
+        x: (x - cx) / outerDouble,
+        y: (y - cy) / outerDouble
+    };
+
+    // Send dart result to Streamlit
+    window.parent.postMessage(
+        {
+            isStreamlitMessage: true,
+            type: "streamlit:setComponentValue",
+            value: lastDart
+        },
+        "*"
+    );
+
+    // Display a marker where the dart landed
+    const existingMarker = document.getElementById(
+        "last-dart-marker"
+    );
+
+    if (existingMarker) {
+        existingMarker.remove();
+    }
+
+    const marker = addElement("circle", {
+        id: "last-dart-marker",
+        cx: x,
+        cy: y,
+        r: 5,
+        fill: "#f5c542",
+        stroke: "#ffffff",
+        "stroke-width": 2,
+        "pointer-events": "none"
+    });
+
+    marker.setAttribute("opacity", "0.95");
+}
+
+svg.addEventListener("click", registerDartClick);
+
+
 // =============================================
 // STREAMLIT COMPONENT COMMUNICATION
 // =============================================
