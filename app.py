@@ -11340,17 +11340,6 @@ if page == "Training":
 
     elif st.session_state.training_game == "301":
 
-        # =============================================
-        # 301 - ALWAYS VISIBLE BACK BUTTON
-        # =============================================
-
-        if st.button(
-            "← Back to Training Centre",
-            key="training_301_back_top",
-            use_container_width=True
-        ):
-            st.session_state.training_game = None
-            st.rerun()
 
         # =============================================
         # 301 GAME STATE
@@ -12409,35 +12398,40 @@ div.st-key-training_301_mode_cards
 
                     st.rerun()
 
-                # =============================================
-                # BACK BUTTON
-                # =============================================
 
-                if st.button(
-                    "← Back to Training Centre",
-                    key="training_301_back",
-                    use_container_width=True
-                ):
+        # =============================================
+        # RETURN TO TRAINING MENU
+        # =============================================
 
-                    st.session_state.training_game = None
+        st.html(
+            """
+<style>
+.st-key-training_301_return_menu button {
+    background:linear-gradient(145deg,#111827,#050b12);
+    color:#f5c542;
+    border:1px solid rgba(245,197,66,0.65);
+    border-radius:14px;
+    font-weight:900;
+    min-height:58px;
+}
 
-                    for state_key in [
-                        "training_301_remaining",
-                        "training_301_history",
-                        "training_301_darts",
-                        "training_301_finished",
-                        "training_301_pending_checkout",
-                        "training_301_checkout_confirmed",
-                        "training_301_checkout_darts",
-                        "training_301_quick_score"
-                    ]:
+.st-key-training_301_return_menu button:hover {
+    background:#263244;
+    color:#ffffff;
+    border-color:#f5c542;
+}
+</style>
+            """
+        )
 
-                        st.session_state.pop(
-                            state_key,
-                            None
-                        )
-
-                    st.rerun()               
+        if st.button(
+            "← RETURN TO TRAINING MENU",
+            key="training_301_return_menu",
+            use_container_width=True
+        ):
+            st.session_state.training_game = None
+            st.rerun()
+             
 
     # =====================================================
     # TRAINING CENTRE HOME
