@@ -11476,18 +11476,41 @@ if page == "Training":
 
                 if checkout_confirmed == "Yes — Double Out":
 
-                    st.session_state.training_301_remaining = 0
-                    st.session_state.training_301_darts += darts_used
-                    st.session_state.training_301_finished = True
+                    if not is_valid_301_checkout(
+                        pending_checkout,
+                        darts_used
+                    ):
 
-                    st.session_state.training_301_history.append({
-                        "score": pending_checkout,
-                        "bust": False,
-                        "remaining": 0
-                    })
+                        st.error(
+                            f"❌ {pending_checkout} cannot be "
+                            f"checked out with {darts_used} "
+                            f"dart(s). Please select a "
+                            f"valid number of darts."
+                        )
+
+                    else:
+
+                        st.session_state.training_301_remaining = 0
+
+                        st.session_state.training_301_darts += (
+                            darts_used
+                        )
+
+                        st.session_state.training_301_finished = True
+
+                        st.session_state.training_301_history.append({
+                            "score": pending_checkout,
+                            "bust": False,
+                            "remaining": 0
+                        })
+
+                        st.session_state.training_301_pending_checkout = None
+
+                        st.rerun()
 
                 else:
 
+                    # Failed double-out: count as a bust
                     st.session_state.training_301_darts += 3
 
                     st.session_state.training_301_history.append({
@@ -11498,9 +11521,9 @@ if page == "Training":
                         )
                     })
 
-                st.session_state.training_301_pending_checkout = None
+                    st.session_state.training_301_pending_checkout = None
 
-                st.rerun()
+                    st.rerun()
 
         if (
             not st.session_state.training_301_finished
