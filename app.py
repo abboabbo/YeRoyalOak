@@ -11555,9 +11555,13 @@ div.st-key-training_301_mode_cards
             if "training_301_last_click_id" not in st.session_state:
                 st.session_state.training_301_last_click_id = None
 
+            # Unique dartboard instance for each new game
+            if "training_301_board_game_id" not in st.session_state:
+                st.session_state.training_301_board_game_id = 0
+
             # Display the interactive dartboard
             dart_hit = interactive_dartboard(
-                key="training_301_dartboard"
+                key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
             )
 
             # Record each new dart only once
@@ -12018,6 +12022,11 @@ div.st-key-training_301_mode_cards
                 # Clear interactive dartboard state
                 st.session_state.training_301_board_darts = []
                 st.session_state.training_301_last_click_id = None
+
+                # Load a fresh dartboard for the new game
+                st.session_state.training_301_board_game_id = (
+                    st.session_state.get("training_301_board_game_id", 0) + 1
+                )
 
                 st.rerun()
 
