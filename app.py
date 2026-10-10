@@ -11572,6 +11572,37 @@ div.st-key-training_301_mode_cards
                         "multiplier": dart_hit["multiplier"]
                     })
 
+            # =============================================
+            # CHECK DARTBOARD TURN FOR CHECKOUT OR BUST
+            # =============================================
+
+            darts = st.session_state.training_301_board_darts
+
+            starting_score = st.session_state.training_301_remaining
+            running_score = starting_score
+
+            board_checkout = False
+            board_bust = False
+
+            for dart in darts:
+
+                running_score -= dart["score"]
+
+                # Bust: below zero or leaving one
+                if running_score < 0 or running_score == 1:
+                    board_bust = True
+                    break
+
+                # Reaching zero requires a finishing double
+                if running_score == 0:
+
+                    if dart["multiplier"] == 2:
+                        board_checkout = True
+                    else:
+                        board_bust = True
+
+                    break
+
             # Current turn display
             st.markdown("### 🎯 Current Turn")
 
@@ -11600,6 +11631,44 @@ div.st-key-training_301_mode_cards
             if len(darts) == 3:
                 st.success("All three darts recorded!")
 
+            # =============================================
+            # AUTOMATIC DARTBOARD CHECKOUT
+            # =============================================
+
+            if board_checkout and not st.session_state.training_301_finished:
+
+                st.success(
+                    f"🏆 CHECKOUT! Finished in {len(darts)} "
+                    f"dart(s) this turn."
+                )
+
+                if st.button(
+                    "🏆 Confirm Checkout",
+                    key="training_301_board_checkout",
+                    type="primary",
+                    use_container_width=True
+                ):
+
+                    turn_total = sum(
+                        dart["score"] for dart in darts
+                    )
+
+                    st.session_state.training_301_remaining = 0
+
+                    st.session_state.training_301_darts += len(darts)
+
+                    st.session_state.training_301_finished = True
+
+                    st.session_state.training_301_history.append({
+                        "score": turn_total,
+                        "bust": False,
+                        "remaining": 0
+                    })
+
+                    st.session_state.training_301_board_darts = []
+
+                    st.rerun()
+
             # Undo last dart
             if st.button(
                 "↩️ Undo Last Dart",
@@ -11619,7 +11688,11 @@ div.st-key-training_301_mode_cards
                 "✅ Submit Turn",
                 key="training_301_board_submit",
                 type="primary",
-                disabled=len(darts) != 3,
+                                disabled=(
+                    len(darts) != 3
+                    or board_checkout
+                    or st.session_state.training_301_finished
+                ),
                 use_container_width=True
             ):
 
