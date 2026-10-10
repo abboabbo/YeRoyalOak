@@ -11400,48 +11400,47 @@ if page == "Training":
 
         remaining = st.session_state.training_301_remaining
 
-        st.markdown(
-            dedent(f"""
-            <div style="
-                background:linear-gradient(145deg,#111827,#0b111a);
-                border:1px solid rgba(245,197,66,0.65);
-                border-radius:22px;
-                padding:30px 20px;
-                text-align:center;
-                margin-bottom:22px;
-                box-shadow:0 10px 35px rgba(0,0,0,0.35);
-            ">
-                <div style="
-                    color:#aeb7c4;
-                    font-size:13px;
-                    font-weight:800;
-                    letter-spacing:2px;
-                ">
-                    REMAINING SCORE
-                </div>
+        st.html(
+            f"""
+<div style="
+    background:linear-gradient(145deg,#111827,#0b111a);
+    border:1px solid rgba(245,197,66,0.65);
+    border-radius:22px;
+    padding:30px 20px;
+    text-align:center;
+    margin-bottom:22px;
+    box-shadow:0 10px 35px rgba(0,0,0,0.35);
+">
+    <div style="
+        color:#aeb7c4;
+        font-size:13px;
+        font-weight:800;
+        letter-spacing:2px;
+    ">
+        REMAINING SCORE
+    </div>
 
-                <div style="
-                    color:#f5c542;
-                    font-size:clamp(76px,12vw,112px);
-                    font-weight:950;
-                    line-height:1.15;
-                    text-shadow:0 0 30px rgba(245,197,66,0.18);
-                    margin:12px 0;
-                ">
-                    {remaining}
-                </div>
+    <div style="
+        color:#f5c542;
+        font-size:clamp(76px,12vw,112px);
+        font-weight:950;
+        line-height:1.15;
+        text-shadow:0 0 30px rgba(245,197,66,0.18);
+        margin:12px 0;
+    ">
+        {remaining}
+    </div>
 
-                <div style="
-                    color:#aeb7c4;
-                    font-size:12px;
-                    font-weight:800;
-                    letter-spacing:1.5px;
-                ">
-                    🎯 DOUBLE OUT
-                </div>
-            </div>
-            """),
-            unsafe_allow_html=True
+    <div style="
+        color:#aeb7c4;
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:1.5px;
+    ">
+        🎯 DOUBLE OUT
+    </div>
+</div>
+            """
         )
 
 
