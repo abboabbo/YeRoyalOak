@@ -315,6 +315,15 @@ function registerDartClick(event) {
         y: (y - cy) / outerDouble
     };
 
+    // Send the dart score and coordinates to Streamlit
+    sendStreamlitMessage(
+        "streamlit:setComponentValue",
+        {
+            value: lastDart,
+            dataType: "json"
+        }
+    );
+
     // Display a marker where the dart landed
     const existingMarker = document.getElementById(
         "last-dart-marker"
