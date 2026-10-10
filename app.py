@@ -11547,6 +11547,8 @@ div.st-key-training_301_mode_cards
             dart_hit = interactive_dartboard(
                 key="training_301_dartboard"
             )
+            # TEMPORARY DEBUG - show data received from dartboard
+            st.write("Dartboard data received:", dart_hit)
 
             # Record each new dart only once
             if (
