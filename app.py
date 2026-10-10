@@ -11402,6 +11402,48 @@ if page == "Training":
         )
 
         # =============================================
+        # 301 COMPLETED - NEW GAME BUTTON
+        # =============================================
+
+        if st.session_state.training_301_finished:
+
+            st.success("🏆 301 CHECKOUT COMPLETE!")
+
+            st.metric(
+                "Total Darts Used",
+                st.session_state.training_301_darts
+            )
+
+            if st.button(
+                "🎯 NEW GAME",
+                key="training_301_new_game_top",
+                type="primary",
+                use_container_width=True
+            ):
+
+                # Reset game
+                st.session_state.training_301_remaining = 301
+                st.session_state.training_301_history = []
+                st.session_state.training_301_darts = 0
+                st.session_state.training_301_finished = False
+                st.session_state.training_301_saved = False
+                st.session_state.training_301_quick_score = 0
+                st.session_state.training_301_pending_checkout = None
+
+                # Reset dartboard
+                st.session_state.training_301_board_darts = []
+                st.session_state.training_301_last_click_id = None
+
+                # Create fresh dartboard instance
+                st.session_state.training_301_board_game_id = (
+                    st.session_state.get(
+                        "training_301_board_game_id", 0
+                    ) + 1
+                )
+
+                st.rerun()
+
+        # =============================================
         # GAME STATISTICS
         # =============================================
 
