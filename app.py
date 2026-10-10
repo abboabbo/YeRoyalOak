@@ -11450,7 +11450,7 @@ if page == "Training":
                         )
 
                         training_result = TrainingSession(
-                            player_id=player_id,
+                            player_id=st.session_state.player_id,
                             game_type="301",
                             score=301,
                             darts_thrown=darts_thrown,
