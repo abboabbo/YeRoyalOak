@@ -11375,33 +11375,109 @@ if page == "Training":
         st.markdown("---")
 
         # =============================================
-        # SCORING PLACEHOLDER
+        # 301 QUICK SCORE
         # =============================================
 
-        st.subheader("🎯 Enter Your Score")
+        st.subheader("🎯 Quick Score")
 
-        st.number_input(
-            "Score from your three darts",
-            min_value=0,
-            max_value=180,
-            value=0,
-            step=1,
-            key="training_301_preview_score",
-            disabled=True
+        st.caption(
+            "Enter your three-dart total. "
+            "Each turn counts as three darts."
         )
 
-        st.button(
-            "Submit Score — Coming in Part 4B",
-            key="training_301_preview_submit",
-            use_container_width=True,
-            disabled=True
-        )
+        if not st.session_state.training_301_finished:
 
-        st.info(
-            "The 301 scoring engine, bust detection "
-            "and double-out finishing will be added "
-            "in Part 4B."
-        )
+            turn_score = st.number_input(
+                "Score this turn",
+                min_value=0,
+                max_value=180,
+                value=0,
+                step=1,
+                key="training_301_quick_score"
+            )
+
+            if st.button(
+                "Submit Score",
+                key="training_301_submit",
+                type="primary",
+                use_container_width=True
+            ):
+
+                remaining = (
+                    st.session_state.training_301_remaining
+                )
+
+                new_remaining = remaining - turn_score
+
+                # Bust if below zero or leaves one
+                bust = (
+                    new_remaining < 0
+                    or new_remaining == 1
+                )
+
+                # Checkout will be handled in Step 4B.2
+                if new_remaining == 0:
+
+                    st.warning(
+                        "Checkout confirmation will be "
+                        "added in the next step. "
+                        "For now, enter scores that "
+                        "leave at least 2."
+                    )
+
+                else:
+
+                    if not bust:
+                        st.session_state.training_301_remaining = (
+                            new_remaining
+                        )
+
+                    st.session_state.training_301_darts += 3
+
+                    st.session_state.training_301_history.append({
+                        "score": turn_score,
+                        "bust": bust,
+                        "remaining": (
+                            st.session_state.training_301_remaining
+                        )
+                    })
+
+                    st.rerun()
+
+        # =============================================
+        # TURN HISTORY
+        # =============================================
+
+        st.markdown("---")
+
+        st.subheader("📋 Turn History")
+
+        if not st.session_state.training_301_history:
+
+            st.info("No scores entered yet.")
+
+        else:
+
+            for turn_number, turn in enumerate(
+                st.session_state.training_301_history,
+                start=1
+            ):
+
+                if turn["bust"]:
+
+                    st.write(
+                        f"**Turn {turn_number}:** "
+                        f"{turn['score']} — BUST — "
+                        f"Remaining: {turn['remaining']}"
+                    )
+
+                else:
+
+                    st.write(
+                        f"**Turn {turn_number}:** "
+                        f"{turn['score']} — "
+                        f"Remaining: {turn['remaining']}"
+                    )
 
         # =============================================
         # BACK BUTTON
