@@ -11617,19 +11617,58 @@ if page == "Training":
             1 for score in valid_scores if score == 180
         )
 
-        stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
 
-        with stat_col1:
-            st.metric("🏆 Highest Turn", highest_turn)
+        # =============================================
+        # PREMIUM 301 ADVANCED STATISTICS
+        # =============================================
 
-        with stat_col2:
-            st.metric("💯 100+ Scores", scores_100_plus)
+        advanced_stats = [
+            ("HIGHEST TURN", highest_turn),
+            ("100+ SCORES", scores_100_plus),
+            ("140+ SCORES", scores_140_plus),
+            ("180s", scores_180),
+        ]
 
-        with stat_col3:
-            st.metric("🔥 140+ Scores", scores_140_plus)
+        advanced_cards = ""
 
-        with stat_col4:
-            st.metric("🎯 180s", scores_180)
+        for label, value in advanced_stats:
+            advanced_cards += f"""
+<div style="
+    background:#111827;
+    border:1px solid #685624;
+    border-radius:14px;
+    padding:15px 5px;
+    text-align:center;
+    min-width:0;
+">
+    <div style="
+        color:#aeb7c4;
+        font-size:10px;
+        font-weight:800;
+        min-height:28px;
+    ">{label}</div>
+    <div style="
+        color:#f5c542;
+        font-size:clamp(19px,3.5vw,30px);
+        font-weight:900;
+        margin-top:5px;
+    ">{value}</div>
+</div>
+"""
+
+        st.html(
+            f"""
+<div style="
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+    margin:12px 0 18px 0;
+">
+    {advanced_cards}
+</div>
+            """
+        )
+
 
         st.markdown("---")
 
