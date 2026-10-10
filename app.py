@@ -5288,109 +5288,134 @@ def get_cached_player_card_png(
         highest_checkout=highest_checkout
     )    
 
+
 def render_player_profile_details(player):
 
-    has_profile_details = any(
-        [
-            player.biography,
-            player.hometown,
-            player.throwing_hand,
-            player.favourite_double,
-            player.favourite_checkout,
-            player.equipment
-        ]
+    # =============================================
+    # PLAYER PROFILE TABS
+    # =============================================
+
+    about_tab, training_tab = st.tabs(
+        ["👤 About Player", "🎯 Training"]
     )
 
-    if not has_profile_details:
+    # =============================================
+    # ABOUT PLAYER TAB
+    # =============================================
 
-        st.info(
-            "No additional player information "
-            "has been added yet."
+    with about_tab:
+
+        has_profile_details = any(
+            [
+                player.biography,
+                player.hometown,
+                player.throwing_hand,
+                player.favourite_double,
+                player.favourite_checkout,
+                player.equipment
+            ]
         )
 
-        return
+        if not has_profile_details:
 
-    st.markdown("## 👤 About the Player")
-
-    if player.biography:
-
-        with st.container(border=True):
-
-            st.markdown("### Biography")
-
-            st.write(
-                player.biography
+            st.info(
+                "No additional player information "
+                "has been added yet."
             )
 
-    detail_col1, detail_col2 = st.columns(2)
+        else:
 
-    with detail_col1:
+            st.markdown("## 👤 About the Player")
 
-        with st.container(border=True):
+            if player.biography:
 
-            st.markdown("### Player Information")
+                with st.container(border=True):
 
-            if player.hometown:
+                    st.markdown("### Biography")
 
-                st.write(
-                    f"📍 **Hometown:** "
-                    f"{player.hometown}"
-                )
+                    st.write(player.biography)
 
-            if player.throwing_hand:
+            detail_col1, detail_col2 = st.columns(2)
 
-                st.write(
-                    f"🎯 **Throwing hand:** "
-                    f"{player.throwing_hand}"
-                )
+            with detail_col1:
 
-            if (
-                not player.hometown
-                and not player.throwing_hand
-            ):
+                with st.container(border=True):
 
-                st.caption(
-                    "No player information added."
-                )
+                    st.markdown("### Player Information")
 
-    with detail_col2:
+                    if player.hometown:
 
-        with st.container(border=True):
+                        st.write(
+                            f"📍 **Hometown:** "
+                            f"{player.hometown}"
+                        )
 
-            st.markdown("### Preferences")
+                    if player.throwing_hand:
 
-            if player.favourite_double:
+                        st.write(
+                            f"🎯 **Throwing hand:** "
+                            f"{player.throwing_hand}"
+                        )
 
-                st.write(
-                    f"⭕ **Favourite double:** "
-                    f"{player.favourite_double}"
-                )
+                    if (
+                        not player.hometown
+                        and not player.throwing_hand
+                    ):
 
-            if player.favourite_checkout:
+                        st.caption(
+                            "No player information added."
+                        )
 
-                st.write(
-                    f"🏹 **Favourite checkout:** "
-                    f"{player.favourite_checkout}"
-                )
+            with detail_col2:
 
-            if (
-                not player.favourite_double
-                and not player.favourite_checkout
-            ):
+                with st.container(border=True):
 
-                st.caption(
-                    "No checkout preferences added."
-                )
+                    st.markdown("### Preferences")
 
-    if player.equipment:
+                    if player.favourite_double:
 
-        with st.container(border=True):
+                        st.write(
+                            f"⭕ **Favourite double:** "
+                            f"{player.favourite_double}"
+                        )
 
-            st.markdown("### 🎯 Darts Equipment")
+                    if player.favourite_checkout:
 
-            st.write(
-                player.equipment
-            )
+                        st.write(
+                            f"🏹 **Favourite checkout:** "
+                            f"{player.favourite_checkout}"
+                        )
+
+                    if (
+                        not player.favourite_double
+                        and not player.favourite_checkout
+                    ):
+
+                        st.caption(
+                            "No checkout preferences added."
+                        )
+
+            if player.equipment:
+
+                with st.container(border=True):
+
+                    st.markdown("### 🎯 Darts Equipment")
+
+                    st.write(player.equipment)
+
+    # =============================================
+    # TRAINING TAB
+    # =============================================
+
+    with training_tab:
+
+        st.markdown("## 🎯 Personal Training Statistics")
+
+        st.info(
+            "Personal 301 training statistics "
+            "will appear here."
+        )
+
 
 # LOGIN
 
