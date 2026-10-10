@@ -11439,7 +11439,77 @@ if page == "Training":
 
             else:
 
-                leaderboard_rows = []
+                               # =========================================
+                # PREMIUM BOB'S 27 LEADERBOARD
+                # =========================================
+
+                current_player_id = st.session_state.get(
+                    "player_id"
+                )
+
+                st.markdown(
+                    """
+<style>
+.bobs-leaderboard-title {
+    color: #f5c542;
+    text-align: center;
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+.bobs-leaderboard-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 18px;
+    margin-bottom: 9px;
+    border-radius: 14px;
+    background: linear-gradient(110deg, #151e2b, #0b111a);
+    border: 1px solid rgba(245,197,66,0.20);
+}
+.bobs-leaderboard-mine {
+    border: 2px solid #f5c542;
+    background: linear-gradient(110deg, #302814, #111827);
+}
+.bobs-leaderboard-position {
+    width: 45px;
+    flex-shrink: 0;
+    font-size: 25px;
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+}
+.bobs-leaderboard-name {
+    flex: 1;
+    min-width: 0;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+.bobs-leaderboard-score {
+    color: #f5c542;
+    font-size: 25px;
+    font-weight: 900;
+    text-align: right;
+}
+.bobs-leaderboard-caption {
+    color: #aeb7c4;
+    font-size: 10px;
+    text-align: right;
+    letter-spacing: 1px;
+}
+</style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                position_icons = {
+                    1: "🥇",
+                    2: "🥈",
+                    3: "🥉"
+                }
 
                 for position, (
                     player_id,
@@ -11449,24 +11519,72 @@ if page == "Training":
                     start=1
                 ):
 
-                    leaderboard_rows.append({
-                        "Position": position,
-                        "Player": player_names.get(
-                            player_id,
-                            "Unknown Player"
-                        ),
-                        "Best Score": score
-                    })
+                    player_name = html.escape(
+                        str(
+                            player_names.get(
+                                player_id,
+                                "Unknown Player"
+                            )
+                        )
+                    )
 
-                leaderboard_df = pd.DataFrame(
-                    leaderboard_rows
-                )
+                    position_label = position_icons.get(
+                        position,
+                        str(position)
+                    )
 
-                st.dataframe(
-                    leaderboard_df,
-                    use_container_width=True,
-                    hide_index=True
-                )
+                    is_my_score = (
+                        current_player_id is not None
+                        and int(current_player_id) == int(player_id)
+                    )
+
+                    row_class = (
+                        "bobs-leaderboard-row "
+                        "bobs-leaderboard-mine"
+                        if is_my_score
+                        else "bobs-leaderboard-row"
+                    )
+
+                    my_badge = (
+                        " <span style='color:#f5c542;"
+                        "font-size:11px;'>★ YOU</span>"
+                        if is_my_score
+                        else ""
+                    )
+
+                    st.markdown(
+                        f"""
+<div class="{row_class}">
+    <div class="bobs-leaderboard-position">
+        {position_label}
+    </div>
+    <div class="bobs-leaderboard-name">
+        {player_name}{my_badge}
+    </div>
+    <div>
+        <div class="bobs-leaderboard-score">
+            {score}
+        </div>
+        <div class="bobs-leaderboard-caption">
+            POINTS
+        </div>
+    </div>
+</div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                if (
+                    current_player_id is not None
+                    and current_player_id in best_scores
+                ):
+
+                    st.markdown("---")
+
+                    st.metric(
+                        "🎯 Your Bob's 27 Personal Best",
+                        best_scores[current_player_id]
+                    )
 
         except Exception as error:
 
