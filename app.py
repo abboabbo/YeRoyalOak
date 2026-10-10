@@ -11995,21 +11995,29 @@ div.st-key-training_301_mode_cards
                         )
 
             # =============================================
-            # RESTART 301
+            # NEW GAME / RESTART 301
             # =============================================
 
             if st.button(
-                "🔄 Restart 301",
+                "🎯 NEW GAME" if st.session_state.training_301_finished
+                else "🔄 Restart 301",
                 key="training_301_restart",
+                type="primary" if st.session_state.training_301_finished
+                else "secondary",
                 use_container_width=True
             ):
 
+                # Reset the 301 game
                 st.session_state.training_301_remaining = 301
                 st.session_state.training_301_history = []
                 st.session_state.training_301_darts = 0
                 st.session_state.training_301_finished = False
                 st.session_state.training_301_quick_score = 0
                 st.session_state.training_301_pending_checkout = None
+
+                # Clear interactive dartboard state
+                st.session_state.training_301_board_darts = []
+                st.session_state.training_301_last_click_id = None
 
                 st.rerun()
 
