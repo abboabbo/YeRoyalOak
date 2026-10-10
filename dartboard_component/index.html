@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #0b111a;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .board-container {
+        width: 100%;
+        padding: 12px 4px 20px;
+        text-align: center;
+    }
+
+    .board-title {
+        color: #f5c542;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    #dartboard {
+        display: block;
+        width: 100%;
+        max-width: 480px;
+        height: auto;
+        margin: 0 auto;
+        cursor: crosshair;
+        touch-action: manipulation;
+    }
+
+    .board-footer {
+        color: #aeb7c4;
+        font-size: 13px;
+        margin-top: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="board-container">
+    <div class="board-title">🎯 INTERACTIVE DARTBOARD</div>
+
+    <svg
+        id="dartboard"
+        viewBox="0 0 500 500"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Dartboard"
+    ></svg>
+
+    <div class="board-footer">
+        Dartboard ready — scoring activation coming next
+    </div>
+</div>
+
+<script>
+const svg = document.getElementById("dartboard");
+const NS = "http://www.w3.org/2000/svg";
+
+const numbers = [
+    20, 1, 18, 4, 13,
+    6, 10, 15, 2, 17,
+    3, 19, 7, 16, 8,
+    11, 14, 9, 12, 5
+];
+
+const cx = 250;
+const cy = 250;
+
+const outerDouble = 205;
+const innerDouble = outerDouble * 162 / 170;
+const outerTreble = outerDouble * 107 / 170;
+const innerTreble = outerDouble * 99 / 170;
+const outerBull = outerDouble * 15.9 / 170;
+const innerBull = outerDouble * 6.35 / 170;
+
+function addElement(tag, attributes, text) {
+    const el = document.createElementNS(NS, tag);
+
+    for (const [name, value] of Object.entries(attributes)) {
+        el.setAttribute(name, value);
+    }
+
+    if (text !== undefined) {
+        el.textContent = text;
+    }
+
+    svg.appendChild(el);
+    return el;
+}
+
+function point(radius, angle) {
+    return {
+        x: cx + radius * Math.cos(angle),
+        y: cy + radius * Math.sin(angle)
+    };
+}
+
+function segmentPath(innerRadius, outerRadius, start, end) {
+    const a = point(outerRadius, start);
+    const b = point(outerRadius, end);
+    const c = point(innerRadius, end);
+    const d = point(innerRadius, start);
+
+    return [
+        `M ${a.x} ${a.y}`,
+        `A ${outerRadius} ${outerRadius} 0 0 1 ${b.x} ${b.y}`,
+        `L ${c.x} ${c.y}`,
+        `A ${innerRadius} ${innerRadius} 0 0 0 ${d.x} ${d.y}`,
+        "Z"
+    ].join(" ");
+}
+
+// Outer surround
+addElement("circle", {
+    cx, cy, r: 248,
+    fill: "#111827",
+    stroke: "#f5c542",
+    "stroke-width": 3
+});
+
+addElement("circle", {
+    cx, cy, r: 217,
+    fill: "#090909",
+    stroke: "#454545",
+    "stroke-width": 2
+});
+
+// Draw every scoring wedge
+for (let i = 0; i < 20; i++) {
+    const start = (-99 + i * 18) * Math.PI / 180;
+    const end = (-81 + i * 18) * Math.PI / 180;
+    const middle = (-90 + i * 18) * Math.PI / 180;
+
+    const base = i % 2 === 0 ? "#e7d9b5" : "#1a1a1a";
+    const ring = i % 2 === 0 ? "#c92a35" : "#16824c";
+
+    const rings = [
+        [outerBull, innerTreble, base],
+        [innerTreble, outerTreble, ring],
+        [outerTreble, innerDouble, base],
+        [innerDouble, outerDouble, ring]
+    ];
+
+    for (const [inner, outer, fill] of rings) {
+        addElement("path", {
+            d: segmentPath(inner, outer, start, end),
+            fill,
+            stroke: "#888888",
+            "stroke-width": 0.55
+        });
+    }
+
+    const label = point(229, middle);
+
+    addElement("text", {
+        x: label.x,
+        y: label.y,
+        fill: "#ffffff",
+        "font-size": 19,
+        "font-weight": 700,
+        "text-anchor": "middle",
+        "dominant-baseline": "middle"
+    }, String(numbers[i]));
+}
+
+// Bulls
+addElement("circle", {
+    cx, cy, r: outerBull,
+    fill: "#16824c",
+    stroke: "#bbbbbb",
+    "stroke-width": 1
+});
+
+addElement("circle", {
+    cx, cy, r: innerBull,
+    fill: "#c92a35",
+    stroke: "#bbbbbb",
+    "stroke-width": 1
+});
+
+// Gold outer accent
+addElement("circle", {
+    cx, cy, r: outerDouble,
+    fill: "none",
+    stroke: "#d4af37",
+    "stroke-width": 1.2,
+    "pointer-events": "none"
+});
+
+// =============================================
+// STREAMLIT COMPONENT COMMUNICATION
+// =============================================
+
+function sendStreamlitMessage(type, data = {}) {
+    window.parent.postMessage(
+        {
+            isStreamlitMessage: true,
+            type: type,
+            ...data
+        },
+        "*"
+    );
+}
+
+function resizeFrame() {
+    sendStreamlitMessage(
+        "streamlit:setFrameHeight",
+        {
+            height: document.documentElement.scrollHeight
+        }
+    );
+}
+
+function initialiseComponent() {
+
+    // Tell Streamlit the component is ready
+    sendStreamlitMessage(
+        "streamlit:componentReady",
+        {
+            apiVersion: 1
+        }
+    );
+
+    // Set component height
+    resizeFrame();
+}
+
+// Wait for Streamlit's render event
+window.addEventListener("message", function(event) {
+
+    if (event.data && event.data.type === "streamlit:render") {
+        resizeFrame();
+    }
+
+});
+
+// Initialise immediately after the HTML has loaded
+initialiseComponent();
+
+window.addEventListener("load", resizeFrame);
+window.addEventListener("resize", resizeFrame);
+</script>
+
+</body>
+</html>
