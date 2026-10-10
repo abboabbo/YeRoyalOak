@@ -11293,6 +11293,22 @@ if page == "Training":
     elif st.session_state.training_game == "301":
 
         # =============================================
+        # 301 GAME STATE
+        # =============================================
+
+        if "training_301_remaining" not in st.session_state:
+            st.session_state.training_301_remaining = 301
+
+        if "training_301_history" not in st.session_state:
+            st.session_state.training_301_history = []
+
+        if "training_301_darts" not in st.session_state:
+            st.session_state.training_301_darts = 0
+
+        if "training_301_finished" not in st.session_state:
+            st.session_state.training_301_finished = False        
+
+        # =============================================
         # GAME HEADER
         # =============================================
 
@@ -11314,14 +11330,16 @@ if page == "Training":
         # INITIAL GAME DISPLAY
         # =============================================
 
+        remaining = st.session_state.training_301_remaining
+
         st.markdown(
-            """
+            f"""
 <div style="text-align:center; padding:25px; background:#0b111a; border:2px solid #f5c542; border-radius:18px; margin-bottom:20px;">
     <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
         REMAINING SCORE
     </div>
     <div style="color:#f5c542; font-size:64px; font-weight:900;">
-        301
+        {remaining}
     </div>
 </div>
             """,
