@@ -5289,6 +5289,122 @@ def get_cached_player_card_png(
     )    
 
 
+def render_player_fixture_cards(player):
+
+    db = SessionLocal()
+
+    try:
+
+        player_fixtures = db.query(Fixture).filter(
+            (Fixture.player1_id == player.id) |
+            (Fixture.player2_id == player.id)
+        ).order_by(
+            Fixture.id.desc()
+        ).all()
+
+        player_lookup = {
+            p.id: display_player_name(p)
+            for p in db.query(Player).all()
+        }
+
+    finally:
+
+        db.close()
+
+    upcoming = [
+        fixture
+        for fixture in player_fixtures
+        if fixture.played == 0
+    ]
+
+    recent = [
+        fixture
+        for fixture in player_fixtures
+        if fixture.played == 1
+    ]
+
+    upcoming = sorted(
+        upcoming,
+        key=lambda fixture: (
+            fixture.round_number or 0,
+            fixture.id
+        )
+    )[:5]
+
+    recent = recent[:5]
+
+    upcoming_col, recent_col = st.columns(2)
+
+    with upcoming_col:
+
+        st.markdown("### 📅 Upcoming Fixtures")
+
+        if not upcoming:
+
+            dashboard_card(
+                "No Fixtures",
+                "None",
+                "No upcoming fixtures"
+            )
+
+        else:
+
+            for fixture in upcoming:
+
+                p1 = player_lookup.get(
+                    fixture.player1_id,
+                    "Unknown"
+                )
+
+                p2 = player_lookup.get(
+                    fixture.player2_id,
+                    "Unknown"
+                )
+
+                match_card(
+                    f"Round {fixture.round_number}",
+                    p1,
+                    "VS",
+                    p2
+                )
+
+    with recent_col:
+
+        st.markdown("### 🔥 Recent Results")
+
+        if not recent:
+
+            dashboard_card(
+                "No Results",
+                "None",
+                "No recent results"
+            )
+
+        else:
+
+            for fixture in recent:
+
+                p1 = player_lookup.get(
+                    fixture.player1_id,
+                    "Unknown"
+                )
+
+                p2 = player_lookup.get(
+                    fixture.player2_id,
+                    "Unknown"
+                )
+
+                match_card(
+                    "Result",
+                    p1,
+                    (
+                        f"{fixture.player1_legs} - "
+                        f"{fixture.player2_legs}"
+                    ),
+                    p2
+                )
+
+
 def render_player_profile_details(player):
 
     # =============================================
@@ -5734,14 +5850,13 @@ def render_player_profile_details(player):
     # FIXTURES & RESULTS TAB
     # =============================================
 
+
     with fixtures_tab:
 
         st.markdown("## 📅 Fixtures & Results")
 
-        st.info(
-            "Player fixtures and recent results "
-            "will appear here."
-        )
+        render_player_fixture_cards(player)
+
 
 
 
