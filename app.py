@@ -14236,7 +14236,7 @@ if page == "My Profile":
                     win_pct=win_pct,
                     recent_form=recent_form,
                     league_position=league_position,
-                    total_Maximums=total_Maximums,
+                    total_maximums=total_Maximums,
                     highest_checkout=highest_checkout
                 )
 
