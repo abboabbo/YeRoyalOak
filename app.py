@@ -14969,52 +14969,6 @@ if page == "My Profile":
                 player
             )
 
-            spotify_embed_url = get_spotify_embed_url(
-                player.walk_on_url
-            )
-
-            if player.walk_on_song or spotify_embed_url:
-
-                st.divider()
-
-                st.subheader("🎵 My Walk-On Song")
-
-                if player.walk_on_song:
-
-                    st.markdown(
-                        f"### {player.walk_on_song}"
-                    )
-
-                if spotify_embed_url:
-
-                    spotify_left, spotify_centre, spotify_right = (
-                        st.columns([1, 2.5, 1])
-                    )
-
-                    with spotify_centre:
-
-                        components.html(
-                            f"""
-                            <iframe
-                                src="{spotify_embed_url}"
-                                width="100%"
-                                height="152"
-                                frameborder="0"
-                                allowfullscreen
-                                allow="
-                                    autoplay;
-                                    clipboard-write;
-                                    encrypted-media;
-                                    fullscreen;
-                                    picture-in-picture
-                                "
-                                loading="lazy">
-                            </iframe>
-                            """,
-                            height=165,
-                            scrolling=False
-                        )
-
             col3, col4 = st.columns(2)
 
             players = db.query(Player).all()
