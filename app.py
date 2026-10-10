@@ -12003,6 +12003,52 @@ div.st-key-training_301_mode_cards
 
                     st.rerun()
 
+
+            # =============================================
+            # PREMIUM 301 SCORING BUTTON STYLES
+            # =============================================
+
+            st.html(
+                """
+<style>
+.st-key-training_301_board_undo button {
+    background: linear-gradient(145deg,#263244,#111827);
+    color: #f5c542;
+    border: 1px solid rgba(245,197,66,0.55);
+    border-radius: 12px;
+    font-weight: 800;
+    min-height: 52px;
+}
+
+.st-key-training_301_board_undo button:hover:not(:disabled) {
+    border-color: #f5c542;
+    color: #ffffff;
+}
+
+.st-key-training_301_board_submit button {
+    background: linear-gradient(135deg,#f5c542,#b78b18);
+    color: #10151d;
+    border: 1px solid #f5c542;
+    border-radius: 12px;
+    font-weight: 900;
+    min-height: 56px;
+}
+
+.st-key-training_301_board_submit button:hover:not(:disabled) {
+    background: #ffe082;
+    color: #10151d;
+}
+
+.st-key-training_301_board_undo button:disabled,
+.st-key-training_301_board_submit button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+</style>
+                """
+            )
+
+
             # Undo last dart
             if st.button(
                 "↩️ Undo Last Dart",
