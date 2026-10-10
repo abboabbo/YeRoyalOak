@@ -11397,21 +11397,53 @@ if page == "Training":
         # INITIAL GAME DISPLAY
         # =============================================
 
+
         remaining = st.session_state.training_301_remaining
 
         st.markdown(
             f"""
-<div style="text-align:center; padding:25px; background:#0b111a; border:2px solid #f5c542; border-radius:18px; margin-bottom:20px;">
-    <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
+<div style="
+    background:linear-gradient(145deg,#111827,#0b111a);
+    border:1px solid rgba(245,197,66,0.65);
+    border-radius:22px;
+    padding:30px 20px;
+    text-align:center;
+    margin-bottom:22px;
+    box-shadow:0 10px 35px rgba(0,0,0,0.35);
+">
+    <div style="
+        color:#aeb7c4;
+        font-size:13px;
+        font-weight:800;
+        letter-spacing:2px;
+    ">
         REMAINING SCORE
     </div>
-    <div style="color:#f5c542; font-size:64px; font-weight:900;">
+
+    <div style="
+        color:#f5c542;
+        font-size:clamp(76px,12vw,112px);
+        font-weight:950;
+        line-height:1.15;
+        text-shadow:0 0 30px rgba(245,197,66,0.18);
+        margin:12px 0;
+    ">
         {remaining}
+    </div>
+
+    <div style="
+        color:#aeb7c4;
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:1.5px;
+    ">
+        🎯 DOUBLE OUT
     </div>
 </div>
             """,
             unsafe_allow_html=True
         )
+
 
         # =============================================
         # 301 COMPLETED - NEW GAME BUTTON
