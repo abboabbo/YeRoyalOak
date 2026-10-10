@@ -11354,7 +11354,14 @@ if page == "Training":
             st.session_state.training_301_darts = 0
 
         if "training_301_finished" not in st.session_state:
-            st.session_state.training_301_finished = False        
+            st.session_state.training_301_finished = False 
+
+        # =============================================
+        # 301 DATABASE SAVE STATUS
+        # =============================================
+
+        if "training_301_saved" not in st.session_state:
+            st.session_state.training_301_saved = False                   
 
         # =============================================
         # GAME HEADER
@@ -12077,6 +12084,7 @@ div.st-key-training_301_mode_cards
                 st.session_state.training_301_history = []
                 st.session_state.training_301_darts = 0
                 st.session_state.training_301_finished = False
+                st.session_state.training_301_saved = False
                 st.session_state.training_301_quick_score = 0
                 st.session_state.training_301_pending_checkout = None
 
