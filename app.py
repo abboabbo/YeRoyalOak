@@ -11553,31 +11553,8 @@ if page == "Training":
         # GAME STATISTICS
         # =============================================
 
+       
         history = st.session_state.training_301_history
-
-        stat_col1, stat_col2, stat_col3 = st.columns(3)
-
-        with stat_col1:
-            st.metric(
-                "Darts Thrown",
-                st.session_state.training_301_darts
-            )
-
-        with stat_col2:
-            st.metric(
-                "Turns Played",
-                len(history)
-            )
-
-        with stat_col3:
-            st.metric(
-                "Last Score",
-                history[-1]["score"] if history else 0
-            )
-
-        # =============================================
-        # 301 LIVE THREE-DART AVERAGE
-        # =============================================
 
         total_scored = sum(
             turn.get("score", 0)
@@ -11593,10 +11570,39 @@ if page == "Training":
             else 0.0
         )
 
-        st.metric(
-            "🎯 3-Dart Average",
-            f"{three_dart_average:.2f}"
+        highest_visit = max(
+            (
+                turn.get("score", 0)
+                for turn in history
+                if not turn.get("bust", False)
+            ),
+            default=0
         )
+
+        st.html(
+            f"""
+<div style="
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:22px;
+">
+    <div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:18px 8px;text-align:center;">
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">3-DART AVG</div>
+        <div style="color:#f5c542;font-size:clamp(20px,4vw,34px);font-weight:900;">{three_dart_average:.2f}</div>
+    </div>
+    <div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:18px 8px;text-align:center;">
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">DARTS THROWN</div>
+        <div style="color:#f5c542;font-size:clamp(20px,4vw,34px);font-weight:900;">{darts_thrown}</div>
+    </div>
+    <div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:18px 8px;text-align:center;">
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">HIGHEST VISIT</div>
+        <div style="color:#f5c542;font-size:clamp(20px,4vw,34px);font-weight:900;">{highest_visit}</div>
+    </div>
+</div>
+            """
+        )
+
 
         # =============================================
         # 301 ADVANCED SCORING STATISTICS
