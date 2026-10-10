@@ -12559,6 +12559,98 @@ div.st-key-training_301_mode_cards
         finally:
 
             leaderboard_db.close()
+
+
+        # =================================================
+        # 301 PRACTICE - PERSONAL RECORDS
+        # =================================================
+
+        st.markdown("---")
+        st.subheader("🎯 301 Practice — Personal Records")
+
+        records_db = SessionLocal()
+
+        try:
+            current_player_id = st.session_state.get("player_id")
+
+            if current_player_id is None:
+                st.info("Log in to view your 301 personal records.")
+
+            else:
+                my_301_results = records_db.query(
+                    TrainingSession
+                ).filter(
+                    TrainingSession.game_type == "301",
+                    TrainingSession.player_id == current_player_id,
+                    TrainingSession.completed == 1
+                ).all()
+
+                if not my_301_results:
+                    st.info(
+                        "You haven't saved a completed 301 game yet. "
+                        "Play your first game to set a personal record!"
+                    )
+
+                else:
+                    games_completed = len(my_301_results)
+
+                    valid_darts = [
+                        result.darts_thrown
+                        for result in my_301_results
+                        if result.darts_thrown is not None
+                        and result.darts_thrown > 0
+                    ]
+
+                    valid_averages = [
+                        result.average
+                        for result in my_301_results
+                        if result.average is not None
+                    ]
+
+                    best_finish = (
+                        min(valid_darts)
+                        if valid_darts
+                        else None
+                    )
+
+                    best_average = (
+                        max(valid_averages)
+                        if valid_averages
+                        else None
+                    )
+
+                    record_col1, record_col2, record_col3 = (
+                        st.columns(3)
+                    )
+
+                    with record_col1:
+                        st.metric(
+                            "🏆 Fewest Darts",
+                            best_finish if best_finish is not None else "—"
+                        )
+
+                    with record_col2:
+                        st.metric(
+                            "🎯 Best 3-Dart Average",
+                            f"{best_average:.2f}"
+                            if best_average is not None
+                            else "—"
+                        )
+
+                    with record_col3:
+                        st.metric(
+                            "✅ Games Completed",
+                            games_completed
+                        )
+
+        except Exception as error:
+            st.error("Unable to load your 301 personal records.")
+            st.exception(error)
+
+        finally:
+            records_db.close()
+
+
 # =========================================================
 # AWARDS PAGE
 # =========================================================
