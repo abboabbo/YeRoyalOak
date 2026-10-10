@@ -12255,6 +12255,15 @@ div.st-key-training_301_mode_cards
             if "training_301_board_darts" not in st.session_state:
                 st.session_state.training_301_board_darts = []
 
+
+            # =============================================
+            # LIVE DARTBOARD HEATMAP DATA
+            # =============================================
+
+            if "training_301_heatmap_darts" not in st.session_state:
+                st.session_state.training_301_heatmap_darts = []
+
+
             if "training_301_last_click_id" not in st.session_state:
                 st.session_state.training_301_last_click_id = None
 
@@ -12357,6 +12366,16 @@ div.st-key-training_301_mode_cards
                         "y": dart_hit["y"],
                         "multiplier": dart_hit["multiplier"]
                     })
+
+
+                    # Record position for the live heatmap
+                    st.session_state.training_301_heatmap_darts.append({
+                        "x": dart_hit["x"],
+                        "y": dart_hit["y"],
+                        "score": dart_hit["score"],
+                        "label": dart_hit["label"]
+                    })
+
 
             # =============================================
             # CHECK DARTBOARD TURN FOR CHECKOUT OR BUST
