@@ -5411,9 +5411,6 @@ def render_player_profile_details(player):
 
         st.markdown("## 🎯 Personal Training Statistics")
 
-
-        st.markdown("## 🎯 Personal Training Statistics")
-
         # =============================================
         # LOAD THIS PLAYER'S COMPLETED 301 GAMES
         # =============================================
@@ -5462,10 +5459,64 @@ def render_player_profile_details(player):
 
         else:
 
-            st.success(
-                f"Found {len(player_301_results)} "
-                "completed 301 training games."
+
+            # =============================================
+            # PERSONAL 301 STATISTICS
+            # =============================================
+
+            total_games = len(player_301_results)
+
+            total_darts = sum(
+                int(result["darts"])
+                for result in player_301_results
             )
+
+            best_average = max(
+                (301 * 3) / int(result["darts"])
+                for result in player_301_results
+            )
+
+            overall_average = (
+                (total_games * 301 * 3) / total_darts
+                if total_darts > 0
+                else 0
+            )
+
+            fewest_darts = min(
+                int(result["darts"])
+                for result in player_301_results
+            )
+
+            # =============================================
+            # DISPLAY STATISTICS
+            # =============================================
+
+            stat_col1, stat_col2 = st.columns(2)
+
+            with stat_col1:
+
+                st.metric(
+                    "🎯 301 Games Played",
+                    total_games
+                )
+
+                st.metric(
+                    "🏆 Best 3-Dart Average",
+                    f"{best_average:.2f}"
+                )
+
+            with stat_col2:
+
+                st.metric(
+                    "📊 Overall 3-Dart Average",
+                    f"{overall_average:.2f}"
+                )
+
+                st.metric(
+                    "⚡ Fewest Darts to Finish",
+                    fewest_darts
+                )
+
 
 
 # LOGIN
