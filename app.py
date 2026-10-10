@@ -12022,112 +12022,112 @@ div.st-key-training_301_mode_cards
 
                         st.rerun()
 
-            if st.session_state.training_301_finished:
+                if st.session_state.training_301_finished:
 
-                st.success("🏆 301 CHECKOUT COMPLETE!")
+                    st.success("🏆 301 CHECKOUT COMPLETE!")
 
-                st.metric(
-                    "Total Darts Used",
-                    st.session_state.training_301_darts
-                )
-
-            # =============================================
-            # TURN HISTORY
-            # =============================================
-
-            st.markdown("---")
-
-            st.subheader("📋 Turn History")
-
-            if not st.session_state.training_301_history:
-
-                st.info("No scores entered yet.")
-
-            else:
-
-                for turn_number, turn in enumerate(
-                    st.session_state.training_301_history,
-                    start=1
-                ):
-
-                    if turn["bust"]:
-
-                        st.write(
-                            f"**Turn {turn_number}:** "
-                            f"{turn['score']} — BUST — "
-                            f"Remaining: {turn['remaining']}"
-                        )
-
-                    else:
-
-                        st.write(
-                            f"**Turn {turn_number}:** "
-                            f"{turn['score']} — "
-                            f"Remaining: {turn['remaining']}"
-                        )
-
-            # =============================================
-            # NEW GAME / RESTART 301
-            # =============================================
-
-            if st.button(
-                "🎯 NEW GAME" if st.session_state.training_301_finished
-                else "🔄 Restart 301",
-                key="training_301_restart",
-                type="primary" if st.session_state.training_301_finished
-                else "secondary",
-                use_container_width=True
-            ):
-
-                # Reset the 301 game
-                st.session_state.training_301_remaining = 301
-                st.session_state.training_301_history = []
-                st.session_state.training_301_darts = 0
-                st.session_state.training_301_finished = False
-                st.session_state.training_301_saved = False
-                st.session_state.training_301_quick_score = 0
-                st.session_state.training_301_pending_checkout = None
-
-                # Clear interactive dartboard state
-                st.session_state.training_301_board_darts = []
-                st.session_state.training_301_last_click_id = None
-
-                # Load a fresh dartboard for the new game
-                st.session_state.training_301_board_game_id = (
-                    st.session_state.get("training_301_board_game_id", 0) + 1
-                )
-
-                st.rerun()
-
-            # =============================================
-            # BACK BUTTON
-            # =============================================
-
-            if st.button(
-                "← Back to Training Centre",
-                key="training_301_back",
-                use_container_width=True
-            ):
-
-                st.session_state.training_game = None
-
-                for state_key in [
-                    "training_301_remaining",
-                    "training_301_history",
-                    "training_301_darts",
-                    "training_301_finished",
-                    "training_301_pending_checkout",
-                    "training_301_checkout_confirmed",
-                    "training_301_checkout_darts",
-                    "training_301_quick_score"
-                ]:
-
-                    st.session_state.pop(
-                        state_key,
-                        None
+                    st.metric(
+                        "Total Darts Used",
+                        st.session_state.training_301_darts
                     )
 
-                st.rerun()               
+                # =============================================
+                # TURN HISTORY
+                # =============================================
+
+                st.markdown("---")
+
+                st.subheader("📋 Turn History")
+
+                if not st.session_state.training_301_history:
+
+                    st.info("No scores entered yet.")
+
+                else:
+
+                    for turn_number, turn in enumerate(
+                        st.session_state.training_301_history,
+                        start=1
+                    ):
+
+                        if turn["bust"]:
+
+                            st.write(
+                                f"**Turn {turn_number}:** "
+                                f"{turn['score']} — BUST — "
+                                f"Remaining: {turn['remaining']}"
+                            )
+
+                        else:
+
+                            st.write(
+                                f"**Turn {turn_number}:** "
+                                f"{turn['score']} — "
+                                f"Remaining: {turn['remaining']}"
+                            )
+
+                # =============================================
+                # NEW GAME / RESTART 301
+                # =============================================
+
+                if st.button(
+                    "🎯 NEW GAME" if st.session_state.training_301_finished
+                    else "🔄 Restart 301",
+                    key="training_301_restart",
+                    type="primary" if st.session_state.training_301_finished
+                    else "secondary",
+                    use_container_width=True
+                ):
+
+                    # Reset the 301 game
+                    st.session_state.training_301_remaining = 301
+                    st.session_state.training_301_history = []
+                    st.session_state.training_301_darts = 0
+                    st.session_state.training_301_finished = False
+                    st.session_state.training_301_saved = False
+                    st.session_state.training_301_quick_score = 0
+                    st.session_state.training_301_pending_checkout = None
+
+                    # Clear interactive dartboard state
+                    st.session_state.training_301_board_darts = []
+                    st.session_state.training_301_last_click_id = None
+
+                    # Load a fresh dartboard for the new game
+                    st.session_state.training_301_board_game_id = (
+                        st.session_state.get("training_301_board_game_id", 0) + 1
+                    )
+
+                    st.rerun()
+
+                # =============================================
+                # BACK BUTTON
+                # =============================================
+
+                if st.button(
+                    "← Back to Training Centre",
+                    key="training_301_back",
+                    use_container_width=True
+                ):
+
+                    st.session_state.training_game = None
+
+                    for state_key in [
+                        "training_301_remaining",
+                        "training_301_history",
+                        "training_301_darts",
+                        "training_301_finished",
+                        "training_301_pending_checkout",
+                        "training_301_checkout_confirmed",
+                        "training_301_checkout_darts",
+                        "training_301_quick_score"
+                    ]:
+
+                        st.session_state.pop(
+                            state_key,
+                            None
+                        )
+
+                    st.rerun()               
 
     # =====================================================
     # TRAINING CENTRE HOME
