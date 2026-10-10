@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+    margin: 0;
+    background: #0b111a;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.board-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.board-title {
+    color: #f5c542;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.board-placeholder {
+    width: 300px;
+    height: 300px;
+    max-width: 100%;
+    margin: auto;
+    border-radius: 50%;
+    border: 5px solid #f5c542;
+    background: #151e2b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="board-container">
+
+    <div class="board-title">
+        INTERACTIVE DARTBOARD
+    </div>
+
+    <div class="board-placeholder">
+        🎯
+    </div>
+
+    <p>
+        Dartboard component ready.
+    </p>
+
+</div>
+
+</body>
+</html>
