@@ -11806,11 +11806,6 @@ div.st-key-training_301_mode_cards
 
             with board_col:
 
-                st.markdown(
-                    "<div style='height:90px'></div>",
-                    unsafe_allow_html=True
-                )
-
                 # Interactive dartboard
                 dart_hit = interactive_dartboard(
                     key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
@@ -12212,9 +12207,6 @@ div.st-key-training_301_mode_cards
     </span>
     <span style="color:{score_colour};font-size:17px;font-weight:900;">
         {visit_score}
-    </span>
-    <span style="color:#aeb7c4;font-size:12px;">
-        {remaining} LEFT
     </span>
 </div>
 """
