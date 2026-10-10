@@ -4,7 +4,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/streamlit-component-lib.js"></script>
 
 <style>
     * {
@@ -204,27 +203,57 @@ addElement("circle", {
     "pointer-events": "none"
 });
 
-// Streamlit component height
-function resizeFrame() {
-    const height = document.body.scrollHeight;
+// =============================================
+// STREAMLIT COMPONENT COMMUNICATION
+// =============================================
 
-    window.parent.postMessage({
-        isStreamlitMessage: true,
-        type: "streamlit:setFrameHeight",
-        height: height
-    }, "*");
+function sendStreamlitMessage(type, data = {}) {
+    window.parent.postMessage(
+        {
+            isStreamlitMessage: true,
+            type: type,
+            ...data
+        },
+        "*"
+    );
 }
 
-window.addEventListener("load", () => {
-    resizeFrame();
+function resizeFrame() {
+    sendStreamlitMessage(
+        "streamlit:setFrameHeight",
+        {
+            height: document.documentElement.scrollHeight
+        }
+    );
+}
 
-    window.parent.postMessage({
-        isStreamlitMessage: true,
-        type: "streamlit:componentReady",
-        apiVersion: 1
-    }, "*");
+function initialiseComponent() {
+
+    // Tell Streamlit the component is ready
+    sendStreamlitMessage(
+        "streamlit:componentReady",
+        {
+            apiVersion: 1
+        }
+    );
+
+    // Set component height
+    resizeFrame();
+}
+
+// Wait for Streamlit's render event
+window.addEventListener("message", function(event) {
+
+    if (event.data && event.data.type === "streamlit:render") {
+        resizeFrame();
+    }
+
 });
 
+// Initialise immediately after the HTML has loaded
+initialiseComponent();
+
+window.addEventListener("load", resizeFrame);
 window.addEventListener("resize", resizeFrame);
 </script>
 
