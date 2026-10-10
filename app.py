@@ -11559,7 +11559,7 @@ div.st-key-training_301_mode_cards
             dart_hit = interactive_dartboard(
                 key="training_301_dartboard"
             )
-            
+
             # Record each new dart only once
             if (
                 dart_hit is not None
@@ -11612,6 +11612,26 @@ div.st-key-training_301_mode_cards
                         board_bust = True
 
                     break
+
+            # =============================================
+            # AUTOMATIC DARTBOARD BUST HANDLING
+            # =============================================
+
+            if board_bust:
+
+                st.session_state.training_301_darts += 3
+
+                st.session_state.training_301_history.append({
+                    "score": sum(dart["score"] for dart in darts),
+                    "bust": True,
+                    "remaining": starting_score
+                })
+
+                # A bust does not reduce the remaining score.
+                # Clear the turn ready for the next three darts.
+                st.session_state.training_301_board_darts = []
+
+                st.rerun()
 
             # Current turn display
             st.markdown("### 🎯 Current Turn")
