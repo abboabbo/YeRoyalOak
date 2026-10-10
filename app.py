@@ -11985,67 +11985,68 @@ div.st-key-training_301_mode_cards
 
                 st.rerun()
 
+            with controls_col:
 
-            # =============================================
-            # PREMIUM 301 CURRENT TURN DISPLAY
-            # =============================================
+                # =============================================
+                # PREMIUM 301 CURRENT TURN DISPLAY
+                # =============================================
 
-            darts = st.session_state.training_301_board_darts
+                darts = st.session_state.training_301_board_darts
 
-            turn_total = sum(
-                dart["score"] for dart in darts
-            )
+                turn_total = sum(
+                    dart["score"] for dart in darts
+                )
 
-            visit_number = (
-                len(st.session_state.training_301_history) + 1
-            )
+                visit_number = (
+                    len(st.session_state.training_301_history) + 1
+                )
 
-            dart_cards = ""
+                dart_cards = ""
 
-            for i in range(3):
-                if i < len(darts):
-                    dart_label = html.escape(str(darts[i]["label"]))
-                    dart_score = darts[i]["score"]
-                else:
-                    dart_label = "—"
-                    dart_score = "—"
+                for i in range(3):
+                    if i < len(darts):
+                        dart_label = html.escape(str(darts[i]["label"]))
+                        dart_score = darts[i]["score"]
+                    else:
+                        dart_label = "—"
+                        dart_score = "—"
 
-                dart_cards += f"""
-<div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:16px 8px;text-align:center;min-width:0;">
-    <div style="color:#aeb7c4;font-size:11px;font-weight:800;">DART {i + 1}</div>
-    <div style="color:white;font-size:24px;font-weight:900;margin:6px 0;">{dart_label}</div>
-    <div style="color:#f5c542;font-size:18px;font-weight:800;">{dart_score}</div>
-</div>
-"""
-
-            st.html(
-                f"""
-<div style="background:linear-gradient(145deg,#111827,#0b111a);border:1px solid rgba(245,197,66,0.45);border-radius:18px;padding:18px;margin:15px 0;">
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;">
-        <div style="color:#f5c542;font-size:18px;font-weight:900;">CURRENT TURN</div>
-        <div style="color:#f5c542;font-size:12px;font-weight:800;">VISIT {visit_number}</div>
+                    dart_cards += f"""
+    <div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:16px 8px;text-align:center;min-width:0;">
+        <div style="color:#aeb7c4;font-size:11px;font-weight:800;">DART {i + 1}</div>
+        <div style="color:white;font-size:24px;font-weight:900;margin:6px 0;">{dart_label}</div>
+        <div style="color:#f5c542;font-size:18px;font-weight:800;">{dart_score}</div>
     </div>
+    """
 
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
-        {dart_cards}
+                st.html(
+                    f"""
+    <div style="background:linear-gradient(145deg,#111827,#0b111a);border:1px solid rgba(245,197,66,0.45);border-radius:18px;padding:18px;margin:15px 0;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;">
+            <div style="color:#f5c542;font-size:18px;font-weight:900;">CURRENT TURN</div>
+            <div style="color:#f5c542;font-size:12px;font-weight:800;">VISIT {visit_number}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            {dart_cards}
+        </div>
+
+        <div style="background:#182334;border-radius:12px;padding:14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:#aeb7c4;font-size:13px;font-weight:800;">TURN TOTAL</div>
+            <div style="color:#f5c542;font-size:30px;font-weight:900;">{turn_total}</div>
+        </div>
+
+        <div style="color:#aeb7c4;font-size:12px;margin-top:12px;">
+            {len(darts)} of 3 darts recorded
+        </div>
+
     </div>
+                    """
+                )
 
-    <div style="background:#182334;border-radius:12px;padding:14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="color:#aeb7c4;font-size:13px;font-weight:800;">TURN TOTAL</div>
-        <div style="color:#f5c542;font-size:30px;font-weight:900;">{turn_total}</div>
-    </div>
-
-    <div style="color:#aeb7c4;font-size:12px;margin-top:12px;">
-        {len(darts)} of 3 darts recorded
-    </div>
-
-</div>
-                """
-            )
-
-            if len(darts) == 3:
-                st.success("All three darts recorded!")
+                if len(darts) == 3:
+                    st.success("All three darts recorded!")
 
 
             # =============================================
