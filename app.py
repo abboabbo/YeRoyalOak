@@ -11838,10 +11838,65 @@ div.st-key-training_301_mode_cards
             if "training_301_board_game_id" not in st.session_state:
                 st.session_state.training_301_board_game_id = 0
 
-            # Display the interactive dartboard
-            dart_hit = interactive_dartboard(
-                key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
+
+            # =============================================
+            # COMPACT 301 DESKTOP PLAYING AREA
+            # =============================================
+
+            board_col, controls_col = st.columns(
+                [1.15, 1],
+                gap="medium"
             )
+
+            with board_col:
+
+                # Interactive dartboard
+                dart_hit = interactive_dartboard(
+                    key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
+                )
+
+            with controls_col:
+
+                remaining_score = (
+                    st.session_state.training_301_remaining
+                )
+
+                st.html(
+                    f"""
+<div style="
+    background:linear-gradient(145deg,#111827,#050b12);
+    border:1px solid rgba(245,197,66,0.65);
+    border-radius:16px;
+    padding:18px;
+    text-align:center;
+    margin-bottom:12px;
+">
+    <div style="
+        color:#aeb7c4;
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:1px;
+    ">
+        SCORE REMAINING
+    </div>
+    <div style="
+        color:#f5c542;
+        font-size:clamp(40px,6vw,68px);
+        font-weight:900;
+        line-height:1.2;
+    ">
+        {remaining_score}
+    </div>
+    <div style="
+        color:#aeb7c4;
+        font-size:11px;
+    ">
+        301 • DOUBLE OUT
+    </div>
+</div>
+                    """
+                )
+
 
             # Record each new dart only once
             if (
