@@ -11480,6 +11480,24 @@ if page == "Training":
                     )
 
         # =============================================
+        # RESTART 301
+        # =============================================
+
+        if st.button(
+            "🔄 Restart 301",
+            key="training_301_restart",
+            use_container_width=True
+        ):
+
+            st.session_state.training_301_remaining = 301
+            st.session_state.training_301_history = []
+            st.session_state.training_301_darts = 0
+            st.session_state.training_301_finished = False
+            st.session_state.training_301_quick_score = 0
+
+            st.rerun()
+
+        # =============================================
         # BACK BUTTON
         # =============================================
 
