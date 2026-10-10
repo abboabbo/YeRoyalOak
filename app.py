@@ -11341,6 +11341,18 @@ if page == "Training":
     elif st.session_state.training_game == "301":
 
         # =============================================
+        # 301 - ALWAYS VISIBLE BACK BUTTON
+        # =============================================
+
+        if st.button(
+            "← Back to Training Centre",
+            key="training_301_back_top",
+            use_container_width=True
+        ):
+            st.session_state.training_game = None
+            st.rerun()
+
+        # =============================================
         # 301 GAME STATE
         # =============================================
 
