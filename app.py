@@ -12167,7 +12167,7 @@ div.st-key-training_301_mode_cards
             # COMPACT 301 RECENT VISITS
             # =============================================
 
-            with controls_col:
+            with board_col:
 
                 recent_history = (
                     st.session_state.training_301_history[-3:]
