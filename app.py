@@ -11420,6 +11420,29 @@ if page == "Training":
                 history[-1]["score"] if history else 0
             )
 
+        # =============================================
+        # 301 LIVE THREE-DART AVERAGE
+        # =============================================
+
+        total_scored = sum(
+            turn.get("score", 0)
+            for turn in history
+            if not turn.get("bust", False)
+        )
+
+        darts_thrown = st.session_state.training_301_darts
+
+        three_dart_average = (
+            (total_scored / darts_thrown) * 3
+            if darts_thrown > 0
+            else 0.0
+        )
+
+        st.metric(
+            "🎯 3-Dart Average",
+            f"{three_dart_average:.2f}"
+        )
+
         st.markdown("---")
 
         # =============================================
