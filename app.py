@@ -5295,8 +5295,13 @@ def render_player_profile_details(player):
     # PLAYER PROFILE TABS
     # =============================================
 
-    about_tab, training_tab = st.tabs(
-        ["👤 About Player", "🎯 Training"]
+
+    about_tab, training_tab, fixtures_tab = st.tabs(
+        [
+            "👤 About Player",
+            "🎯 Training",
+            "📅 Fixtures & Results"
+        ]
     )
 
     # =============================================
@@ -5671,6 +5676,20 @@ def render_player_profile_details(player):
                     "Complete at least 10 games of 301 "
                     "to unlock your personal progress comparison."
                 )
+
+
+    # =============================================
+    # FIXTURES & RESULTS TAB
+    # =============================================
+
+    with fixtures_tab:
+
+        st.markdown("## 📅 Fixtures & Results")
+
+        st.info(
+            "Player fixtures and recent results "
+            "will appear here."
+        )
 
 
 
