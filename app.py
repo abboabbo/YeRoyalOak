@@ -11287,6 +11287,120 @@ if page == "Training":
                 st.rerun()
 
     # =====================================================
+    # 301 PRACTICE GAME SCREEN
+    # =====================================================
+
+    elif st.session_state.training_game == "301":
+
+        # =============================================
+        # GAME HEADER
+        # =============================================
+
+        st.markdown(
+            """
+<div style="text-align:center; padding:20px; background:#111827; border:1px solid rgba(245,197,66,0.45); border-radius:18px; margin-bottom:20px;">
+    <div style="color:#f5c542; font-size:32px; font-weight:900;">
+        🎯 301 PRACTICE
+    </div>
+    <div style="color:#bfc5d2; font-size:15px; margin-top:8px;">
+        Race from 301 to zero. Double out to finish!
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # =============================================
+        # INITIAL GAME DISPLAY
+        # =============================================
+
+        st.markdown(
+            """
+<div style="text-align:center; padding:25px; background:#0b111a; border:2px solid #f5c542; border-radius:18px; margin-bottom:20px;">
+    <div style="color:#bfc5d2; font-size:14px; font-weight:700;">
+        REMAINING SCORE
+    </div>
+    <div style="color:#f5c542; font-size:64px; font-weight:900;">
+        301
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # =============================================
+        # GAME STATISTICS
+        # =============================================
+
+        stat_col1, stat_col2, stat_col3 = (
+            st.columns(3)
+        )
+
+        with stat_col1:
+            st.metric(
+                "Darts Thrown",
+                0
+            )
+
+        with stat_col2:
+            st.metric(
+                "Turns Played",
+                0
+            )
+
+        with stat_col3:
+            st.metric(
+                "Last Score",
+                0
+            )
+
+        st.markdown("---")
+
+        # =============================================
+        # SCORING PLACEHOLDER
+        # =============================================
+
+        st.subheader("🎯 Enter Your Score")
+
+        st.number_input(
+            "Score from your three darts",
+            min_value=0,
+            max_value=180,
+            value=0,
+            step=1,
+            key="training_301_preview_score",
+            disabled=True
+        )
+
+        st.button(
+            "Submit Score — Coming in Part 4B",
+            key="training_301_preview_submit",
+            use_container_width=True,
+            disabled=True
+        )
+
+        st.info(
+            "The 301 scoring engine, bust detection "
+            "and double-out finishing will be added "
+            "in Part 4B."
+        )
+
+        # =============================================
+        # BACK BUTTON
+        # =============================================
+
+        st.markdown("---")
+
+        if st.button(
+            "← Back to Training Centre",
+            key="training_301_back",
+            use_container_width=True
+        ):
+
+            st.session_state.training_game = None
+            st.rerun()                
+
+    # =====================================================
     # TRAINING CENTRE HOME
     # =====================================================
 
@@ -11342,12 +11456,14 @@ if page == "Training":
                     "Leaderboard: Fewest Darts"
                 )
 
-                st.button(
-                    "Coming Soon",
-                    key="training_301_coming_soon",
-                    use_container_width=True,
-                    disabled=True
-                )
+                if st.button(
+                    "▶ Play 301 Practice",
+                    key="training_301_play",
+                    use_container_width=True
+                ):
+
+                    st.session_state.training_game = "301"
+                    st.rerun()
 
         # =================================================
         # AROUND THE CLOCK
