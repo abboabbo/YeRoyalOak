@@ -18,6 +18,7 @@ from textwrap import dedent
 from supabase import create_client
 from openai import OpenAI
 from types import SimpleNamespace
+from dartboard_component import interactive_dartboard
 
 from PIL import Image
 from itertools import combinations
@@ -11533,8 +11534,10 @@ div.st-key-training_301_mode_cards
 
         if scoring_mode == "Interactive Dartboard":
 
-            st.info(
-                "🎯 Interactive Dartboard mode is coming next."
+            st.markdown("### 🎯 Interactive Dartboard")
+
+            interactive_dartboard(
+                key="training_301_dartboard"
             )
 
         # =============================================
