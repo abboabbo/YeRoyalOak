@@ -11376,17 +11376,109 @@ if page == "Training":
                 )
 
         # =================================================
-        # LEADERBOARDS PLACEHOLDER
+        # BOB'S 27 LEADERBOARD
         # =================================================
 
         st.markdown("---")
 
         st.subheader("🏆 Training Leaderboards")
 
-        st.info(
-            "Your training results and leaderboards "
-            "will appear here as we activate each game."
-        )
+        st.markdown("### 🎯 Bob's 27 — Highest Scores")
+
+        leaderboard_db = SessionLocal()
+
+        try:
+
+            training_results = leaderboard_db.query(
+                TrainingSession
+            ).filter(
+                TrainingSession.game_type == "bobs27"
+            ).all()
+
+            players = leaderboard_db.query(
+                Player
+            ).all()
+
+            player_names = {
+                player.id: display_player_name(player)
+                for player in players
+            }
+
+            # Keep each player's highest score
+            best_scores = {}
+
+            for result in training_results:
+
+                if result.score is None:
+                    continue
+
+                player_id = result.player_id
+
+                if (
+                    player_id not in best_scores
+                    or result.score > best_scores[player_id]
+                ):
+
+                    best_scores[player_id] = result.score
+
+            # Highest scores first
+            ranked_scores = sorted(
+                best_scores.items(),
+                key=lambda item: (
+                    -item[1],
+                    item[0]
+                )
+            )
+
+            if not ranked_scores:
+
+                st.info(
+                    "No Bob's 27 results have been "
+                    "saved yet. Be the first!"
+                )
+
+            else:
+
+                leaderboard_rows = []
+
+                for position, (
+                    player_id,
+                    score
+                ) in enumerate(
+                    ranked_scores,
+                    start=1
+                ):
+
+                    leaderboard_rows.append({
+                        "Position": position,
+                        "Player": player_names.get(
+                            player_id,
+                            "Unknown Player"
+                        ),
+                        "Best Score": score
+                    })
+
+                leaderboard_df = pd.DataFrame(
+                    leaderboard_rows
+                )
+
+                st.dataframe(
+                    leaderboard_df,
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+        except Exception as error:
+
+            st.error(
+                "Unable to load the Bob's 27 leaderboard."
+            )
+
+            st.exception(error)
+
+        finally:
+
+            leaderboard_db.close()
 # =========================================================
 # AWARDS PAGE
 # =========================================================
