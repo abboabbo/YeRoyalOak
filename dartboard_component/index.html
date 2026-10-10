@@ -306,22 +306,14 @@ function registerDartClick(event) {
 
     lastDart = {
         ...result,
+
+        // Unique identifier for each dart click
         click_id: dartClickId,
 
         // Normalised coordinates for future heat maps
         x: (x - cx) / outerDouble,
         y: (y - cy) / outerDouble
     };
-
-    // Send dart result to Streamlit
-    window.parent.postMessage(
-        {
-            isStreamlitMessage: true,
-            type: "streamlit:setComponentValue",
-            value: lastDart
-        },
-        "*"
-    );
 
     // Display a marker where the dart landed
     const existingMarker = document.getElementById(
