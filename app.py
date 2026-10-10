@@ -5563,6 +5563,54 @@ def render_player_profile_details(player):
             )
 
 
+            # =============================================
+            # 301 PERFORMANCE CHART
+            # =============================================
+
+            st.markdown("### 📈 301 Performance Over Time")
+
+            chart_results = list(
+                reversed(player_301_results)
+            )
+
+            chart_data = []
+
+            for game_number, result in enumerate(
+                chart_results,
+                start=1
+            ):
+
+                darts = int(result["darts"])
+
+                game_average = (301 * 3) / darts
+
+                chart_data.append(
+                    {
+                        "Game": game_number,
+                        "3-Dart Average": round(
+                            game_average, 2
+                        )
+                    }
+                )
+
+            chart_df = pd.DataFrame(chart_data)
+
+            if len(chart_df) >= 2:
+
+                st.line_chart(
+                    chart_df.set_index("Game"),
+                    y="3-Dart Average",
+                    use_container_width=True
+                )
+
+            else:
+
+                st.info(
+                    "Complete at least two 301 games "
+                    "to see your performance chart."
+                )
+
+
 
 # LOGIN
 
