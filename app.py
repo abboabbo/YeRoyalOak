@@ -11422,31 +11422,72 @@ if page == "Training":
         st.markdown("---")
 
         # =============================================
-        # 301 SCORING MODE SELECTOR
+        # PREMIUM 301 SCORING METHOD SELECTOR
         # =============================================
 
         if "training_301_scoring_mode" not in st.session_state:
             st.session_state.training_301_scoring_mode = "Quick Score"
 
-        st.markdown("### 🎯 Scoring Method")
+        st.markdown("### 🎯 Select Scoring Method")
 
-        scoring_mode = st.radio(
-            "Choose how to enter your darts",
-            [
-                "Quick Score",
-                "Interactive Dartboard"
-            ],
-            horizontal=True,
-            key="training_301_scoring_mode"
+        mode_col1, mode_col2 = st.columns(2)
+
+        with mode_col1:
+
+            quick_selected = (
+                st.session_state.training_301_scoring_mode
+                == "Quick Score"
+            )
+
+            if st.button(
+                "⌨️ QUICK SCORE" + (
+                    "  ✓ SELECTED" if quick_selected else ""
+                ),
+                key="training_301_mode_quick",
+                type="primary" if quick_selected else "secondary",
+                use_container_width=True
+            ):
+
+                st.session_state.training_301_scoring_mode = (
+                    "Quick Score"
+                )
+                st.rerun()
+
+            st.caption("Enter your three-dart total")
+
+        with mode_col2:
+
+            board_selected = (
+                st.session_state.training_301_scoring_mode
+                == "Interactive Dartboard"
+            )
+
+            if st.button(
+                "🎯 DARTBOARD" + (
+                    "  ✓ SELECTED" if board_selected else ""
+                ),
+                key="training_301_mode_board",
+                type="primary" if board_selected else "secondary",
+                use_container_width=True
+            ):
+
+                st.session_state.training_301_scoring_mode = (
+                    "Interactive Dartboard"
+                )
+                st.rerun()
+
+            st.caption("Record each dart position")
+
+        scoring_mode = (
+            st.session_state.training_301_scoring_mode
         )
 
         if scoring_mode == "Interactive Dartboard":
 
             st.info(
-                "🎯 Interactive Dartboard mode is being "
-                "built. You'll soon be able to click "
-                "where each dart lands and track your "
-                "accuracy with heat maps."
+                "🎯 Interactive Dartboard mode is coming "
+                "next. You'll soon be able to click "
+                "where each dart lands."
             )
 
         # =============================================
