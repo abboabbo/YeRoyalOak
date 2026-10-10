@@ -5611,6 +5611,68 @@ def render_player_profile_details(player):
                 )
 
 
+            # =============================================
+            # PERSONAL 301 PROGRESS TRACKING
+            # =============================================
+
+            st.markdown("### 📊 Personal Progress")
+
+            if len(player_301_results) >= 10:
+
+                chronological_results = list(
+                    reversed(player_301_results)
+                )
+
+                first_five = chronological_results[:5]
+                latest_five = chronological_results[-5:]
+
+                first_five_darts = sum(
+                    int(result["darts"])
+                    for result in first_five
+                )
+
+                latest_five_darts = sum(
+                    int(result["darts"])
+                    for result in latest_five
+                )
+
+                first_five_average = (
+                    (5 * 301 * 3) / first_five_darts
+                )
+
+                latest_five_average = (
+                    (5 * 301 * 3) / latest_five_darts
+                )
+
+                improvement = (
+                    latest_five_average - first_five_average
+                )
+
+                progress_col1, progress_col2 = st.columns(2)
+
+                with progress_col1:
+
+                    st.metric(
+                        "First 5 Games Average",
+                        f"{first_five_average:.2f}"
+                    )
+
+                with progress_col2:
+
+                    st.metric(
+                        "Latest 5 Games Average",
+                        f"{latest_five_average:.2f}",
+                        delta=f"{improvement:+.2f}"
+                    )
+
+            else:
+
+                st.info(
+                    "Complete at least 10 games of 301 "
+                    "to unlock your personal progress comparison."
+                )
+
+
 
 # LOGIN
 
