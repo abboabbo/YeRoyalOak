@@ -11611,6 +11611,58 @@ div.st-key-training_301_mode_cards
                 st.session_state.training_301_board_darts.pop()
                 st.rerun()
 
+            # =============================================
+            # SUBMIT DARTBOARD TURN TO 301
+            # =============================================
+
+            if st.button(
+                "✅ Submit Turn",
+                key="training_301_board_submit",
+                type="primary",
+                disabled=len(darts) != 3,
+                use_container_width=True
+            ):
+
+                remaining = st.session_state.training_301_remaining
+                turn_total = sum(dart["score"] for dart in darts)
+
+                new_remaining = remaining - turn_total
+
+                # A turn is a bust if the score goes below
+                # zero or leaves exactly one point.
+                bust = new_remaining < 0 or new_remaining == 1
+
+                # A zero finish must be checked separately.
+                if new_remaining == 0:
+
+                    st.warning(
+                        "Checkout handling is coming in "
+                        "the next step. Your turn has not "
+                        "been submitted."
+                    )
+
+                else:
+
+                    if not bust:
+                        st.session_state.training_301_remaining = (
+                            new_remaining
+                        )
+
+                    st.session_state.training_301_darts += 3
+
+                    st.session_state.training_301_history.append({
+                        "score": turn_total,
+                        "bust": bust,
+                        "remaining": (
+                            st.session_state.training_301_remaining
+                        )
+                    })
+
+                    # Clear the current three-dart turn
+                    st.session_state.training_301_board_darts = []
+
+                    st.rerun()
+
         # =============================================
         # 301 QUICK SCORE
         # =============================================
