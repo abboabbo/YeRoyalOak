@@ -11768,7 +11768,36 @@ div.st-key-training_301_mode_cards
 
         if scoring_mode == "Interactive Dartboard":
 
-            st.markdown("### 🎯 Interactive Dartboard")
+
+            st.html(
+                """
+<div style="
+    background:linear-gradient(145deg,#111827,#0b111a);
+    border:1px solid rgba(245,197,66,0.45);
+    border-radius:18px;
+    padding:18px 20px;
+    margin:15px 0 12px 0;
+    box-shadow:0 8px 25px rgba(0,0,0,0.25);
+">
+    <div style="
+        color:#f5c542;
+        font-size:20px;
+        font-weight:900;
+        letter-spacing:1px;
+    ">
+        🎯 INTERACTIVE DARTBOARD
+    </div>
+    <div style="
+        color:#aeb7c4;
+        font-size:12px;
+        margin-top:5px;
+    ">
+        Select your darts directly on the board
+    </div>
+</div>
+                """
+            )
+
 
             # Initialise current turn
             if "training_301_board_darts" not in st.session_state:
