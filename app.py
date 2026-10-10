@@ -11753,6 +11753,56 @@ div.st-key-training_301_mode_cards
                         )
                         st.rerun()
 
+
+        # =============================================
+        # COMPACT LIVE REMAINING SCORE
+        # =============================================
+
+        live_remaining = st.session_state.training_301_remaining
+
+        st.html(
+            f"""
+<div style="
+    background:linear-gradient(145deg,#111827,#050b12);
+    border:1px solid rgba(245,197,66,0.65);
+    border-radius:14px;
+    padding:10px 18px;
+    margin:10px 0 14px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+">
+    <div>
+        <div style="
+            color:#aeb7c4;
+            font-size:12px;
+            font-weight:800;
+            letter-spacing:1px;
+        ">
+            SCORE REMAINING
+        </div>
+        <div style="
+            color:#aeb7c4;
+            font-size:11px;
+            margin-top:3px;
+        ">
+            301 • DOUBLE OUT
+        </div>
+    </div>
+    <div style="
+        color:#f5c542;
+        font-size:clamp(36px,7vw,54px);
+        font-weight:900;
+        line-height:1;
+    ">
+        {live_remaining}
+    </div>
+</div>
+            """
+        )
+
+
         scoring_mode = st.session_state.training_301_scoring_mode
 
         if scoring_mode == "Interactive Dartboard":
