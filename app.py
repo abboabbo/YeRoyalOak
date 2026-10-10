@@ -11443,6 +11443,44 @@ if page == "Training":
             f"{three_dart_average:.2f}"
         )
 
+        # =============================================
+        # 301 ADVANCED SCORING STATISTICS
+        # =============================================
+
+        valid_scores = [
+            turn.get("score", 0)
+            for turn in history
+            if not turn.get("bust", False)
+        ]
+
+        highest_turn = max(valid_scores, default=0)
+
+        scores_100_plus = sum(
+            1 for score in valid_scores if score >= 100
+        )
+
+        scores_140_plus = sum(
+            1 for score in valid_scores if score >= 140
+        )
+
+        scores_180 = sum(
+            1 for score in valid_scores if score == 180
+        )
+
+        stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
+
+        with stat_col1:
+            st.metric("🏆 Highest Turn", highest_turn)
+
+        with stat_col2:
+            st.metric("💯 100+ Scores", scores_100_plus)
+
+        with stat_col3:
+            st.metric("🔥 140+ Scores", scores_140_plus)
+
+        with stat_col4:
+            st.metric("🎯 180s", scores_180)
+
         st.markdown("---")
 
         # =============================================
