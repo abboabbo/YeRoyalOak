@@ -50,6 +50,53 @@ YOUTUBE_URL = (
     "https://www.youtube.com/@YeRoyalOakDarts"
 )
 
+# =========================================================
+# 301 CHECKOUT VALIDATION
+# =========================================================
+
+def is_valid_301_checkout(score, darts_used):
+
+    if darts_used not in (1, 2, 3):
+        return False
+
+    # All possible scores for a single dart
+    single_dart_scores = {0, 25, 50}
+
+    for number in range(1, 21):
+        single_dart_scores.add(number)
+        single_dart_scores.add(number * 2)
+        single_dart_scores.add(number * 3)
+
+    # Final dart must be a double or bullseye
+    finishing_scores = {
+        number * 2
+        for number in range(1, 21)
+    }
+
+    finishing_scores.add(50)
+
+    if darts_used == 1:
+        return score in finishing_scores
+
+    if darts_used == 2:
+
+        return any(
+            first + finish == score
+            for first in single_dart_scores
+            for finish in finishing_scores
+        )
+
+    if darts_used == 3:
+
+        return any(
+            first + second + finish == score
+            for first in single_dart_scores
+            for second in single_dart_scores
+            for finish in finishing_scores
+        )
+
+    return False
+
 def player_logo_available(logo_path):
 
     if not logo_path:
