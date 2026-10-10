@@ -12162,6 +12162,93 @@ div.st-key-training_301_mode_cards
 
                         st.rerun()
 
+
+            # =============================================
+            # COMPACT 301 RECENT VISITS
+            # =============================================
+
+            with controls_col:
+
+                recent_history = (
+                    st.session_state.training_301_history[-3:]
+                )
+
+                recent_rows = ""
+
+                for visit_number in range(
+                    len(st.session_state.training_301_history)
+                    - len(recent_history) + 1,
+                    len(st.session_state.training_301_history) + 1
+                ):
+
+                    turn = st.session_state.training_301_history[
+                        visit_number - 1
+                    ]
+
+                    is_bust = turn.get("bust", False)
+                    visit_score = (
+                        "BUST" if is_bust
+                        else str(turn.get("score", 0))
+                    )
+                    remaining = turn.get("remaining", 301)
+
+                    score_colour = (
+                        "#ff6670" if is_bust else "#f5c542"
+                    )
+
+                    recent_rows += f"""
+<div style="
+    background:#111827;
+    border:1px solid #685624;
+    border-radius:9px;
+    padding:9px 12px;
+    margin-bottom:6px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+">
+    <span style="color:#aeb7c4;font-size:12px;font-weight:800;">
+        VISIT {visit_number}
+    </span>
+    <span style="color:{score_colour};font-size:17px;font-weight:900;">
+        {visit_score}
+    </span>
+    <span style="color:#aeb7c4;font-size:12px;">
+        {remaining} LEFT
+    </span>
+</div>
+"""
+
+                if not recent_rows:
+                    recent_rows = """
+<div style="color:#aeb7c4;font-size:12px;">
+    No visits recorded yet.
+</div>
+"""
+
+                st.html(
+                    f"""
+<div style="
+    background:linear-gradient(145deg,#111827,#0b111a);
+    border:1px solid rgba(245,197,66,0.45);
+    border-radius:14px;
+    padding:12px;
+    margin-top:12px;
+">
+    <div style="
+        color:#f5c542;
+        font-size:15px;
+        font-weight:900;
+        margin-bottom:10px;
+    ">
+        RECENT VISITS
+    </div>
+    {recent_rows}
+</div>
+                    """
+                )
+
+
         if scoring_mode == "Quick Score":        
 
             # =============================================
