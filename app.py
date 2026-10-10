@@ -11536,22 +11536,78 @@ div.st-key-training_301_mode_cards
 
             st.markdown("### 🎯 Interactive Dartboard")
 
+            # Initialise current turn
+            if "training_301_board_darts" not in st.session_state:
+                st.session_state.training_301_board_darts = []
+
+            if "training_301_last_click_id" not in st.session_state:
+                st.session_state.training_301_last_click_id = None
+
+            # Display the interactive dartboard
             dart_hit = interactive_dartboard(
                 key="training_301_dartboard"
             )
 
-            if dart_hit is not None:
+            # Record each new dart only once
+            if (
+                dart_hit is not None
+                and dart_hit.get("click_id") is not None
+                and dart_hit["click_id"]
+                != st.session_state.training_301_last_click_id
+            ):
 
-                st.success(
-                    f"🎯 Last dart: {dart_hit['label']} "
-                    f"— {dart_hit['score']} points"
+                st.session_state.training_301_last_click_id = (
+                    dart_hit["click_id"]
                 )
 
-                st.caption(
-                    f"Position: "
-                    f"X = {dart_hit['x']:.3f}, "
-                    f"Y = {dart_hit['y']:.3f}"
-                )
+                if len(st.session_state.training_301_board_darts) < 3:
+
+                    st.session_state.training_301_board_darts.append({
+                        "score": dart_hit["score"],
+                        "label": dart_hit["label"],
+                        "x": dart_hit["x"],
+                        "y": dart_hit["y"],
+                        "multiplier": dart_hit["multiplier"]
+                    })
+
+            # Current turn display
+            st.markdown("### 🎯 Current Turn")
+
+            darts = st.session_state.training_301_board_darts
+
+            dart_cols = st.columns(3)
+
+            for i in range(3):
+
+                with dart_cols[i]:
+
+                    if i < len(darts):
+                        st.metric(
+                            f"Dart {i + 1} — {darts[i]['label']}",
+                            darts[i]["score"]
+                        )
+                    else:
+                        st.metric(f"Dart {i + 1}", "—")
+
+            turn_total = sum(dart["score"] for dart in darts)
+
+            st.metric("🎯 Turn Total", turn_total)
+
+            st.caption(f"{len(darts)} of 3 darts recorded")
+
+            if len(darts) == 3:
+                st.success("All three darts recorded!")
+
+            # Undo last dart
+            if st.button(
+                "↩️ Undo Last Dart",
+                key="training_301_board_undo",
+                disabled=len(darts) == 0,
+                use_container_width=True
+            ):
+
+                st.session_state.training_301_board_darts.pop()
+                st.rerun()
 
         # =============================================
         # 301 QUICK SCORE

@@ -209,6 +209,7 @@ addElement("circle", {
    ============================================= */
 
 let lastDart = null;
+let dartClickId = 0;
 
 function calculateDartScore(x, y) {
 
@@ -301,8 +302,11 @@ function registerDartClick(event) {
 
     const result = calculateDartScore(x, y);
 
+    dartClickId += 1;
+
     lastDart = {
         ...result,
+        click_id: dartClickId,
 
         // Normalised coordinates for future heat maps
         x: (x - cx) / outerDouble,
