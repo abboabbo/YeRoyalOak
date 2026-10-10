@@ -11648,14 +11648,13 @@ if page == "Training":
             st.session_state.training_301_darts = 0
             st.session_state.training_301_finished = False
             st.session_state.training_301_quick_score = 0
+            st.session_state.training_301_pending_checkout = None
 
             st.rerun()
 
         # =============================================
         # BACK BUTTON
         # =============================================
-
-        st.markdown("---")
 
         if st.button(
             "← Back to Training Centre",
@@ -11664,7 +11663,24 @@ if page == "Training":
         ):
 
             st.session_state.training_game = None
-            st.rerun()                
+
+            for state_key in [
+                "training_301_remaining",
+                "training_301_history",
+                "training_301_darts",
+                "training_301_finished",
+                "training_301_pending_checkout",
+                "training_301_checkout_confirmed",
+                "training_301_checkout_darts",
+                "training_301_quick_score"
+            ]:
+
+                st.session_state.pop(
+                    state_key,
+                    None
+                )
+
+            st.rerun()               
 
     # =====================================================
     # TRAINING CENTRE HOME
