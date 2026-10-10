@@ -13996,7 +13996,7 @@ if page == "My Profile":
             recent_form = []
             upcoming = []
 
-            total_Maximumss = 0
+            total_Maximums = 0
             highest_checkout = 0
 
             for fixture in fixtures:
