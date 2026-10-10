@@ -11350,26 +11350,26 @@ if page == "Training":
         # GAME STATISTICS
         # =============================================
 
-        stat_col1, stat_col2, stat_col3 = (
-            st.columns(3)
-        )
+        history = st.session_state.training_301_history
+
+        stat_col1, stat_col2, stat_col3 = st.columns(3)
 
         with stat_col1:
             st.metric(
                 "Darts Thrown",
-                0
+                st.session_state.training_301_darts
             )
 
         with stat_col2:
             st.metric(
                 "Turns Played",
-                0
+                len(history)
             )
 
         with stat_col3:
             st.metric(
                 "Last Score",
-                0
+                history[-1]["score"] if history else 0
             )
 
         st.markdown("---")
