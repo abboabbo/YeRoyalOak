@@ -11385,7 +11385,80 @@ if page == "Training":
             "Each turn counts as three darts."
         )
 
-        if not st.session_state.training_301_finished:
+        # =============================================
+        # CHECKOUT CONFIRMATION
+        # =============================================
+
+        if "training_301_pending_checkout" not in st.session_state:
+            st.session_state.training_301_pending_checkout = None
+
+        pending_checkout = (
+            st.session_state.training_301_pending_checkout
+        )
+
+        if pending_checkout is not None:
+
+            st.success(
+                f"🎯 Checkout attempt: {pending_checkout}"
+            )
+
+            st.write(
+                "Did you finish the leg on a double?"
+            )
+
+            checkout_confirmed = st.radio(
+                "Checkout result",
+                ["Yes — Double Out", "No — Bust"],
+                key="training_301_checkout_confirmed"
+            )
+
+            if checkout_confirmed == "Yes — Double Out":
+
+                darts_used = st.selectbox(
+                    "How many darts did you use to finish?",
+                    [1, 2, 3],
+                    key="training_301_checkout_darts"
+                )
+
+            if st.button(
+                "Confirm Checkout",
+                key="training_301_confirm_checkout",
+                type="primary",
+                use_container_width=True
+            ):
+
+                if checkout_confirmed == "Yes — Double Out":
+
+                    st.session_state.training_301_remaining = 0
+                    st.session_state.training_301_darts += darts_used
+                    st.session_state.training_301_finished = True
+
+                    st.session_state.training_301_history.append({
+                        "score": pending_checkout,
+                        "bust": False,
+                        "remaining": 0
+                    })
+
+                else:
+
+                    st.session_state.training_301_darts += 3
+
+                    st.session_state.training_301_history.append({
+                        "score": pending_checkout,
+                        "bust": True,
+                        "remaining": (
+                            st.session_state.training_301_remaining
+                        )
+                    })
+
+                st.session_state.training_301_pending_checkout = None
+
+                st.rerun()
+
+        if (
+            not st.session_state.training_301_finished
+            and pending_checkout is None
+        ):
 
             turn_score = st.number_input(
                 "Score this turn",
@@ -11415,15 +11488,17 @@ if page == "Training":
                     or new_remaining == 1
                 )
 
-                # Checkout will be handled in Step 4B.2
+                # =====================================
+                # CHECKOUT DETECTION
+                # =====================================
+
                 if new_remaining == 0:
 
-                    st.warning(
-                        "Checkout confirmation will be "
-                        "added in the next step. "
-                        "For now, enter scores that "
-                        "leave at least 2."
+                    st.session_state.training_301_pending_checkout = (
+                        turn_score
                     )
+
+                    st.rerun()
 
                 else:
 
@@ -11443,6 +11518,15 @@ if page == "Training":
                     })
 
                     st.rerun()
+
+        if st.session_state.training_301_finished:
+
+            st.success("🏆 301 CHECKOUT COMPLETE!")
+
+            st.metric(
+                "Total Darts Used",
+                st.session_state.training_301_darts
+            )
 
         # =============================================
         # TURN HISTORY
