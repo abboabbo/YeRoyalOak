@@ -11850,6 +11850,11 @@ div.st-key-training_301_mode_cards
 
             with board_col:
 
+                st.markdown(
+                    "<div style='height:90px'></div>",
+                    unsafe_allow_html=True
+                )
+
                 # Interactive dartboard
                 dart_hit = interactive_dartboard(
                     key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
