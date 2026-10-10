@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/streamlit-component-lib.js"></script>
 
 <style>
     * {
@@ -214,7 +215,16 @@ function resizeFrame() {
     }, "*");
 }
 
-window.addEventListener("load", resizeFrame);
+window.addEventListener("load", () => {
+    resizeFrame();
+
+    window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:componentReady",
+        apiVersion: 1
+    }, "*");
+});
+
 window.addEventListener("resize", resizeFrame);
 </script>
 
