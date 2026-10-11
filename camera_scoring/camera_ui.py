@@ -26,8 +26,8 @@ def render_camera_scoring():
 
     components.html(
         camera_html,
-        height=650,
-        scrolling=False
+        height=850,
+        scrolling=True
     )
 
     st.info(

@@ -3,54 +3,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        margin: 0;
-        background: #050b12;
-        color: white;
-        font-family: Arial, sans-serif;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    .camera-panel {
-        background: #111827;
-        border: 1px solid #b78b18;
-        border-radius: 16px;
-        padding: 12px;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    background: #050b12;
+    color: white;
+    font-family: Arial, sans-serif;
+}
 
-    video {
-        width: 100%;
-        max-height: 500px;
-        object-fit: contain;
-        background: black;
-        border-radius: 12px;
-    }
+.camera-panel {
+    background: #111827;
+    border: 1px solid #b78b18;
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+}
 
-    button {
-        background: #f5c542;
-        color: #111827;
-        border: none;
-        border-radius: 10px;
-        padding: 14px 18px;
-        margin: 8px 4px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+.preview {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
 
-    .stop {
-        background: #b52d38;
-        color: white;
-    }
+video, canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+}
 
-    #status {
-        margin: 10px;
-        color: #aeb7c4;
-        font-size: 14px;
-    }
+canvas {
+    display: none;
+    touch-action: none;
+}
+
+button {
+    background: #f5c542;
+    color: #111827;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 5px 3px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button.secondary {
+    background: #29374b;
+    color: white;
+}
+
+button.danger {
+    background: #b52d38;
+    color: white;
+}
+
+button:disabled {
+    opacity: 0.45;
+}
+
+#status {
+    color: #aeb7c4;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 10px 0;
+}
+
+#step {
+    color: #f5c542;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+#result {
+    color: #aeb7c4;
+    font-size: 12px;
+    text-align: left;
+    overflow-wrap: anywhere;
+    margin-top: 10px;
+}
 </style>
 </head>
 
@@ -58,80 +98,255 @@
 
 <div class="camera-panel">
 
-    <video
-        id="camera"
-        autoplay
-        playsinline
-        muted>
-    </video>
+    <div class="preview">
+        <video id="camera"
+               autoplay playsinline muted></video>
+        <canvas id="snapshot"></canvas>
+    </div>
 
     <div>
-        <button id="startBtn" onclick="startCamera()">
+        <button onclick="startCamera()">
             Start Camera
         </button>
 
-        <button class="stop" onclick="stopCamera()">
+        <button class="danger"
+                onclick="stopCamera()">
             Stop Camera
         </button>
+
+        <button onclick="captureFrame()">
+            Capture Board
+        </button>
+    </div>
+
+    <div id="step">
+        Start the camera to begin.
     </div>
 
     <div id="status">
         Camera is not running.
     </div>
 
+    <div>
+        <button class="secondary"
+                onclick="undoPoint()">
+            Undo Point
+        </button>
+
+        <button class="secondary"
+                onclick="resetCalibration()">
+            Reset
+        </button>
+
+        <button id="saveBtn"
+                onclick="saveCalibration()"
+                disabled>
+            Save Calibration
+        </button>
+    </div>
+
+    <div id="result"></div>
+
 </div>
 
 <script>
 let cameraStream = null;
+let captured = false;
+let points = [];
+
+const video = document.getElementById("camera");
+const canvas = document.getElementById("snapshot");
+const ctx = canvas.getContext("2d");
+
+const steps = [
+    "Tap the centre of the bullseye",
+    "Tap the outer double ring at 12 o'clock",
+    "Tap the outer double ring at 6 o'clock",
+    "Tap the outer double ring at 9 o'clock",
+    "Tap the outer double ring at 3 o'clock",
+    "Tap the centre of the number 20 segment"
+];
+
+function setStatus(message) {
+    document.getElementById("status").textContent = message;
+}
+
+function updateStep() {
+    const step = document.getElementById("step");
+
+    if (!captured) {
+        step.textContent = "Capture the dartboard first.";
+    } else if (points.length < steps.length) {
+        step.textContent =
+            `Step ${points.length + 1}/6: ${steps[points.length]}`;
+    } else {
+        step.textContent =
+            "Calibration points complete. Save when ready.";
+    }
+
+    document.getElementById("saveBtn").disabled =
+        points.length !== steps.length;
+}
 
 async function startCamera() {
-
-    const status = document.getElementById("status");
-    const video = document.getElementById("camera");
-
     stopCamera();
 
     try {
-
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-                facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-        });
+        cameraStream =
+            await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: { ideal: "environment" },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
 
         video.srcObject = cameraStream;
-
         await video.play();
 
-        status.textContent = "Rear camera running.";
+        captured = false;
+        points = [];
+        video.style.display = "block";
+        canvas.style.display = "none";
+
+        setStatus("Rear camera running.");
+        updateStep();
 
     } catch (error) {
-
-        status.textContent =
-            "Camera error: " + error.message;
+        setStatus("Camera error: " + error.message);
     }
 }
 
 function stopCamera() {
-
-    const video = document.getElementById("camera");
-
     if (cameraStream) {
-
-        cameraStream.getTracks().forEach(track => {
-            track.stop();
-        });
-
+        cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
     }
 
     video.srcObject = null;
+    setStatus("Camera is not running.");
+}
 
-    document.getElementById("status").textContent =
-        "Camera is not running.";
+function captureFrame() {
+    if (!cameraStream || !video.videoWidth) {
+        setStatus("Start the camera before capturing.");
+        return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(
+        video, 0, 0,
+        canvas.width, canvas.height
+    );
+
+    originalFrame = ctx.getImageData(
+        0, 0,
+        canvas.width,
+        canvas.height
+    );
+
+    captured = true;
+    points = [];
+
+    video.style.display = "none";
+    canvas.style.display = "block";
+
+    stopCamera();
+    setStatus("Board captured. Tap the requested points.");
+    updateStep();
+}
+
+function redraw() {
+    if (!captured) return;
+
+    // Restore the original captured image.
+    ctx.putImageData(originalFrame, 0, 0);
+
+    points.forEach((point, index) => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "#f5c542";
+        ctx.fill();
+
+        ctx.strokeStyle = "#050b12";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(
+            String(index + 1),
+            point.x + 12,
+            point.y - 10
+        );
+    });
+}
+
+let originalFrame = null;
+
+canvas.addEventListener("click", function(event) {
+    if (!captured || points.length >= steps.length) {
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = (event.clientX - rect.left) *
+              (canvas.width / rect.width);
+
+    const y = (event.clientY - rect.top) *
+              (canvas.height / rect.height);
+
+    points.push({x, y});
+
+    redraw();
+    updateStep();
+});
+
+function undoPoint() {
+    if (points.length > 0) {
+        points.pop();
+        redraw();
+        updateStep();
+    }
+}
+
+function resetCalibration() {
+    points = [];
+
+    if (captured) {
+        redraw();
+    }
+
+    updateStep();
+}
+
+function saveCalibration() {
+    if (points.length !== 6) {
+        setStatus("All six points are required.");
+        return;
+    }
+
+    const calibration = {
+        imageWidth: canvas.width,
+        imageHeight: canvas.height,
+        points: points
+    };
+
+    localStorage.setItem(
+        "rodl_camera_calibration",
+        JSON.stringify(calibration)
+    );
+
+    document.getElementById("result").textContent =
+        "Calibration saved in this browser.";
+
+    setStatus(
+        "Calibration saved. Ready for the next phase."
+    );
 }
 
 window.addEventListener("pagehide", stopCamera);
