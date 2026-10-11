@@ -12578,12 +12578,6 @@ div.st-key-training_301_mode_cards
                         )
                     )
 
-
-                # =============================================
-                # LIVE DART HEATMAP LAYER
-                # =============================================
-
-
                 # =============================================
                 # SMOOTH LIVE DART HEATMAP
                 # =============================================
@@ -12715,10 +12709,134 @@ div.st-key-training_301_mode_cards
 
 
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
+
+                # =============================================
+                # RESPONSIVE LIVE 301 HEATMAP
+                # Desktop remains unchanged
+                # Mobile / Tablet uses compact display
+                # =============================================
+
+                st.html("""
+                <style>
+
+                /* DESKTOP DEFAULT */
+
+                .st-key-heatmap_mobile_view {
+                    display: none;
+                }
+
+                .st-key-heatmap_desktop_view {
+                    display: block;
+                }
+
+                /* MOBILE AND TABLET */
+
+                @media (max-width: 1024px) {
+
+                    .st-key-heatmap_desktop_view {
+                        display: none !important;
+                    }
+
+                    .st-key-heatmap_mobile_view {
+                        display: block !important;
+                    }
+
+                    .st-key-heatmap_mobile_view
+                    [data-testid="stPlotlyChart"] {
+                        width: 100%;
+                        max-width: 100%;
+                    }
+                }
+
+                </style>
+                """)
+
+                # =============================================
+                # DESKTOP HEATMAP - ORIGINAL
+                # =============================================
+
+                with st.container(
+                    key="heatmap_desktop_view"
+                ):
+
+                    st.plotly_chart(
+                        fig,
+                        use_container_width=True,
+                        key="training_301_heatmap_desktop"
+                    )
+
+                # =============================================
+                # MOBILE / TABLET HEATMAP
+                # =============================================
+
+                mobile_fig = go.Figure(fig)
+
+
+                # =============================================
+                # MOBILE ONLY - CLEANER DART MARKERS
+                # =============================================
+
+                for trace in mobile_fig.data:
+
+                    if (
+                        isinstance(trace, go.Scatter)
+                        and trace.name == "Dart Hits"
+                    ):
+
+                        trace.mode = "markers"
+
+                        trace.marker.size = 9
+
+                        trace.hovertemplate = (
+                            "%{text}<extra></extra>"
+                        )
+
+
+                mobile_fig.update_layout(
+                    height=340,
+                    margin=dict(
+                        l=4,
+                        r=4,
+                        t=4,
+                        b=4
+                    ),
+                    paper_bgcolor="#050b12",
+                    plot_bgcolor="#050b12",
+                    showlegend=False,
+                    dragmode=False
                 )
+
+                mobile_fig.update_xaxes(
+                    range=[-1, 1],
+                    visible=False,
+                    fixedrange=True,
+                    constrain="domain"
+                )
+
+                mobile_fig.update_yaxes(
+                    range=[1, -1],
+                    visible=False,
+                    fixedrange=True,
+                    scaleanchor="x",
+                    scaleratio=1,
+                    constrain="domain"
+                )
+
+                with st.container(
+                    key="heatmap_mobile_view"
+                ):
+
+                    st.plotly_chart(
+                        mobile_fig,
+                        use_container_width=True,
+                        key="training_301_heatmap_mobile",
+                        config={
+                            "displayModeBar": False,
+                            "scrollZoom": False,
+                            "responsive": True
+                        }
+                    )
+
 
             else:
 
