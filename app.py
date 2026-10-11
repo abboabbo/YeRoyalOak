@@ -12417,6 +12417,91 @@ div.st-key-training_301_mode_cards
 
 
                 # =============================================
+                # DARTBOARD BACKGROUND AND RINGS
+                # =============================================
+
+                import math
+
+                # Standard dartboard segment order, clockwise
+                segment_numbers = [
+                    20, 1, 18, 4, 13,
+                    6, 10, 15, 2, 17,
+                    3, 19, 7, 16, 8,
+                    11, 14, 9, 12, 5
+                ]
+
+                # Dartboard ring boundaries (normalised)
+                ring_radii = [
+                    0.037,
+                    0.093,
+                    0.582,
+                    0.629,
+                    0.953,
+                    1.0
+                ]
+
+                # Draw circular scoring rings
+                for radius in ring_radii:
+
+                    fig.add_shape(
+                        type="circle",
+                        x0=-radius,
+                        y0=-radius,
+                        x1=radius,
+                        y1=radius,
+                        line=dict(
+                            color="rgba(255,255,255,0.45)",
+                            width=1
+                        )
+                    )
+
+                # Draw 20 radial segment boundaries
+                for segment_index in range(20):
+
+                    angle = math.radians(
+                        segment_index * 18 - 9
+                    )
+
+                    end_x = math.sin(angle)
+                    end_y = -math.cos(angle)
+
+                    fig.add_shape(
+                        type="line",
+                        x0=0,
+                        y0=0,
+                        x1=end_x,
+                        y1=end_y,
+                        line=dict(
+                            color="rgba(255,255,255,0.25)",
+                            width=1
+                        )
+                    )
+
+                # Add segment number labels
+                for segment_index, number in enumerate(
+                    segment_numbers
+                ):
+
+                    angle = math.radians(
+                        segment_index * 18
+                    )
+
+                    label_x = 0.86 * math.sin(angle)
+                    label_y = -0.86 * math.cos(angle)
+
+                    fig.add_annotation(
+                        x=label_x,
+                        y=label_y,
+                        text=str(number),
+                        showarrow=False,
+                        font=dict(
+                            color="white",
+                            size=11
+                        )
+                    )
+
+
+                # =============================================
                 # LIVE DART HEATMAP LAYER
                 # =============================================
 
