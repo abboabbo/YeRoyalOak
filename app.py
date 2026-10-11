@@ -13133,8 +13133,6 @@ div.st-key-training_301_mode_cards
     }
 }
 
-</style>
-
 
 /* =============================================
    PHASE 5 - MOBILE 301 LAYOUT POLISH
@@ -13215,6 +13213,7 @@ div.st-key-training_301_mode_cards
         margin-bottom: 10px;
     }
 }
+</style>
 
                 """
             )
