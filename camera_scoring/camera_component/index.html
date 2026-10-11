@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        background: #050b12;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    .camera-panel {
+        background: #111827;
+        border: 1px solid #b78b18;
+        border-radius: 16px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    video {
+        width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        background: black;
+        border-radius: 12px;
+    }
+
+    button {
+        background: #f5c542;
+        color: #111827;
+        border: none;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin: 8px 4px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .stop {
+        background: #b52d38;
+        color: white;
+    }
+
+    #status {
+        margin: 10px;
+        color: #aeb7c4;
+        font-size: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="camera-panel">
+
+    <video
+        id="camera"
+        autoplay
+        playsinline
+        muted>
+    </video>
+
+    <div>
+        <button id="startBtn" onclick="startCamera()">
+            Start Camera
+        </button>
+
+        <button class="stop" onclick="stopCamera()">
+            Stop Camera
+        </button>
+    </div>
+
+    <div id="status">
+        Camera is not running.
+    </div>
+
+</div>
+
+<script>
+let cameraStream = null;
+
+async function startCamera() {
+
+    const status = document.getElementById("status");
+    const video = document.getElementById("camera");
+
+    stopCamera();
+
+    try {
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                facingMode: { ideal: "environment" },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        });
+
+        video.srcObject = cameraStream;
+
+        await video.play();
+
+        status.textContent = "Rear camera running.";
+
+    } catch (error) {
+
+        status.textContent =
+            "Camera error: " + error.message;
+    }
+}
+
+function stopCamera() {
+
+    const video = document.getElementById("camera");
+
+    if (cameraStream) {
+
+        cameraStream.getTracks().forEach(track => {
+            track.stop();
+        });
+
+        cameraStream = null;
+    }
+
+    video.srcObject = null;
+
+    document.getElementById("status").textContent =
+        "Camera is not running.";
+}
+
+window.addEventListener("pagehide", stopCamera);
+</script>
+
+</body>
+</html>

@@ -1,5 +1,8 @@
 
 import streamlit as st
+import streamlit.components.v1 as components
+
+from pathlib import Path
 
 
 def render_camera_scoring():
@@ -7,24 +10,27 @@ def render_camera_scoring():
     st.markdown("## 📷 Camera Darts Scoring")
 
     st.write(
-        "Welcome to the Camera Scoring module. "
-        "This will use your phone's rear camera "
-        "to detect darts and calculate scores."
+        "Use your phone's rear camera to capture "
+        "your dartboard."
     )
 
-    with st.container(border=True):
+    component_path = (
+        Path(__file__).parent
+        / "camera_component"
+        / "index.html"
+    )
 
-        st.subheader("🎯 Camera Setup")
+    camera_html = component_path.read_text(
+        encoding="utf-8"
+    )
 
-        st.info(
-            "Camera integration is coming in Phase 2. "
-            "Your existing 301 Training module "
-            "will remain unchanged."
-        )
+    components.html(
+        camera_html,
+        height=650,
+        scrolling=False
+    )
 
-        st.metric("Remaining Score", 301)
-
-        st.caption(
-            "Development mode — automatic scoring "
-            "is not yet active."
-        )
+    st.info(
+        "Phase 2: Live camera preview only. "
+        "Automatic scoring is not yet active."
+    )
