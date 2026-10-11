@@ -12378,6 +12378,94 @@ div.st-key-training_301_mode_cards
 
 
             # =============================================
+            # LIVE 301 DARTBOARD HEATMAP
+            # =============================================
+
+            st.markdown("### 🎯 Live Dart Heatmap")
+
+            heatmap_darts = (
+                st.session_state.training_301_heatmap_darts
+            )
+
+            if heatmap_darts:
+
+                import plotly.graph_objects as go
+
+                heatmap_x = [
+                    dart["x"]
+                    for dart in heatmap_darts
+                ]
+
+                heatmap_y = [
+                    dart["y"]
+                    for dart in heatmap_darts
+                ]
+
+                fig = go.Figure()
+
+                fig.add_trace(
+                    go.Histogram2dContour(
+                        x=heatmap_x,
+                        y=heatmap_y,
+                        colorscale="Hot",
+                        contours=dict(
+                            coloring="heatmap"
+                        ),
+                        showscale=False,
+                        ncontours=15,
+                        opacity=0.85
+                    )
+                )
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=heatmap_x,
+                        y=heatmap_y,
+                        mode="markers",
+                        marker=dict(
+                            size=6,
+                            color="white",
+                            opacity=0.7
+                        ),
+                        name="Dart Hits"
+                    )
+                )
+
+                fig.update_layout(
+                    height=450,
+                    margin=dict(
+                        l=10,
+                        r=10,
+                        t=10,
+                        b=10
+                    ),
+                    paper_bgcolor="#050b12",
+                    plot_bgcolor="#050b12",
+                    xaxis=dict(
+                        visible=False
+                    ),
+                    yaxis=dict(
+                        visible=False,
+                        scaleanchor="x",
+                        scaleratio=1
+                    ),
+                    showlegend=False
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+            else:
+
+                st.info(
+                    "Throw your first dart to start "
+                    "building your live heatmap."
+                )
+
+
+            # =============================================
             # CHECK DARTBOARD TURN FOR CHECKOUT OR BUST
             # =============================================
 
