@@ -7,3 +7,4 @@ reportlab
 supabase
 openai
 requests
+plotly
