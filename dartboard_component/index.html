@@ -48,6 +48,68 @@
         font-size: 13px;
         margin-top: 14px;
     }
+
+/* ==========================================
+   MOBILE & TABLET DARTBOARD OPTIMISATION
+   Desktop styles remain unchanged
+   ========================================== */
+
+/* TABLETS */
+@media (min-width: 601px) and (max-width: 1024px) {
+
+    .board-container {
+        padding: 8px 4px 12px;
+    }
+
+    #dartboard {
+        width: 100%;
+        max-width: 440px;
+        touch-action: none;
+    }
+
+    .board-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .board-footer {
+        font-size: 12px;
+        margin-top: 10px;
+    }
+}
+
+/* MOBILE PHONES */
+@media (max-width: 600px) {
+
+    .board-container {
+        width: 100%;
+        padding: 4px 0 8px;
+    }
+
+    .board-title {
+        font-size: 15px;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    #dartboard {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .board-footer {
+        font-size: 11px;
+        margin-top: 8px;
+    }
+}
+
 </style>
 </head>
 
@@ -302,17 +364,28 @@ function calculateDartScore(x, y) {
 
 function registerDartClick(event) {
 
-    const rect = svg.getBoundingClientRect();
 
-    const x = (
-        (event.clientX - rect.left) *
-        500 / rect.width
+    // Convert touch/mouse position into SVG coordinates.
+    // Works when the dartboard is resized.
+
+    const svgPoint = svg.createSVGPoint();
+
+    svgPoint.x = event.clientX;
+    svgPoint.y = event.clientY;
+
+    const matrix = svg.getScreenCTM();
+
+    if (!matrix) {
+        return;
+    }
+
+    const boardPoint = svgPoint.matrixTransform(
+        matrix.inverse()
     );
 
-    const y = (
-        (event.clientY - rect.top) *
-        500 / rect.height
-    );
+    const x = boardPoint.x;
+    const y = boardPoint.y;
+
 
     const result = calculateDartScore(x, y);
     recordDartPosition(x, y);
@@ -417,6 +490,24 @@ initialiseComponent();
 
 window.addEventListener("load", resizeFrame);
 window.addEventListener("resize", resizeFrame);
+
+/* ==========================================
+   RESPONSIVE COMPONENT HEIGHT
+   ========================================== */
+
+if (typeof ResizeObserver !== "undefined") {
+
+    const boardResizeObserver = new ResizeObserver(
+        () => {
+            resizeFrame();
+        }
+    );
+
+    boardResizeObserver.observe(
+        document.querySelector(".board-container")
+    );
+}
+
 </script>
 
 </body>
