@@ -12406,6 +12406,14 @@ div.st-key-training_301_mode_cards
 
                 import plotly.graph_objects as go
 
+
+                # TEMPORARY HEATMAP COORDINATE CHECK
+                st.markdown("#### Dartboard Coordinate Test")
+
+                if heatmap_darts:
+                    st.json(heatmap_darts[-1])
+
+
                 heatmap_x = [
                     dart["x"]
                     for dart in heatmap_darts
