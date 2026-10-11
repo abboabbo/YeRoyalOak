@@ -19,6 +19,7 @@ from supabase import create_client
 from openai import OpenAI
 from types import SimpleNamespace
 from dartboard_component import interactive_dartboard
+from camera_scoring.camera_ui import render_camera_scoring
 
 from PIL import Image
 from itertools import combinations
@@ -11803,6 +11804,24 @@ if page == "Training":
                 st.rerun()
 
     # =====================================================
+    # CAMERA SCORING MODULE
+    # =====================================================
+
+    elif st.session_state.training_game == "camera_scoring":
+
+        render_camera_scoring()
+
+        st.markdown("---")
+
+        if st.button(
+            "← RETURN TO TRAINING MENU",
+            key="camera_scoring_return",
+            use_container_width=True
+        ):
+            st.session_state.training_game = None
+            st.rerun()
+
+    # =====================================================
     # 301 PRACTICE GAME SCREEN
     # =====================================================
 
@@ -13789,6 +13808,31 @@ div.st-key-training_301_mode_cards
                     use_container_width=True,
                     disabled=True
                 )
+
+        # =================================================
+        # CAMERA SCORING
+        # =================================================
+
+        with st.container(border=True):
+
+            st.subheader("📷 Camera Darts Scoring")
+
+            st.write(
+                "Use your phone camera to detect darts "
+                "and automatically calculate scores."
+            )
+
+            st.caption(
+                "New training module — under development"
+            )
+
+            if st.button(
+                "▶ Open Camera Scoring",
+                key="training_camera_scoring_play",
+                use_container_width=True
+            ):
+                st.session_state.training_game = "camera_scoring"
+                st.rerun()
 
         # =================================================
         # BOB'S 27 LEADERBOARD
