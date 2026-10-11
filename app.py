@@ -12475,6 +12475,20 @@ div.st-key-training_301_mode_cards
                     showlegend=False
                 )
 
+
+                # Match the interactive dartboard coordinates
+                fig.update_xaxes(
+                    range=[-1, 1],
+                    constrain="domain"
+                )
+
+                fig.update_yaxes(
+                    range=[1, -1],
+                    scaleanchor="x",
+                    scaleratio=1
+                )
+
+
                 st.plotly_chart(
                     fig,
                     use_container_width=True
