@@ -12377,11 +12377,26 @@ div.st-key-training_301_mode_cards
                     })
 
 
+                    st.session_state.training_301_last_heatmap_hit = {
+                        "x": dart_hit["x"],
+                        "y": dart_hit["y"],
+                        "label": dart_hit["label"]
+                    }
+
+
             # =============================================
             # LIVE 301 DARTBOARD HEATMAP
             # =============================================
 
             st.markdown("### 🎯 Live Dart Heatmap")
+
+
+            if "training_301_last_heatmap_hit" in st.session_state:
+                st.write(
+                    "Last dartboard click:",
+                    st.session_state.training_301_last_heatmap_hit
+                )
+
 
             heatmap_darts = (
                 st.session_state.training_301_heatmap_darts
