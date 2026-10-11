@@ -12376,14 +12376,6 @@ div.st-key-training_301_mode_cards
                         "label": dart_hit["label"]
                     })
 
-
-                    st.session_state.training_301_last_heatmap_hit = {
-                        "x": dart_hit["x"],
-                        "y": dart_hit["y"],
-                        "label": dart_hit["label"]
-                    }
-
-
             # =============================================
             # LIVE 301 DARTBOARD HEATMAP
             # =============================================
@@ -12397,11 +12389,6 @@ div.st-key-training_301_mode_cards
             if heatmap_darts:
 
                 import plotly.graph_objects as go
-
-
-                if heatmap_darts:
-                    st.json(heatmap_darts[-1])
-
 
                 heatmap_x = [
                     dart["x"]
