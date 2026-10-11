@@ -13040,6 +13040,96 @@ div.st-key-training_301_mode_cards
     opacity: 0.45;
     cursor: not-allowed;
 }
+
+/* =============================================
+   PHASE 4 - RESPONSIVE 301 SCORING CONTROLS
+   DESKTOP REMAINS UNCHANGED
+   ============================================= */
+
+/* TABLET ONLY */
+@media (min-width: 601px) and (max-width: 1024px) {
+
+    .st-key-training_301_board_undo button,
+    .st-key-training_301_board_submit button {
+        min-height: 62px;
+        font-size: 17px;
+        border-radius: 14px;
+        width: 100%;
+        touch-action: manipulation;
+    }
+
+    .st-key-training_301_board_undo,
+    .st-key-training_301_board_submit {
+        margin-bottom: 8px;
+    }
+}
+
+/* MOBILE ONLY */
+@media (max-width: 600px) {
+
+    /* Undo Last Dart */
+
+    .st-key-training_301_board_undo button {
+        width: 100%;
+        min-height: 60px;
+        font-size: 17px;
+        font-weight: 900;
+        border-radius: 14px;
+        padding: 12px 16px;
+        touch-action: manipulation;
+    }
+
+    /* Submit Turn */
+
+    .st-key-training_301_board_submit button {
+        width: 100%;
+        min-height: 68px;
+        font-size: 19px;
+        font-weight: 900;
+        border-radius: 14px;
+        padding: 14px 16px;
+        touch-action: manipulation;
+    }
+
+    /* Spacing between controls */
+
+    .st-key-training_301_board_undo {
+        margin-bottom: 10px;
+    }
+
+    .st-key-training_301_board_submit {
+        margin-bottom: 14px;
+    }
+
+    /* Disabled controls */
+
+    .st-key-training_301_board_undo button:disabled,
+    .st-key-training_301_board_submit button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    /* Manual scoring input */
+
+    .st-key-training_301_quick_score input {
+        min-height: 52px;
+        font-size: 20px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    /* Manual score submit */
+
+    .st-key-training_301_submit button {
+        width: 100%;
+        min-height: 60px;
+        font-size: 18px;
+        font-weight: 900;
+        border-radius: 14px;
+        touch-action: manipulation;
+    }
+}
+
 </style>
                 """
             )
