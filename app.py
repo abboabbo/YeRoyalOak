@@ -12390,14 +12390,6 @@ div.st-key-training_301_mode_cards
 
             st.markdown("### 🎯 Live Dart Heatmap")
 
-
-            if "training_301_last_heatmap_hit" in st.session_state:
-                st.write(
-                    "Last dartboard click:",
-                    st.session_state.training_301_last_heatmap_hit
-                )
-
-
             heatmap_darts = (
                 st.session_state.training_301_heatmap_darts
             )
@@ -12406,9 +12398,6 @@ div.st-key-training_301_mode_cards
 
                 import plotly.graph_objects as go
 
-
-                # TEMPORARY HEATMAP COORDINATE CHECK
-                st.markdown("#### Dartboard Coordinate Test")
 
                 if heatmap_darts:
                     st.json(heatmap_darts[-1])
@@ -12431,23 +12420,63 @@ div.st-key-training_301_mode_cards
                 # LIVE DART HEATMAP LAYER
                 # =============================================
 
+
+                # =============================================
+                # SMOOTH LIVE DART HEATMAP
+                # =============================================
+
+                import numpy as np
+
+                grid_size = 100
+
+                grid_x = np.linspace(-1, 1, grid_size)
+                grid_y = np.linspace(-1, 1, grid_size)
+
+                X, Y = np.meshgrid(grid_x, grid_y)
+
+                heat = np.zeros_like(X)
+
+                # Heat spread around each dart impact
+                sigma = 0.12
+
+                for dart in heatmap_darts:
+
+                    dart_x = float(dart["x"])
+                    dart_y = float(dart["y"])
+
+                    distance_squared = (
+                        (X - dart_x) ** 2
+                        + (Y - dart_y) ** 2
+                    )
+
+                    heat += np.exp(
+                        -distance_squared / (2 * sigma ** 2)
+                    )
+
+                # Keep heat inside the circular dartboard
+                board_mask = (X ** 2 + Y ** 2) <= 1
+
+                heat = np.where(
+                    board_mask,
+                    heat,
+                    np.nan
+                )
+
                 fig.add_trace(
-                    go.Histogram2dContour(
-                        x=heatmap_x,
-                        y=heatmap_y,
-                        ncontours=20,
-                        contours=dict(
-                            coloring="heatmap",
-                            showlines=False
-                        ),
+                    go.Heatmap(
+                        x=grid_x,
+                        y=grid_y,
+                        z=heat,
                         colorscale=[
-                            [0.0, "rgba(0,0,0,0)"],
-                            [0.2, "#173f7a"],
-                            [0.4, "#00bfff"],
-                            [0.6, "#00ff99"],
-                            [0.8, "#ffff00"],
+                            [0.0, "#050b12"],
+                            [0.15, "#173f7a"],
+                            [0.35, "#00bfff"],
+                            [0.55, "#00ff99"],
+                            [0.75, "#ffff00"],
                             [1.0, "#ff3300"]
                         ],
+                        zmin=0,
+                        zmax=max(1.0, float(np.nanmax(heat))),
                         showscale=False,
                         hoverinfo="skip",
                         name="Heatmap"
