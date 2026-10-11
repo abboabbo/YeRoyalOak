@@ -12426,33 +12426,33 @@ div.st-key-training_301_mode_cards
 
                 fig = go.Figure()
 
-                fig.add_trace(
-                    go.Histogram2dContour(
-                        x=heatmap_x,
-                        y=heatmap_y,
-                        colorscale="Hot",
-                        contours=dict(
-                            coloring="heatmap"
-                        ),
-                        showscale=False,
-                        ncontours=15,
-                        opacity=0.85
-                    )
-                )
 
                 fig.add_trace(
                     go.Scatter(
                         x=heatmap_x,
                         y=heatmap_y,
-                        mode="markers",
-                        marker=dict(
-                            size=6,
+                        mode="markers+text",
+                        text=[
+                            dart["label"]
+                            for dart in heatmap_darts
+                        ],
+                        textposition="top center",
+                        textfont=dict(
                             color="white",
-                            opacity=0.7
+                            size=12
+                        ),
+                        marker=dict(
+                            size=14,
+                            color="#f5c542",
+                            line=dict(
+                                color="white",
+                                width=2
+                            )
                         ),
                         name="Dart Hits"
                     )
                 )
+
 
                 fig.update_layout(
                     height=450,
@@ -12476,7 +12476,10 @@ div.st-key-training_301_mode_cards
                 )
 
 
+
                 # Match the interactive dartboard coordinates
+                # Negative Y is the TOP of the dartboard.
+
                 fig.update_xaxes(
                     range=[-1, 1],
                     constrain="domain"
@@ -12485,8 +12488,10 @@ div.st-key-training_301_mode_cards
                 fig.update_yaxes(
                     range=[1, -1],
                     scaleanchor="x",
-                    scaleratio=1
+                    scaleratio=1,
+                    constrain="domain"
                 )
+
 
 
                 st.plotly_chart(
