@@ -12427,6 +12427,35 @@ div.st-key-training_301_mode_cards
                 fig = go.Figure()
 
 
+                # =============================================
+                # LIVE DART HEATMAP LAYER
+                # =============================================
+
+                fig.add_trace(
+                    go.Histogram2dContour(
+                        x=heatmap_x,
+                        y=heatmap_y,
+                        ncontours=20,
+                        contours=dict(
+                            coloring="heatmap",
+                            showlines=False
+                        ),
+                        colorscale=[
+                            [0.0, "rgba(0,0,0,0)"],
+                            [0.2, "#173f7a"],
+                            [0.4, "#00bfff"],
+                            [0.6, "#00ff99"],
+                            [0.8, "#ffff00"],
+                            [1.0, "#ff3300"]
+                        ],
+                        showscale=False,
+                        hoverinfo="skip",
+                        name="Heatmap"
+                    )
+                )
+
+
+
                 fig.add_trace(
                     go.Scatter(
                         x=heatmap_x,
