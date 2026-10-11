@@ -12272,63 +12272,154 @@ div.st-key-training_301_mode_cards
                 st.session_state.training_301_board_game_id = 0
 
 
+
             # =============================================
-            # COMPACT 301 DESKTOP PLAYING AREA
+            # RESPONSIVE 301 PLAYING AREA
+            # Desktop: Board LEFT / Score RIGHT
+            # Mobile: Score TOP / Board BELOW
             # =============================================
 
-            board_col, controls_col = st.columns(
-                [1.15, 1],
-                gap="medium"
+            remaining_score = (
+                st.session_state.training_301_remaining
             )
 
-            with board_col:
+            # Score display HTML
+            score_html = f"""
+            <div class="training-301-score-card">
+                <div class="training-301-score-label">
+                    SCORE REMAINING
+                </div>
 
-                # Interactive dartboard
-                dart_hit = interactive_dartboard(
-                    key=f"training_301_dartboard_{st.session_state.training_301_board_game_id}"
+                <div class="training-301-score-value">
+                    {remaining_score}
+                </div>
+
+                <div class="training-301-score-footer">
+                    301 • DOUBLE OUT
+                </div>
+            </div>
+            """
+
+            # Responsive styles scoped to this area.
+            # CSS order is used only for visual layout;
+            # the interactive dartboard is rendered once.
+            st.html("""
+            <style>
+            .training-301-playing-area {
+                display: contents;
+            }
+
+            .training-301-score-card {
+                background: linear-gradient(
+                    145deg, #111827, #050b12
+                );
+                border: 1px solid rgba(245,197,66,0.65);
+                border-radius: 16px;
+                padding: 18px;
+                text-align: center;
+                margin-bottom: 12px;
+            }
+
+            .training-301-score-label {
+                color: #aeb7c4;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 1px;
+            }
+
+            .training-301-score-value {
+                color: #f5c542;
+                font-size: clamp(40px, 6vw, 68px);
+                font-weight: 900;
+                line-height: 1.2;
+            }
+
+            .training-301-score-footer {
+                color: #aeb7c4;
+                font-size: 11px;
+            }
+
+            /* MOBILE & NARROW TABLETS */
+            @media (max-width: 767px) {
+
+                .st-key-training_301_playing_area
+                > div[data-testid="stVerticalBlock"] {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .training-301-score-value {
+                    font-size: 54px;
+                }
+
+                .training-301-score-card {
+                    padding: 12px;
+                    margin-bottom: 8px;
+                }
+            }
+            </style>
+            """)
+
+            # Use Streamlit's responsive columns.
+            # On desktop they stay side by side.
+            # On narrow screens they stack.
+            # Score must appear first in the
+            # document for the mobile layout.
+
+            with st.container(
+                key="training_301_playing_area"
+            ):
+
+                board_col, controls_col = st.columns(
+                    [1.15, 1],
+                    gap="medium"
                 )
 
-            with controls_col:
+                with board_col:
 
-                remaining_score = (
-                    st.session_state.training_301_remaining
-                )
+                    dart_hit = interactive_dartboard(
+                        key=(
+                            f"training_301_dartboard_"
+                            f"{st.session_state.training_301_board_game_id}"
+                        )
+                    )
 
-                st.html(
-                    f"""
-<div style="
-    background:linear-gradient(145deg,#111827,#050b12);
-    border:1px solid rgba(245,197,66,0.65);
-    border-radius:16px;
-    padding:18px;
-    text-align:center;
-    margin-bottom:12px;
-">
-    <div style="
-        color:#aeb7c4;
-        font-size:12px;
-        font-weight:800;
-        letter-spacing:1px;
-    ">
-        SCORE REMAINING
-    </div>
-    <div style="
-        color:#f5c542;
-        font-size:clamp(40px,6vw,68px);
-        font-weight:900;
-        line-height:1.2;
-    ">
-        {remaining_score}
-    </div>
-    <div style="
-        color:#aeb7c4;
-        font-size:11px;
-    ">
-        301 • DOUBLE OUT
-    </div>
-</div>
-                    """
-                )
+                with controls_col:
+
+                    st.html(score_html)
+
+
+            # =============================================
+            # MOBILE ONLY: SCORE ABOVE DARTBOARD
+            # =============================================
+
+            st.html("""
+            <style>
+            @media (max-width: 767px) {
+
+                .st-key-training_301_playing_area
+                div[data-testid="stHorizontalBlock"] {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .st-key-training_301_playing_area
+                div[data-testid="stHorizontalBlock"]
+                > div[data-testid="stColumn"]:first-child {
+                    order: 2;
+                    width: 100%;
+                }
+
+                .st-key-training_301_playing_area
+                div[data-testid="stHorizontalBlock"]
+                > div[data-testid="stColumn"]:last-child {
+                    order: 1;
+                    width: 100%;
+                }
+            }
+            </style>
+            """)
+
 
 
             # Record each new dart only once
