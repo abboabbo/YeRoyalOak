@@ -12924,7 +12924,8 @@ div.st-key-training_301_mode_cards
                         dart_score = "—"
 
                     dart_cards += f"""
-    <div style="background:#111827;border:1px solid #685624;border-radius:14px;padding:16px 8px;text-align:center;min-width:0;">
+
+<div class="training-301-dart-card" style="background:#111827;border:1px solid #685624;border-radius:14px;padding:16px 8px;text-align:center;min-width:0;">
         <div style="color:#aeb7c4;font-size:11px;font-weight:800;">DART {i + 1}</div>
         <div style="color:white;font-size:24px;font-weight:900;margin:6px 0;">{dart_label}</div>
         <div style="color:#f5c542;font-size:18px;font-weight:800;">{dart_score}</div>
@@ -12933,7 +12934,9 @@ div.st-key-training_301_mode_cards
 
                 st.html(
                     f"""
-    <div style="background:linear-gradient(145deg,#111827,#0b111a);border:1px solid rgba(245,197,66,0.45);border-radius:18px;padding:18px;margin:15px 0;">
+
+<div class="training-301-turn-card" style="background:linear-gradient(145deg,#111827,#0b111a);border:1px solid rgba(245,197,66,0.45);border-radius:18px;padding:18px;margin:15px 0;">
+
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;">
             <div style="color:#f5c542;font-size:18px;font-weight:900;">CURRENT TURN</div>
@@ -13131,6 +13134,88 @@ div.st-key-training_301_mode_cards
 }
 
 </style>
+
+
+/* =============================================
+   PHASE 5 - MOBILE 301 LAYOUT POLISH
+   DESKTOP UNCHANGED
+   ============================================= */
+
+/* TABLET LAYOUT */
+@media (min-width: 601px) and (max-width: 1024px) {
+
+    .training-301-turn-card {
+        padding: 16px !important;
+        margin: 10px 0 !important;
+    }
+
+    .training-301-dart-card {
+        padding: 12px 6px !important;
+        border-radius: 12px !important;
+    }
+
+    .training-301-recent-visits {
+        margin-top: 10px !important;
+        padding: 12px !important;
+    }
+
+    .st-key-training_301_playing_area
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0.75rem;
+    }
+}
+
+/* MOBILE LAYOUT */
+@media (max-width: 600px) {
+
+    /* Current turn card */
+
+    .training-301-turn-card {
+        padding: 12px !important;
+        margin: 8px 0 !important;
+        border-radius: 14px !important;
+    }
+
+    /* Individual dart cards */
+
+    .training-301-dart-card {
+        padding: 10px 4px !important;
+        border-radius: 10px !important;
+    }
+
+    /* Recent visits */
+
+    .training-301-recent-visits {
+        padding: 12px !important;
+        margin-top: 8px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Playing area spacing */
+
+    .st-key-training_301_playing_area
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0.5rem;
+    }
+
+    /* Score card spacing */
+
+    .training-301-score-card {
+        margin-bottom: 6px !important;
+        padding: 12px !important;
+    }
+
+    /* Keep buttons comfortably separated */
+
+    .st-key-training_301_board_undo {
+        margin-bottom: 8px;
+    }
+
+    .st-key-training_301_board_submit {
+        margin-bottom: 10px;
+    }
+}
+
                 """
             )
 
@@ -13266,7 +13351,7 @@ div.st-key-training_301_mode_cards
 
                 st.html(
                     f"""
-<div style="
+<div class="training-301-recent-visits" style="
     background:linear-gradient(145deg,#111827,#0b111a);
     border:1px solid rgba(245,197,66,0.45);
     border-radius:14px;
