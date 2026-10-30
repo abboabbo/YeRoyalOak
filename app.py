@@ -18416,6 +18416,124 @@ if page == "Knockout":
                         f"{manual_player_label(player2)}"
                     )
 
+
+                # -----------------------------------------
+                # SAVE MANUAL BRACKET
+                # -----------------------------------------
+
+                bracket_is_valid = (
+                    not duplicates
+                    and not missing_players
+                    and not empty_matches
+                    and actual_byes == bye_count
+                    and len(selected_players) == player_count
+                )
+
+                confirm_manual_bracket = st.checkbox(
+                    "I confirm these fixtures are correct",
+                    key=f"confirm_manual_{selected_tournament_id}"
+                )
+
+                if st.button(
+                    "Save Manual Bracket",
+                    key=f"save_manual_{selected_tournament_id}",
+                    disabled=not bracket_is_valid,
+                    use_container_width=True
+                ):
+
+                    if not confirm_manual_bracket:
+
+                        st.warning(
+                            "Please confirm the bracket first."
+                        )
+
+                    else:
+
+                        try:
+
+                            # Recheck the database before saving
+                            existing_count = (
+                                knockout_db.query(KnockoutMatch)
+                                .filter(
+                                    KnockoutMatch.tournament_id
+                                    == selected_tournament_id
+                                )
+                                .count()
+                            )
+
+                            if existing_count > 0:
+
+                                st.error(
+                                    "This tournament already has "
+                                    "knockout fixtures. No changes made."
+                                )
+
+                            else:
+
+                                # Recheck registered players
+                                registered_ids = {
+                                    link.player_id
+                                    for link in knockout_db.query(
+                                        TournamentPlayer
+                                    ).filter(
+                                        TournamentPlayer.tournament_id
+                                        == selected_tournament_id
+                                    ).all()
+                                }
+
+                                if set(selected_players) != registered_ids:
+
+                                    st.error(
+                                        "Tournament players have changed. "
+                                        "Refresh the page and try again."
+                                    )
+
+                                else:
+
+                                    round_name = (
+                                        "Final"
+                                        if bracket_size == 2
+                                        else "Semi Final"
+                                        if bracket_size == 4
+                                        else "Quarter Final"
+                                        if bracket_size == 8
+                                        else "Preliminary 1"
+                                    )
+
+                                    for player1, player2 in selected_pairs:
+
+                                        # Store the actual player first
+                                        if player1 is None:
+                                            player1, player2 = player2, player1
+
+                                        create_knockout_match(
+                                            db=knockout_db,
+                                            tournament_id=selected_tournament_id,
+                                            round_name=round_name,
+                                            player1_id=player1,
+                                            player2_id=player2
+                                        )
+
+                                    knockout_db.commit()
+
+                                    st.success(
+                                        "Manual bracket saved successfully!"
+                                    )
+
+                                    st.rerun()
+
+                        except Exception as error:
+
+                            knockout_db.rollback()
+
+                            st.error(
+                                "Unable to save the manual bracket. "
+                                "No fixtures were saved."
+                            )
+
+                            st.exception(error)
+
+
                 st.warning(
                     "Create the knockout only after the "
                     "league standings are ready. The current "
@@ -18436,7 +18554,10 @@ if page == "Knockout":
                         "create_knockout_bracket_"
                         f"{selected_tournament_id}"
                     ),
-                    use_container_width=True
+                    use_container_width=True,
+                    disabled=(
+                        bracket_creation_mode == "Manual Bracket"
+                    )
                 ):
 
                     if not confirm_start:
