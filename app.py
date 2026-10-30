@@ -8172,16 +8172,6 @@ if page == "Players":
                             key=f"admin_player_logo_{player.id}"
                         )
 
-                        updated_photo_url = st.text_input(
-                            "Player Photo URL",
-                            value=player.photo_url or "",
-                            help=(
-                                "Optional direct image link. "
-                                "The player logo will be used as a fallback."
-                            ),
-                            key=f"admin_player_photo_url_{player.id}"
-                        )
-
                         st.divider()
 
                         st.markdown("### Player Details")
@@ -8334,11 +8324,6 @@ if page == "Players":
 
                             target_player.nickname = (
                                 updated_nickname.strip()
-                            )
-
-                            target_player.photo_url = (
-                                updated_photo_url.strip()
-                                or None
                             )
 
                             target_player.hometown = (
