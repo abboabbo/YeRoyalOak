@@ -919,6 +919,21 @@ st.markdown(
     """
     <style>
 
+    /* GLOBAL FONT - MANROPE */
+
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400&display=swap');
+
+    html, body, .stApp,
+    .stApp p, .stApp span, .stApp div,
+    .stApp h1, .stApp h2, .stApp h3,
+    .stApp h4, .stApp h5, .stApp h6,
+    .stApp button, .stApp input,
+    .stApp textarea, .stApp select,
+    .stApp label, .stApp table,
+    .stApp th, .stApp td {
+        font-family: 'Manrope', sans-serif !important;
+    }    
+
     .stDataFrame table {
         font-size: 16px;
         font-weight: 700;
