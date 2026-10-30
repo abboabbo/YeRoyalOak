@@ -18236,302 +18236,302 @@ if page == "Knockout":
                     horizontal=True
                 )
 
-        if bracket_creation_mode == "Manual Bracket":
+                if bracket_creation_mode == "Manual Bracket":
 
-            st.subheader("Manual Knockout Bracket Builder")
+                    st.subheader("Manual Knockout Bracket Builder")
 
-            st.caption(
-                "Choose the players for each match. "
-                "The order of the matches determines "
-                "their positions in the bracket."
-            )
-
-            manual_player_ids = list(
-                dict.fromkeys(seeded_player_ids)
-            )
-
-            player_count = len(manual_player_ids)
-
-            if player_count < 2:
-
-                st.error(
-                    "At least two players are required."
-                )
-
-            else:
-
-                # Next power of two determines bracket size
-                bracket_size = 1 << (
-                    player_count - 1
-                ).bit_length()
-
-                match_count = bracket_size // 2
-                bye_count = bracket_size - player_count
-
-                st.write(
-                    f"**Players:** {player_count} | "
-                    f"**Opening round slots:** {match_count} | "
-                    f"**Byes:** {bye_count}"
-                )
-
-                # None represents a bye
-                player_options = [None] + manual_player_ids
-
-                def manual_player_label(player_id):
-
-                    if player_id is None:
-                        return "BYE"
-
-                    return player_lookup.get(
-                        player_id,
-                        f"Player {player_id}"
+                    st.caption(
+                        "Choose the players for each match. "
+                        "The order of the matches determines "
+                        "their positions in the bracket."
                     )
 
-                selected_pairs = []
-
-                for match_number in range(
-                    1,
-                    match_count + 1
-                ):
-
-                    st.markdown(
-                        f"#### Match {match_number}"
+                    manual_player_ids = list(
+                        dict.fromkeys(seeded_player_ids)
                     )
 
-                    col1, col2 = st.columns(2)
+                    player_count = len(manual_player_ids)
 
-                    with col1:
+                    if player_count < 2:
 
-                        player1 = st.selectbox(
-                            "Player 1",
-                            options=player_options,
-                            format_func=manual_player_label,
-                            key=(
-                                f"manual_p1_"
-                                f"{selected_tournament_id}_"
-                                f"{match_number}"
-                            )
-                        )
-
-                    with col2:
-
-                        player2 = st.selectbox(
-                            "Player 2",
-                            options=player_options,
-                            format_func=manual_player_label,
-                            key=(
-                                f"manual_p2_"
-                                f"{selected_tournament_id}_"
-                                f"{match_number}"
-                            )
-                        )
-
-                    selected_pairs.append(
-                        (player1, player2)
-                    )
-
-                st.divider()
-
-                st.subheader("Bracket Preview")
-
-                selected_players = []
-
-                for player1, player2 in selected_pairs:
-
-                    if player1 is not None:
-                        selected_players.append(player1)
-
-                    if player2 is not None:
-                        selected_players.append(player2)
-
-                duplicates = (
-                    len(selected_players)
-                    != len(set(selected_players))
-                )
-
-                missing_players = (
-                    set(manual_player_ids)
-                    - set(selected_players)
-                )
-
-                actual_byes = sum(
-                    1
-                    for player1, player2 in selected_pairs
-                    if (
-                        (player1 is None)
-                        != (player2 is None)
-                    )
-                )
-
-                empty_matches = any(
-                    player1 is None and player2 is None
-                    for player1, player2 in selected_pairs
-                )
-
-                if duplicates:
-
-                    st.error(
-                        "A player has been selected more "
-                        "than once."
-                    )
-
-                elif missing_players:
-
-                    st.warning(
-                        "Please assign every player "
-                        "to a bracket position."
-                    )
-
-                elif empty_matches:
-
-                    st.error(
-                        "A match cannot contain two BYEs."
-                    )
-
-                elif actual_byes != bye_count:
-
-                    st.error(
-                        f"This bracket requires exactly "
-                        f"{bye_count} bye(s)."
-                    )
-
-                else:
-
-                    st.success(
-                        "Bracket selections are valid!"
-                    )
-
-                for index, (
-                    player1,
-                    player2
-                ) in enumerate(
-                    selected_pairs,
-                    start=1
-                ):
-
-                    st.write(
-                        f"**Match {index}:** "
-                        f"{manual_player_label(player1)} "
-                        f"vs "
-                        f"{manual_player_label(player2)}"
-                    )
-
-
-                # -----------------------------------------
-                # SAVE MANUAL BRACKET
-                # -----------------------------------------
-
-                bracket_is_valid = (
-                    not duplicates
-                    and not missing_players
-                    and not empty_matches
-                    and actual_byes == bye_count
-                    and len(selected_players) == player_count
-                )
-
-                confirm_manual_bracket = st.checkbox(
-                    "I confirm these fixtures are correct",
-                    key=f"confirm_manual_{selected_tournament_id}"
-                )
-
-                if st.button(
-                    "Save Manual Bracket",
-                    key=f"save_manual_{selected_tournament_id}",
-                    disabled=not bracket_is_valid,
-                    use_container_width=True
-                ):
-
-                    if not confirm_manual_bracket:
-
-                        st.warning(
-                            "Please confirm the bracket first."
+                        st.error(
+                            "At least two players are required."
                         )
 
                     else:
 
-                        try:
+                        # Next power of two determines bracket size
+                        bracket_size = 1 << (
+                            player_count - 1
+                        ).bit_length()
 
-                            # Recheck the database before saving
-                            existing_count = (
-                                knockout_db.query(KnockoutMatch)
-                                .filter(
-                                    KnockoutMatch.tournament_id
-                                    == selected_tournament_id
-                                )
-                                .count()
+                        match_count = bracket_size // 2
+                        bye_count = bracket_size - player_count
+
+                        st.write(
+                            f"**Players:** {player_count} | "
+                            f"**Opening round slots:** {match_count} | "
+                            f"**Byes:** {bye_count}"
+                        )
+
+                        # None represents a bye
+                        player_options = [None] + manual_player_ids
+
+                        def manual_player_label(player_id):
+
+                            if player_id is None:
+                                return "BYE"
+
+                            return player_lookup.get(
+                                player_id,
+                                f"Player {player_id}"
                             )
 
-                            if existing_count > 0:
+                        selected_pairs = []
 
-                                st.error(
-                                    "This tournament already has "
-                                    "knockout fixtures. No changes made."
+                        for match_number in range(
+                            1,
+                            match_count + 1
+                        ):
+
+                            st.markdown(
+                                f"#### Match {match_number}"
+                            )
+
+                            col1, col2 = st.columns(2)
+
+                            with col1:
+
+                                player1 = st.selectbox(
+                                    "Player 1",
+                                    options=player_options,
+                                    format_func=manual_player_label,
+                                    key=(
+                                        f"manual_p1_"
+                                        f"{selected_tournament_id}_"
+                                        f"{match_number}"
+                                    )
+                                )
+
+                            with col2:
+
+                                player2 = st.selectbox(
+                                    "Player 2",
+                                    options=player_options,
+                                    format_func=manual_player_label,
+                                    key=(
+                                        f"manual_p2_"
+                                        f"{selected_tournament_id}_"
+                                        f"{match_number}"
+                                    )
+                                )
+
+                            selected_pairs.append(
+                                (player1, player2)
+                            )
+
+                        st.divider()
+
+                        st.subheader("Bracket Preview")
+
+                        selected_players = []
+
+                        for player1, player2 in selected_pairs:
+
+                            if player1 is not None:
+                                selected_players.append(player1)
+
+                            if player2 is not None:
+                                selected_players.append(player2)
+
+                        duplicates = (
+                            len(selected_players)
+                            != len(set(selected_players))
+                        )
+
+                        missing_players = (
+                            set(manual_player_ids)
+                            - set(selected_players)
+                        )
+
+                        actual_byes = sum(
+                            1
+                            for player1, player2 in selected_pairs
+                            if (
+                                (player1 is None)
+                                != (player2 is None)
+                            )
+                        )
+
+                        empty_matches = any(
+                            player1 is None and player2 is None
+                            for player1, player2 in selected_pairs
+                        )
+
+                        if duplicates:
+
+                            st.error(
+                                "A player has been selected more "
+                                "than once."
+                            )
+
+                        elif missing_players:
+
+                            st.warning(
+                                "Please assign every player "
+                                "to a bracket position."
+                            )
+
+                        elif empty_matches:
+
+                            st.error(
+                                "A match cannot contain two BYEs."
+                            )
+
+                        elif actual_byes != bye_count:
+
+                            st.error(
+                                f"This bracket requires exactly "
+                                f"{bye_count} bye(s)."
+                            )
+
+                        else:
+
+                            st.success(
+                                "Bracket selections are valid!"
+                            )
+
+                        for index, (
+                            player1,
+                            player2
+                        ) in enumerate(
+                            selected_pairs,
+                            start=1
+                        ):
+
+                            st.write(
+                                f"**Match {index}:** "
+                                f"{manual_player_label(player1)} "
+                                f"vs "
+                                f"{manual_player_label(player2)}"
+                            )
+
+
+                        # -----------------------------------------
+                        # SAVE MANUAL BRACKET
+                        # -----------------------------------------
+
+                        bracket_is_valid = (
+                            not duplicates
+                            and not missing_players
+                            and not empty_matches
+                            and actual_byes == bye_count
+                            and len(selected_players) == player_count
+                        )
+
+                        confirm_manual_bracket = st.checkbox(
+                            "I confirm these fixtures are correct",
+                            key=f"confirm_manual_{selected_tournament_id}"
+                        )
+
+                        if st.button(
+                            "Save Manual Bracket",
+                            key=f"save_manual_{selected_tournament_id}",
+                            disabled=not bracket_is_valid,
+                            use_container_width=True
+                        ):
+
+                            if not confirm_manual_bracket:
+
+                                st.warning(
+                                    "Please confirm the bracket first."
                                 )
 
                             else:
 
-                                # Recheck registered players
-                                registered_ids = {
-                                    link.player_id
-                                    for link in knockout_db.query(
-                                        TournamentPlayer
-                                    ).filter(
-                                        TournamentPlayer.tournament_id
-                                        == selected_tournament_id
-                                    ).all()
-                                }
+                                try:
 
-                                if set(selected_players) != registered_ids:
-
-                                    st.error(
-                                        "Tournament players have changed. "
-                                        "Refresh the page and try again."
+                                    # Recheck the database before saving
+                                    existing_count = (
+                                        knockout_db.query(KnockoutMatch)
+                                        .filter(
+                                            KnockoutMatch.tournament_id
+                                            == selected_tournament_id
+                                        )
+                                        .count()
                                     )
 
-                                else:
+                                    if existing_count > 0:
 
-                                    round_name = (
-                                        "Final"
-                                        if bracket_size == 2
-                                        else "Semi Final"
-                                        if bracket_size == 4
-                                        else "Quarter Final"
-                                        if bracket_size == 8
-                                        else "Preliminary 1"
-                                    )
-
-                                    for player1, player2 in selected_pairs:
-
-                                        # Store the actual player first
-                                        if player1 is None:
-                                            player1, player2 = player2, player1
-
-                                        create_knockout_match(
-                                            db=knockout_db,
-                                            tournament_id=selected_tournament_id,
-                                            round_name=round_name,
-                                            player1_id=player1,
-                                            player2_id=player2
+                                        st.error(
+                                            "This tournament already has "
+                                            "knockout fixtures. No changes made."
                                         )
 
-                                    knockout_db.commit()
+                                    else:
 
-                                    st.success(
-                                        "Manual bracket saved successfully!"
+                                        # Recheck registered players
+                                        registered_ids = {
+                                            link.player_id
+                                            for link in knockout_db.query(
+                                                TournamentPlayer
+                                            ).filter(
+                                                TournamentPlayer.tournament_id
+                                                == selected_tournament_id
+                                            ).all()
+                                        }
+
+                                        if set(selected_players) != registered_ids:
+
+                                            st.error(
+                                                "Tournament players have changed. "
+                                                "Refresh the page and try again."
+                                            )
+
+                                        else:
+
+                                            round_name = (
+                                                "Final"
+                                                if bracket_size == 2
+                                                else "Semi Final"
+                                                if bracket_size == 4
+                                                else "Quarter Final"
+                                                if bracket_size == 8
+                                                else "Preliminary 1"
+                                            )
+
+                                            for player1, player2 in selected_pairs:
+
+                                                # Store the actual player first
+                                                if player1 is None:
+                                                    player1, player2 = player2, player1
+
+                                                create_knockout_match(
+                                                    db=knockout_db,
+                                                    tournament_id=selected_tournament_id,
+                                                    round_name=round_name,
+                                                    player1_id=player1,
+                                                    player2_id=player2
+                                                )
+
+                                            knockout_db.commit()
+
+                                            st.success(
+                                                "Manual bracket saved successfully!"
+                                            )
+
+                                            st.rerun()
+
+                                except Exception as error:
+
+                                    knockout_db.rollback()
+
+                                    st.error(
+                                        "Unable to save the manual bracket. "
+                                        "No fixtures were saved."
                                     )
 
-                                    st.rerun()
-
-                        except Exception as error:
-
-                            knockout_db.rollback()
-
-                            st.error(
-                                "Unable to save the manual bracket. "
-                                "No fixtures were saved."
-                            )
-
-                            st.exception(error)
+                                    st.exception(error)
 
 
                 st.warning(
