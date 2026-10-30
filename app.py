@@ -18226,6 +18226,22 @@ if page == "Knockout":
 
             else:
 
+                bracket_creation_mode = st.radio(
+                    "Choose Bracket Creation Method",
+                    [
+                        "Automatic Bracket",
+                        "Manual Bracket"
+                    ],
+                    key=f"bracket_mode_{selected_tournament_id}",
+                    horizontal=True
+                )
+
+                if bracket_creation_mode == "Manual Bracket":
+                    st.info(
+                        "Manual Bracket Builder selected. "
+                        "Fixture selection will be added next."
+                    )
+
                 st.warning(
                     "Create the knockout only after the "
                     "league standings are ready. The current "
