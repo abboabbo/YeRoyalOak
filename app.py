@@ -8305,17 +8305,6 @@ if page == "Players":
                                 "Please enter a valid Spotify track, "
                                 "album, artist or playlist link."
                             )
-
-                        elif not is_valid_optional_url(
-                            updated_walk_on_url
-                        ):
-
-                            edit_db.close()
-
-                            st.error(
-                                "The walk-on link must begin with "
-                                "http:// or https://"
-                            )
                         
                         else:
                             target_player.name = (
