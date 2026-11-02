@@ -14747,300 +14747,300 @@ if page == "Awards":
                                 )
                             )
 
-                        # -----------------------------------------
-                        # SEASON STATISTICS
-                        # -----------------------------------------
+                # -----------------------------------------
+                # SEASON STATISTICS
+                # -----------------------------------------
 
-                        st.divider()
+                st.divider()
 
-                        st.subheader(
-                            "🌟 Season Awards"
-                            if awards_view == "Season Awards"
-                            else "🌟 Tournament Leaders"
+                st.subheader(
+                    "🌟 Season Awards"
+                    if awards_view == "Season Awards"
+                    else "🌟 Tournament Leaders"
+                )
+
+                season_stats = {}
+
+                for player in players:
+
+                    season_stats[player.id] = {
+                        "player": player,
+                        "played": 0,
+                        "wins": 0,
+                        "averages": [],
+                        "Maximums": 0,
+                        "highest_checkout": 0,
+                        "legs_for": 0,
+                        "legs_against": 0
+                    }
+
+                for fixture in completed_fixtures:
+
+                    if (
+                        fixture.player1_id
+                        not in season_stats
+                        or fixture.player2_id
+                        not in season_stats
+                    ):
+                        continue
+
+                    p1_stats = season_stats[
+                        fixture.player1_id
+                    ]
+
+                    p2_stats = season_stats[
+                        fixture.player2_id
+                    ]
+
+                    p1_legs = safe_int(
+                        fixture.player1_legs
+                    )
+
+                    p2_legs = safe_int(
+                        fixture.player2_legs
+                    )
+
+                    p1_stats["played"] += 1
+                    p2_stats["played"] += 1
+
+                    p1_stats["legs_for"] += p1_legs
+                    p1_stats[
+                        "legs_against"
+                    ] += p2_legs
+
+                    p2_stats["legs_for"] += p2_legs
+                    p2_stats[
+                        "legs_against"
+                    ] += p1_legs
+
+                    p1_average = safe_float(
+                        fixture.player1_average
+                    )
+
+                    p2_average = safe_float(
+                        fixture.player2_average
+                    )
+
+                    if p1_average > 0:
+                        p1_stats[
+                            "averages"
+                        ].append(
+                            p1_average
                         )
 
-                        season_stats = {}
+                    if p2_average > 0:
+                        p2_stats[
+                            "averages"
+                        ].append(
+                            p2_average
+                        )
 
-                        for player in players:
+                    p1_stats["Maximums"] += safe_int(
+                        getattr(
+                            fixture,
+                            "player1_Maximums",
+                            0
+                        )
+                    )
 
-                            season_stats[player.id] = {
-                                "player": player,
-                                "played": 0,
-                                "wins": 0,
-                                "averages": [],
-                                "Maximums": 0,
-                                "highest_checkout": 0,
-                                "legs_for": 0,
-                                "legs_against": 0
-                            }
+                    p2_stats["Maximums"] += safe_int(
+                        getattr(
+                            fixture,
+                            "player2_Maximums",
+                            0
+                        )
+                    )
 
-                        for fixture in completed_fixtures:
-
-                            if (
-                                fixture.player1_id
-                                not in season_stats
-                                or fixture.player2_id
-                                not in season_stats
-                            ):
-                                continue
-
-                            p1_stats = season_stats[
-                                fixture.player1_id
-                            ]
-
-                            p2_stats = season_stats[
-                                fixture.player2_id
-                            ]
-
-                            p1_legs = safe_int(
-                                fixture.player1_legs
+                    p1_stats[
+                        "highest_checkout"
+                    ] = max(
+                        p1_stats[
+                            "highest_checkout"
+                        ],
+                        safe_int(
+                            getattr(
+                                fixture,
+                                "player1_high_checkout",
+                                0
                             )
+                        )
+                    )
 
-                            p2_legs = safe_int(
-                                fixture.player2_legs
+                    p2_stats[
+                        "highest_checkout"
+                    ] = max(
+                        p2_stats[
+                            "highest_checkout"
+                        ],
+                        safe_int(
+                            getattr(
+                                fixture,
+                                "player2_high_checkout",
+                                0
                             )
+                        )
+                    )
 
-                            p1_stats["played"] += 1
-                            p2_stats["played"] += 1
+                    if p1_legs > p2_legs:
+                        p1_stats["wins"] += 1
 
-                            p1_stats["legs_for"] += p1_legs
-                            p1_stats[
-                                "legs_against"
-                            ] += p2_legs
+                    elif p2_legs > p1_legs:
+                        p2_stats["wins"] += 1
 
-                            p2_stats["legs_for"] += p2_legs
-                            p2_stats[
-                                "legs_against"
-                            ] += p1_legs
+                season_rows = []
 
-                            p1_average = safe_float(
-                                fixture.player1_average
+                for stats in season_stats.values():
+
+                    if stats["played"] == 0:
+                        continue
+
+                    average = 0.0
+
+                    if stats["averages"]:
+
+                        average = (
+                            sum(stats["averages"])
+                            / len(stats["averages"])
+                        )
+
+                    win_percentage = (
+                        stats["wins"]
+                        / stats["played"]
+                        * 100
+                    )
+
+                    season_rows.append(
+                        {
+                            **stats,
+                            "average": average,
+                            "win_percentage": (
+                                win_percentage
+                            ),
+                            "leg_difference": (
+                                stats["legs_for"]
+                                - stats[
+                                    "legs_against"
+                                ]
                             )
+                        }
+                    )
 
-                            p2_average = safe_float(
-                                fixture.player2_average
-                            )
+                if season_rows:
 
-                            if p1_average > 0:
-                                p1_stats[
-                                    "averages"
-                                ].append(
-                                    p1_average
-                                )
+                    most_wins = max(
+                        season_rows,
+                        key=lambda item: (
+                            item["wins"],
+                            item["average"]
+                        )
+                    )
 
-                            if p2_average > 0:
-                                p2_stats[
-                                    "averages"
-                                ].append(
-                                    p2_average
-                                )
+                    best_average = max(
+                        season_rows,
+                        key=lambda item: (
+                            item["average"],
+                            item["wins"]
+                        )
+                    )
 
-                            p1_stats["Maximums"] += safe_int(
-                                getattr(
-                                    fixture,
-                                    "player1_Maximums",
-                                    0
-                                )
-                            )
+                    season_most_maximums = max(
+                        season_rows,
+                        key=lambda item: (
+                            item["Maximums"],
+                            item["average"]
+                        )
+                    )
 
-                            p2_stats["Maximums"] += safe_int(
-                                getattr(
-                                    fixture,
-                                    "player2_Maximums",
-                                    0
-                                )
-                            )
-
-                            p1_stats[
+                    season_checkout = max(
+                        season_rows,
+                        key=lambda item: (
+                            item[
                                 "highest_checkout"
-                            ] = max(
-                                p1_stats[
-                                    "highest_checkout"
-                                ],
-                                safe_int(
-                                    getattr(
-                                        fixture,
-                                        "player1_high_checkout",
-                                        0
-                                    )
-                                )
+                            ],
+                            item["average"]
+                        )
+                    )
+
+                    season_col1, season_col2 = (
+                        st.columns(2)
+                    )
+
+                    with season_col1:
+
+                        show_award(
+                            "👑",
+                            "Most Wins",
+                            display_player_name(
+                                most_wins["player"]
+                            ),
+                            (
+                                f'{most_wins["wins"]}'
+                                f' wins from '
+                                f'{most_wins["played"]}'
+                                " matches"
+                            ),
+                            (
+                                f'{most_wins["win_percentage"]:.1f}%'
+                                " win rate"
                             )
+                        )
 
-                            p2_stats[
-                                "highest_checkout"
-                            ] = max(
-                                p2_stats[
-                                    "highest_checkout"
-                                ],
-                                safe_int(
-                                    getattr(
-                                        fixture,
-                                        "player2_high_checkout",
-                                        0
-                                    )
-                                )
+                    with season_col2:
+
+                        show_award(
+                            "📈",
+                            "Best Average",
+                            display_player_name(
+                                best_average["player"]
+                            ),
+                            (
+                                f'{best_average["average"]:.2f}'
+                                " tournament average"
                             )
+                        )
 
-                            if p1_legs > p2_legs:
-                                p1_stats["wins"] += 1
+                    season_col3, season_col4 = (
+                        st.columns(2)
+                    )
 
-                            elif p2_legs > p1_legs:
-                                p2_stats["wins"] += 1
+                    with season_col3:
 
-                        season_rows = []
-
-                        for stats in season_stats.values():
-
-                            if stats["played"] == 0:
-                                continue
-
-                            average = 0.0
-
-                            if stats["averages"]:
-
-                                average = (
-                                    sum(stats["averages"])
-                                    / len(stats["averages"])
-                                )
-
-                            win_percentage = (
-                                stats["wins"]
-                                / stats["played"]
-                                * 100
+                        show_award(
+                            "💯",
+                            "Most Maximums",
+                            display_player_name(
+                                season_most_maximums[
+                                    "player"
+                                ]
+                            ),
+                            (
+                                f'{season_most_maximums["Maximums"]}'
+                                " total maximums"
                             )
+                        )
 
-                            season_rows.append(
-                                {
-                                    **stats,
-                                    "average": average,
-                                    "win_percentage": (
-                                        win_percentage
-                                    ),
-                                    "leg_difference": (
-                                        stats["legs_for"]
-                                        - stats[
-                                            "legs_against"
-                                        ]
-                                    )
-                                }
+                    with season_col4:
+
+                        show_award(
+                            "🏹",
+                            "Highest Checkout",
+                            display_player_name(
+                                season_checkout[
+                                    "player"
+                                ]
+                            ),
+                            (
+                                f'{season_checkout["highest_checkout"]}'
+                                " checkout"
                             )
+                        )
 
-                        if season_rows:
+                else:
 
-                            most_wins = max(
-                                season_rows,
-                                key=lambda item: (
-                                    item["wins"],
-                                    item["average"]
-                                )
-                            )
-
-                            best_average = max(
-                                season_rows,
-                                key=lambda item: (
-                                    item["average"],
-                                    item["wins"]
-                                )
-                            )
-
-                            season_most_maximums = max(
-                                season_rows,
-                                key=lambda item: (
-                                    item["Maximums"],
-                                    item["average"]
-                                )
-                            )
-
-                            season_checkout = max(
-                                season_rows,
-                                key=lambda item: (
-                                    item[
-                                        "highest_checkout"
-                                    ],
-                                    item["average"]
-                                )
-                            )
-
-                            season_col1, season_col2 = (
-                                st.columns(2)
-                            )
-
-                            with season_col1:
-
-                                show_award(
-                                    "👑",
-                                    "Most Wins",
-                                    display_player_name(
-                                        most_wins["player"]
-                                    ),
-                                    (
-                                        f'{most_wins["wins"]}'
-                                        f' wins from '
-                                        f'{most_wins["played"]}'
-                                        " matches"
-                                    ),
-                                    (
-                                        f'{most_wins["win_percentage"]:.1f}%'
-                                        " win rate"
-                                    )
-                                )
-
-                            with season_col2:
-
-                                show_award(
-                                    "📈",
-                                    "Best Average",
-                                    display_player_name(
-                                        best_average["player"]
-                                    ),
-                                    (
-                                        f'{best_average["average"]:.2f}'
-                                        " tournament average"
-                                    )
-                                )
-
-                            season_col3, season_col4 = (
-                                st.columns(2)
-                            )
-
-                            with season_col3:
-
-                                show_award(
-                                    "💯",
-                                    "Most Maximums",
-                                    display_player_name(
-                                        season_most_maximums[
-                                            "player"
-                                        ]
-                                    ),
-                                    (
-                                        f'{season_most_maximums["Maximums"]}'
-                                        " total maximums"
-                                    )
-                                )
-
-                            with season_col4:
-
-                                show_award(
-                                    "🏹",
-                                    "Highest Checkout",
-                                    display_player_name(
-                                        season_checkout[
-                                            "player"
-                                        ]
-                                    ),
-                                    (
-                                        f'{season_checkout["highest_checkout"]}'
-                                        " checkout"
-                                    )
-                                )
-
-                        else:
-
-                            st.info(
-                                "No tournament statistics "
-                                "are available yet."
-                            )
+                    st.info(
+                        "No tournament statistics "
+                        "are available yet."
+                    )
 
                 awards_db.close()    
 
