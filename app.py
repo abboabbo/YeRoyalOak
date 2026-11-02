@@ -8359,27 +8359,33 @@ if page == "Players":
 
                             if updated_logo is not None:
 
-                                os.makedirs(
-                                    "assets/logos",
-                                    exist_ok=True
-                                )
+                                try:
 
-                                replacement_path = os.path.join(
-                                    "assets/logos",
-                                    f"player_{player.id}_{updated_logo.name}"
-                                )
-
-                                with open(
-                                    replacement_path,
-                                    "wb"
-                                ) as file:
-                                    file.write(
-                                        updated_logo.getbuffer()
+                                    logo_url = upload_player_logo(
+                                        updated_logo,
+                                        target_player.id
                                     )
 
-                                target_player.logo_path = (
-                                    replacement_path
-                                )
+                                    if not logo_url:
+                                        raise ValueError(
+                                            "No logo URL was returned."
+                                        )
+
+                                    target_player.logo_path = (
+                                        logo_url
+                                    )
+
+                                except Exception as error:
+
+                                    edit_db.rollback()
+                                    edit_db.close()
+
+                                    st.error(
+                                        "The replacement logo could not be uploaded."
+                                    )
+
+                                    st.error(str(error))
+                                    st.stop()
 
                             edit_db.commit()
                             edit_db.close()
