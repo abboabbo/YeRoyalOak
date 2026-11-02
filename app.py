@@ -14518,232 +14518,234 @@ if page == "Awards":
                         }
                     )
 
-                if not round_performances:
+                if awards_view == "Round Awards":
 
-                    st.info(
-                        "No valid performances were found "
-                        "for this round."
-                    )
+                    if not round_performances:
 
-                else:
-
-                    # -----------------------------------------
-                    # CALCULATE ROUND AWARDS
-                    # -----------------------------------------
-
-                    for performance in round_performances:
-
-                        performance[
-                            "performance_score"
-                        ] = (
-                            performance["average"]
-                            + performance["margin"] * 3
-                            + performance["Maximums"] * 4
-                            + (
-                                performance["checkout"]
-                                / 20
-                            )
-                            + (
-                                10
-                                if performance["won"]
-                                else 0
-                            )
+                        st.info(
+                            "No valid performances were found "
+                            "for this round."
                         )
 
-                    winners = [
-                        performance
-                        for performance
-                        in round_performances
-                        if performance["won"]
-                    ]
+                    else:
 
-                    player_of_round = max(
-                        round_performances,
-                        key=lambda item: (
-                            item["performance_score"],
-                            item["average"]
-                        )
-                    )
+                        # -----------------------------------------
+                        # CALCULATE ROUND AWARDS
+                        # -----------------------------------------
 
-                    highest_average = max(
-                        round_performances,
-                        key=lambda item: item[
-                            "average"
+                        for performance in round_performances:
+
+                            performance[
+                                "performance_score"
+                            ] = (
+                                performance["average"]
+                                + performance["margin"] * 3
+                                + performance["Maximums"] * 4
+                                + (
+                                    performance["checkout"]
+                                    / 20
+                                )
+                                + (
+                                    10
+                                    if performance["won"]
+                                    else 0
+                                )
+                            )
+
+                        winners = [
+                            performance
+                            for performance
+                            in round_performances
+                            if performance["won"]
                         ]
-                    )
 
-                    most_Maximums = max(
-                        round_performances,
-                        key=lambda item: (
-                            item["Maximums"],
-                            item["average"]
-                        )
-                    )
-
-                    highest_checkout = max(
-                        round_performances,
-                        key=lambda item: (
-                            item["checkout"],
-                            item["average"]
-                        )
-                    )
-
-                    biggest_victory = None
-
-                    if winners:
-
-                        biggest_victory = max(
-                            winners,
+                        player_of_round = max(
+                            round_performances,
                             key=lambda item: (
-                                item["margin"],
+                                item["performance_score"],
                                 item["average"]
                             )
                         )
 
-                    st.subheader(
-                        f"🏆 Round {selected_round} Awards"
-                    )
+                        highest_average = max(
+                            round_performances,
+                            key=lambda item: item[
+                                "average"
+                            ]
+                        )
 
-                    featured_left, featured_centre, featured_right = (
-                        st.columns([1, 1.6, 1])
-                    )
-
-                    with featured_centre:
-
-                        show_award(
-                            "👑",
-                            "Player of the Round",
-                            display_player_name(
-                                player_of_round["player"]
-                            ),
-                            (
-                                f'{player_of_round["legs_for"]}'
-                                f'–'
-                                f'{player_of_round["legs_against"]}'
-                                f' against '
-                                f'{display_player_name(player_of_round["opponent"])}'
-                            ),
-                            (
-                                f'{player_of_round["average"]:.2f} AVG'
-                                f' · {player_of_round["Maximums"]} Maximums'
-                                f' · {player_of_round["checkout"]} checkout'
+                        most_Maximums = max(
+                            round_performances,
+                            key=lambda item: (
+                                item["Maximums"],
+                                item["average"]
                             )
                         )
 
-                    st.divider()
+                        highest_checkout = max(
+                            round_performances,
+                            key=lambda item: (
+                                item["checkout"],
+                                item["average"]
+                            )
+                        )
 
-                    award_col1, award_col2 = (
-                        st.columns(2)
-                    )
+                        biggest_victory = None
 
-                    with award_col1:
+                        if winners:
 
-                        show_award(
-                            "🎯",
-                            "Highest Average",
-                            display_player_name(
-                                highest_average["player"]
-                            ),
-                            (
-                                f'{highest_average["average"]:.2f}'
-                                " three-dart average"
-                            ),
-                            (
-                                "Against "
-                                + display_player_name(
-                                    highest_average[
-                                        "opponent"
-                                    ]
+                            biggest_victory = max(
+                                winners,
+                                key=lambda item: (
+                                    item["margin"],
+                                    item["average"]
                                 )
                             )
+
+                        st.subheader(
+                            f"🏆 Round {selected_round} Awards"
                         )
 
-                    with award_col2:
+                        featured_left, featured_centre, featured_right = (
+                            st.columns([1, 1.6, 1])
+                        )
 
-                        if biggest_victory:
+                        with featured_centre:
 
                             show_award(
-                                "💥",
-                                "Biggest Victory",
+                                "👑",
+                                "Player of the Round",
                                 display_player_name(
-                                    biggest_victory[
-                                        "player"
-                                    ]
+                                    player_of_round["player"]
                                 ),
                                 (
-                                    f'{biggest_victory["legs_for"]}'
+                                    f'{player_of_round["legs_for"]}'
                                     f'–'
-                                    f'{biggest_victory["legs_against"]}'
+                                    f'{player_of_round["legs_against"]}'
+                                    f' against '
+                                    f'{display_player_name(player_of_round["opponent"])}'
+                                ),
+                                (
+                                    f'{player_of_round["average"]:.2f} AVG'
+                                    f' · {player_of_round["Maximums"]} Maximums'
+                                    f' · {player_of_round["checkout"]} checkout'
+                                )
+                            )
+
+                        st.divider()
+
+                        award_col1, award_col2 = (
+                            st.columns(2)
+                        )
+
+                        with award_col1:
+
+                            show_award(
+                                "🎯",
+                                "Highest Average",
+                                display_player_name(
+                                    highest_average["player"]
+                                ),
+                                (
+                                    f'{highest_average["average"]:.2f}'
+                                    " three-dart average"
                                 ),
                                 (
                                     "Against "
                                     + display_player_name(
-                                        biggest_victory[
+                                        highest_average[
                                             "opponent"
                                         ]
                                     )
                                 )
                             )
 
-                        else:
+                        with award_col2:
+
+                            if biggest_victory:
+
+                                show_award(
+                                    "💥",
+                                    "Biggest Victory",
+                                    display_player_name(
+                                        biggest_victory[
+                                            "player"
+                                        ]
+                                    ),
+                                    (
+                                        f'{biggest_victory["legs_for"]}'
+                                        f'–'
+                                        f'{biggest_victory["legs_against"]}'
+                                    ),
+                                    (
+                                        "Against "
+                                        + display_player_name(
+                                            biggest_victory[
+                                                "opponent"
+                                            ]
+                                        )
+                                    )
+                                )
+
+                            else:
+
+                                show_award(
+                                    "💥",
+                                    "Biggest Victory",
+                                    "No winner",
+                                    (
+                                        "No winning result was "
+                                        "found in this round."
+                                    )
+                                )
+
+                        award_col3, award_col4 = (
+                            st.columns(2)
+                        )
+
+                        with award_col3:
 
                             show_award(
-                                "💥",
-                                "Biggest Victory",
-                                "No winner",
+                                "💯",
+                                "Most Maximums",
+                                display_player_name(
+                                    most_Maximums["player"]
+                                ),
                                 (
-                                    "No winning result was "
-                                    "found in this round."
+                                    f'{most_Maximums["Maximums"]}'
+                                    " maximums"
+                                ),
+                                (
+                                    "Against "
+                                    + display_player_name(
+                                        most_Maximums["opponent"]
+                                    )
                                 )
                             )
 
-                    award_col3, award_col4 = (
-                        st.columns(2)
-                    )
+                        with award_col4:
 
-                    with award_col3:
-
-                        show_award(
-                            "💯",
-                            "Most Maximums",
-                            display_player_name(
-                                most_Maximums["player"]
-                            ),
-                            (
-                                f'{most_Maximums["Maximums"]}'
-                                " maximums"
-                            ),
-                            (
-                                "Against "
-                                + display_player_name(
-                                    most_Maximums["opponent"]
-                                )
-                            )
-                        )
-
-                    with award_col4:
-
-                        show_award(
-                            "🏹",
-                            "Highest Checkout",
-                            display_player_name(
-                                highest_checkout[
-                                    "player"
-                                ]
-                            ),
-                            (
-                                f'{highest_checkout["checkout"]}'
-                                " checkout"
-                            ),
-                            (
-                                "Against "
-                                + display_player_name(
+                            show_award(
+                                "🏹",
+                                "Highest Checkout",
+                                display_player_name(
                                     highest_checkout[
-                                        "opponent"
+                                        "player"
                                     ]
+                                ),
+                                (
+                                    f'{highest_checkout["checkout"]}'
+                                    " checkout"
+                                ),
+                                (
+                                    "Against "
+                                    + display_player_name(
+                                        highest_checkout[
+                                            "opponent"
+                                        ]
+                                    )
                                 )
                             )
-                        )
 
                     # -----------------------------------------
                     # SEASON STATISTICS
@@ -14752,7 +14754,9 @@ if page == "Awards":
                     st.divider()
 
                     st.subheader(
-                        "🌟 Tournament Leaders"
+                        "🌟 Season Awards"
+                        if awards_view == "Season Awards"
+                        else "🌟 Tournament Leaders"
                     )
 
                     season_stats = {}
