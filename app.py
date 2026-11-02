@@ -14312,12 +14312,25 @@ if page == "Awards":
 
             else:
 
-                selected_round = st.selectbox(
-                    "Round",
-                    available_rounds,
-                    index=len(available_rounds) - 1,
-                    key="awards_round"
+                awards_view = st.radio(
+                    "Awards View",
+                    ["Round Awards", "Season Awards"],
+                    horizontal=True,
+                    key="awards_view"
                 )
+
+                if awards_view == "Round Awards":
+
+                    selected_round = st.selectbox(
+                        "Round",
+                        available_rounds,
+                        index=len(available_rounds) - 1,
+                        key="awards_round"
+                    )
+
+                else:
+
+                    selected_round = available_rounds[-1]
 
                 round_fixtures = [
                     fixture
